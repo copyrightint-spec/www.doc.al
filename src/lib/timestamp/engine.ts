@@ -81,6 +81,11 @@ export async function createTimestamp(
     },
   });
 
+  // Auto-submit to OpenTimestamps (fire and forget)
+  import("@/lib/timestamp/opentimestamps")
+    .then(({ anchorToBitcoin }) => anchorToBitcoin(entry.id))
+    .catch(() => {});
+
   return {
     id: entry.id,
     sequenceNumber: entry.sequenceNumber,
