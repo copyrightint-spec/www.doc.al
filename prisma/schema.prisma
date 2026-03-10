@@ -1,0 +1,361 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==================== ENUMS ====================
+
+enum UserRole {
+  USER
+  ADMIN
+  API_USER
+}
+
+enum KycStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum DocumentStatus {
+  DRAFT
+  PENDING_SIGNATURE
+  PARTIALLY_SIGNED
+  COMPLETED
+  ARCHIVED
+}
+
+enum SignatureStatus {
+  PENDING
+  SIGNED
+  REJECTED
+  EXPIRED
+}
+
+enum CertificateType {
+  PERSONAL
+  ORGANIZATION
+  TSA
+}
+
+enum TimestampType {
+  SINGLE_FILE
+  SUBMITTED_HASH
+  SIGNATURE
+}
+
+enum OtsStatus {
+  PENDING
+  CONFIRMED
+}
+
+enum VerificationCodeType {
+  EMAIL
+  TOTP
+}
+
+enum OrganizationPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum SigningRequestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+// ==================== MODELS ====================
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  password       String?
+  role           UserRole  @default(USER)
+  kycStatus      KycStatus @default(PENDING)
+  kycDocumentUrl String?
+  totpSecret     String?
+  totpEnabled    Boolean   @default(false)
+  emailVerified  DateTime?
+  image          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  documents         Document[]
+  signatures        Signature[]
+  certificates      Certificate[]
+  apiKeys           ApiKey[]
+  auditLogs         AuditLog[]
+  verificationCodes VerificationCode[]
+  signingTemplates  SigningTemplate[]
+  signingRequests   SigningRequest[]
+  accounts          Account[]
+  sessions          Session[]
+
+  @@index([email])
+  @@index([organizationId])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Organization {
+  id                  String           @id @default(cuid())
+  name                String
+  domain              String?          @unique
+  logo                String?
+  certificateTemplate String?
+  apiQuota            Int              @default(100)
+  plan                OrganizationPlan @default(FREE)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  users              User[]
+  documents          Document[]
+  certificates       Certificate[]
+  apiKeys            ApiKey[]
+  signingTemplates   SigningTemplate[]
+
+  @@index([domain])
+}
+
+model Document {
+  id             String         @id @default(cuid())
+  title          String
+  fileName       String
+  fileHash       String
+  fileUrl        String
+  fileSize       Int
+  status         DocumentStatus @default(DRAFT)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+
+  ownerId        String
+  owner          User           @relation(fields: [ownerId], references: [id])
+  organizationId String?
+  organization   Organization?  @relation(fields: [organizationId], references: [id])
+
+  signatures      Signature[]
+  timestampEntries TimestampEntry[]
+  signingRequests  SigningRequest[]
+
+  @@index([fileHash])
+  @@index([ownerId])
+  @@index([status])
+  @@index([organizationId])
+}
+
+model Signature {
+  id                String          @id @default(cuid())
+  status            SignatureStatus @default(PENDING)
+  signerEmail       String
+  signerName        String
+  signedAt          DateTime?
+  signatureImageUrl String?
+  position          Json?
+  order             Int             @default(0)
+  token             String          @unique @default(cuid())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  documentId    String
+  document      Document    @relation(fields: [documentId], references: [id])
+  signerId      String?
+  signer        User?       @relation(fields: [signerId], references: [id])
+  certificateId String?
+  certificate   Certificate? @relation(fields: [certificateId], references: [id])
+
+  timestampEntries TimestampEntry[]
+
+  @@index([documentId])
+  @@index([signerId])
+  @@index([token])
+  @@index([signerEmail])
+}
+
+model Certificate {
+  id                  String          @id @default(cuid())
+  serialNumber        String          @unique
+  subjectDN           String
+  issuerDN            String
+  publicKey           String          @db.Text
+  encryptedPrivateKey String          @db.Text
+  validFrom           DateTime
+  validTo             DateTime
+  revoked             Boolean         @default(false)
+  revokedAt           DateTime?
+  revokeReason        String?
+  type                CertificateType @default(PERSONAL)
+  createdAt           DateTime        @default(now())
+
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  signatures Signature[]
+
+  @@index([serialNumber])
+  @@index([userId])
+  @@index([type])
+}
+
+model TimestampEntry {
+  id                     String        @id @default(cuid())
+  sequenceNumber         Int           @unique @default(autoincrement())
+  fingerprint            String
+  sequentialFingerprint  String
+  type                   TimestampType @default(SINGLE_FILE)
+  serverTimestamp        DateTime      @default(now())
+  btcTxId                String?
+  btcBlockHeight         Int?
+  btcBlockHash           String?
+  otsProof               Bytes?
+  otsStatus              OtsStatus     @default(PENDING)
+  createdAt              DateTime      @default(now())
+
+  documentId     String?
+  document       Document?   @relation(fields: [documentId], references: [id])
+  signatureId    String?
+  signature      Signature?  @relation(fields: [signatureId], references: [id])
+  previousEntryId String?   @unique
+  previousEntry   TimestampEntry? @relation("TimestampChain", fields: [previousEntryId], references: [id])
+  nextEntry       TimestampEntry? @relation("TimestampChain")
+
+  @@index([sequenceNumber])
+  @@index([fingerprint])
+  @@index([otsStatus])
+  @@index([serverTimestamp])
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  key         String    @unique
+  name        String
+  permissions Json      @default("{}")
+  rateLimit   Int       @default(100)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([key])
+  @@index([userId])
+}
+
+model SigningTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  fields      Json
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  signingRequests SigningRequest[]
+
+  @@index([userId])
+  @@index([isPublic])
+}
+
+model SigningRequest {
+  id              String               @id @default(cuid())
+  status          SigningRequestStatus  @default(PENDING)
+  recipientEmails Json
+  message         String?
+  expiresAt       DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  templateId String?
+  template   SigningTemplate? @relation(fields: [templateId], references: [id])
+  documentId String
+  document   Document         @relation(fields: [documentId], references: [id])
+  requesterId String
+  requester   User             @relation(fields: [requesterId], references: [id])
+
+  @@index([documentId])
+  @@index([requesterId])
+  @@index([status])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  userId String?
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+}
+
+model VerificationCode {
+  id        String               @id @default(cuid())
+  code      String
+  type      VerificationCodeType
+  expiresAt DateTime
+  used      Boolean              @default(false)
+  createdAt DateTime             @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([userId, type])
+  @@index([code, type])
+}
