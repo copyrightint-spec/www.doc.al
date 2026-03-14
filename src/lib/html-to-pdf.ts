@@ -191,8 +191,8 @@ export interface RenderPdfOptions {
   subtitle?: string;
   /** Creator/company details for the header */
   creator?: CreatorDetails;
-  /** Signature blocks at the end, each with name and role */
-  signers?: Array<{ name: string; role: string }>;
+  /** Signature blocks at the end, each with name, role, and optional signing date */
+  signers?: Array<{ name: string; role: string; signedAt?: string | Date | null }>;
   /** When true, adds a red "DRAFT" watermark across every page */
   isDraft?: boolean;
 }
@@ -561,7 +561,14 @@ export function renderBlocksToPdf(opts: RenderPdfOptions) {
 
         doc.setFontSize(7);
         doc.setTextColor(...C.dark);
-        doc.text("Data: ___/___/______", x, y + boxH + 11);
+        if (signer.signedAt) {
+          const d = new Date(signer.signedAt);
+          const dateStr = d.toLocaleDateString("sq-AL", { day: "2-digit", month: "2-digit", year: "numeric" });
+          const timeStr = d.toLocaleTimeString("sq-AL", { hour: "2-digit", minute: "2-digit" });
+          doc.text(`Data: ${dateStr}, ${timeStr}`, x, y + boxH + 11);
+        } else {
+          doc.text("Data: ___/___/______", x, y + boxH + 11);
+        }
       }
       y += boxH + 14;
     }

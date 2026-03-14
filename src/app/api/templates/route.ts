@@ -27,7 +27,7 @@ const templateSchema = z.object({
         y: z.number(),
         width: z.number(),
         height: z.number(),
-      }),
+      }).optional(),
       assignedTo: z.string().optional(),
       options: z.array(z.string()).optional(),
     })
@@ -40,6 +40,7 @@ const templateSchema = z.object({
     })
   ).optional(),
   isPublic: z.boolean().default(false),
+  termsHtml: z.string().optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -98,6 +99,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validated = templateSchema.parse(body);
 
+    // If termsHtml is provided (from contract builder), store it in pdfmeTemplate
+    const pdfmeData = validated.termsHtml
+      ? { type: "contract-builder", termsHtml: validated.termsHtml }
+      : body.pdfmeTemplate
+        ? (typeof body.pdfmeTemplate === "string" ? JSON.parse(body.pdfmeTemplate) : body.pdfmeTemplate)
+        : undefined;
+
     const template = await prisma.signingTemplate.create({
       data: {
         name: validated.name,
@@ -106,9 +114,7 @@ export async function POST(req: NextRequest) {
         fields: JSON.parse(JSON.stringify(validated.fields)),
         signerRoles: validated.signerRoles ? JSON.parse(JSON.stringify(validated.signerRoles)) : undefined,
         isPublic: validated.isPublic,
-        pdfmeTemplate: body.pdfmeTemplate
-          ? (typeof body.pdfmeTemplate === "string" ? JSON.parse(body.pdfmeTemplate) : body.pdfmeTemplate)
-          : undefined,
+        pdfmeTemplate: pdfmeData,
         userId: session.user.id,
         organizationId: session.user.organizationId,
       },

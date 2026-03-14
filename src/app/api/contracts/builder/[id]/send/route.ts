@@ -97,8 +97,20 @@ export async function POST(
       },
     });
 
-    // Send invitation emails
+    // Send invitation emails with full contract details
     const baseUrl = process.env.NEXTAUTH_URL || "https://www.doc.al";
+    const contractDetails = {
+      contractNumber: contract.contractNumber,
+      contractTitle: contract.title,
+      parties: contract.parties.map((p) => ({
+        fullName: p.fullName,
+        role: p.role,
+        partyNumber: p.partyNumber,
+      })),
+      creatorName: session.user.name,
+      creatorEmail: session.user.email || undefined,
+    };
+
     for (const sig of signatures) {
       const party = contract.parties.find((p) => p.email === sig.signerEmail);
       await sendSigningInvitation(
@@ -108,10 +120,14 @@ export async function POST(
         `${baseUrl}/sign/${sig.token}`,
         session.user.name,
         {
+          companyName: contract.organization?.name || undefined,
+          companyLogo: contract.organization?.logo || undefined,
+          brandColor: contract.organization?.primaryColor || "#0f172a",
           message: party
             ? `Ju jeni ftuar si ${party.role} (Pala ${party.partyNumber}) per te nenshkruar kontraten "${contract.title}".`
             : undefined,
           expiresAt,
+          contract: contractDetails,
         },
       );
     }

@@ -5,8 +5,6 @@ import { prisma } from "@/lib/db";
 export async function GET() {
   try {
     const session = await auth();
-    console.log("[legal-bases] session:", session?.user?.email || "NO SESSION");
-
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -24,10 +22,8 @@ export async function GET() {
       },
     });
 
-    console.log("[legal-bases] found:", legalBases.length);
     return NextResponse.json({ success: true, data: legalBases });
-  } catch (error) {
-    console.error("[legal-bases] GET error:", error);
+  } catch {
     return NextResponse.json({ error: "Ndodhi nje gabim" }, { status: 500 });
   }
 }

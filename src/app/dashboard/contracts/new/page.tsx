@@ -231,18 +231,23 @@ export default function ContractBuilderPage() {
 
   async function handleSaveTemplate() {
     try {
+      const lbNames = allLegalBasesRef.current
+        .filter((lb) => selectedLegalBasisIds.includes(lb.id))
+        .map((lb) => lb.title)
+        .join(", ");
       const res = await fetch("/api/templates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: title,
-          description: `Kontrate e krijuar me Contract Builder`,
+          name: title || "Kontrate pa titull",
+          description: `Kontrate me ${parties.length} pale${lbNames ? `. Baza ligjore: ${lbNames}` : ""}`,
           category: "contract",
           fields: parties.map((p) => ({
-            type: "text",
+            type: "text" as const,
             label: `Pala ${p.partyNumber} - ${p.role}`,
             required: true,
           })),
+          termsHtml,
         }),
       });
       const json = await res.json();
