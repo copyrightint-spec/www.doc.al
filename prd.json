@@ -1,0 +1,313 @@
+{
+  "project": "www.doc.al",
+  "branchName": "ralph/esign-platform",
+  "description": "Electronic Signature & Timestamp Platform - Dual timestamp (time.copyright.al + OpenTimestamps/Bitcoin), public blockchain explorer, eIDAS/ETSI compliant, 2FA signing, API service, certificate generation, and template maker for electronic signatures.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Prisma schema - arkitektura e plote e databazes",
+      "description": "Database schema qe mbulon te gjithe sistemin: perdorues me KYC, organizata, dokumenta, nenshkrime, certifikata, timestamp chain (server + BTC), API keys, templates, audit log.",
+      "acceptanceCriteria": [
+        "Model User: id, email, name, password, role (USER/ADMIN/API_USER), kycStatus (PENDING/VERIFIED/REJECTED), kycDocumentUrl, totpSecret, totpEnabled, emailVerified, organizationId",
+        "Model Organization: id, name, domain, logo, certificateTemplate, apiQuota, plan (FREE/PRO/ENTERPRISE)",
+        "Model Document: id, title, fileName, fileHash (SHA-256), fileUrl, status (DRAFT/PENDING_SIGNATURE/PARTIALLY_SIGNED/COMPLETED/ARCHIVED), ownerId, organizationId",
+        "Model Signature: id, documentId, signerId, signerEmail, signerName, status (PENDING/SIGNED/REJECTED/EXPIRED), signedAt, signatureImageUrl, certificateId, position (JSON), order (int)",
+        "Model Certificate: id, userId, organizationId, serialNumber, subjectDN, issuerDN, publicKey, encryptedPrivateKey, validFrom, validTo, revoked, type (PERSONAL/ORGANIZATION/TSA)",
+        "Model TimestampEntry: id, sequenceNumber (auto-increment), fingerprint (SHA-256), sequentialFingerprint (SHA-256), type (SINGLE_FILE/SUBMITTED_HASH/SIGNATURE), serverTimestamp, btcTxId, btcBlockHeight, btcBlockHash, otsProof (bytes), otsStatus (PENDING/CONFIRMED), documentId, signatureId, previousEntryId (self-relation for chain)",
+        "Model ApiKey: id, key (hashed), name, organizationId, userId, permissions (JSON), rateLimit, lastUsedAt, expiresAt, active",
+        "Model SigningTemplate: id, name, description, fields (JSON - pozicionet e nenshkrimeve, fushat e formes), organizationId, userId, isPublic",
+        "Model SigningRequest: id, templateId, documentId, status, requesterEmail, recipientEmails (JSON), message, expiresAt",
+        "Model AuditLog: id, action, entityType, entityId, userId, ipAddress, userAgent, metadata (JSON), createdAt",
+        "Model VerificationCode: id, userId, code (6 digits), type (EMAIL/TOTP), expiresAt, used",
+        "Indexe per performance: TimestampEntry.sequenceNumber, TimestampEntry.fingerprint, Document.fileHash, AuditLog.createdAt",
+        "npx prisma generate ekzekutohet pa gabime",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Kjo eshte baza per te gjithe sistemin. TimestampEntry formon nje chain ku cdo entry lidhet me te meparshmen permes sequentialFingerprint = SHA256(previousSequentialFingerprint + currentFingerprint + serverTimestamp)."
+    },
+    {
+      "id": "US-002",
+      "title": "Autentifikim, regjistrim, dhe KYC verification",
+      "description": "Sistem autentifikimi me NextAuth v5, regjistrim me email verification, KYC document upload per verifikim identiteti, dhe TOTP setup per nenshkrim.",
+      "acceptanceCriteria": [
+        "NextAuth v5 me Credentials provider dhe Google OAuth",
+        "Faqe /auth/login me email/password form",
+        "Faqe /auth/register me emri, email, password, organizate (opsionale)",
+        "Email verification pas regjistrimit (6-digit code via Resend)",
+        "Faqe /settings/kyc per ngarkim dokument identiteti (foto ID/pasaporte)",
+        "KYC status display: PENDING, VERIFIED, REJECTED",
+        "Faqe /settings/security per aktivizim TOTP (Google Authenticator) - shfaq QR code, kerkon verifikim me 6-digit code",
+        "Middleware: route-t private kerkojne auth, nenshkrimi kerkon KYC verified + TOTP enabled",
+        "JWT session me role, kycStatus, totpEnabled",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Per te nenshkruar dokumente, perdoruesi DUHET te kete KYC te verifikuar DHE TOTP te aktivizuar. Per timestamp pa nenshkrim, mjafton llogaria."
+    },
+    {
+      "id": "US-003",
+      "title": "Timestamp Engine - Server timestamp (time.copyright.al)",
+      "description": "Motori i timestamp qe regjistron kohen e serverit tone, krijon fingerprint SHA-256, dhe nderton chain-in sekuencial ku cdo entry lidhet me te meparshmin.",
+      "acceptanceCriteria": [
+        "Funksion createTimestamp(data, type) qe: 1) llogarit SHA-256 fingerprint, 2) merr timestamp nga serveri (UTC), 3) llogarit sequentialFingerprint = SHA256(prevSequentialFingerprint + fingerprint + timestamp), 4) ruan ne DB me sequenceNumber auto-increment",
+        "Funksion verifyChainIntegrity() qe verifikon qe cdo sequentialFingerprint eshte i sakte bazuar ne te meparshmin",
+        "API endpoint: POST /api/timestamp - pranon file ose hash, kthen TimestampEntry me ID, sequenceNumber, fingerprints, timestamp",
+        "API endpoint: GET /api/timestamp/:id - kthen detajet e nje timestamp entry",
+        "API endpoint: POST /api/timestamp/verify - pranon hash, verifikon nese ekziston ne chain",
+        "Server time sinkronizohet me NTP per saktesi",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Ky eshte timestamp-i jone (time.copyright.al). Chain sekuencial si ne foton e derguar: ID, Time Stamp (UTC), Fingerprint SHA-256, Type, Sequential Fingerprint SHA-256."
+    },
+    {
+      "id": "US-004",
+      "title": "Bitcoin Timestamp - OpenTimestamps integration",
+      "description": "Integrim me OpenTimestamps.org per te ankoruar timestamp-et tona ne blockchain-in e Bitcoin, duke provuar ekzistencen e dokumentit ne nje kohe te caktuar ne menyre te pavarur.",
+      "acceptanceCriteria": [
+        "Integrim me OpenTimestamps API/library per te derguar SHA-256 hash",
+        "Pas dergimit, ruaj OTS proof (bytes) ne TimestampEntry.otsProof me status PENDING",
+        "Background job (cron ose polling) qe kontrollon cdo 10 minuta nese OTS proof eshte konfirmuar ne BTC blockchain",
+        "Kur konfirmohet: update btcTxId, btcBlockHeight, btcBlockHash, otsStatus = CONFIRMED",
+        "API endpoint: GET /api/timestamp/:id/btc - kthen statusin e BTC confirmation",
+        "Funksion verifyOtsProof(proof, hash) per verifikim te pavarur",
+        "Shfaqje ne UI: 'Pending BTC confirmation...' ose 'Confirmed in BTC Block #xxxxx (TxID: xxx...xxx)'",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "OpenTimestamps eshte falas pa limit. Proof-i konfirmohet pas ~1-2 ore kur futet ne nje BTC block. Kjo jep garanci te pavarur blockchain per timestamp-et tona."
+    },
+    {
+      "id": "US-005",
+      "title": "Public Timestamp Explorer (Blockchain Explorer)",
+      "description": "Faqe publike real-time qe shfaq te gjitha timestamp-et, nenshkrimet, hash-et, dhe blloqet si nje blockchain explorer - e aksesueshme nga kushdo per verifikim.",
+      "acceptanceCriteria": [
+        "Faqe /explorer publike (pa nevoje per llogari)",
+        "Tabele real-time me kolonat: ID, Time Stamp (UTC), Fingerprint (SHA-256), Type, Sequential Fingerprint (SHA-256), BTC Status",
+        "Auto-refresh cdo 5 sekonda ose WebSocket/SSE per updates real-time",
+        "Rreshtat e rinj shfaqen me animacion (highlight green si ne foto)",
+        "Klikim ne nje rresht hap detajet: hash-i plote, BTC block info, OTS proof, chain verification",
+        "Filter sipas type: single-file, submitted-hash, signature",
+        "Search me fingerprint hash",
+        "Paginim per historikun e plote",
+        "Link direkt per cdo entry: /explorer/:sequenceNumber",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Kjo eshte faqja publike si ne screenshot - shfaq te gjitha timestamps ne real-time. Kushdo mund te verifikoje qe nje hash ekziston ne chain-in tone dhe ne BTC blockchain."
+    },
+    {
+      "id": "US-006",
+      "title": "Public Verify Page - Verifikim timestamp dhe nenshkrimesh",
+      "description": "Faqe publike per verifikim te timestamp-eve dhe nenshkrimeve duke ngarkuar file, certifikate, ose duke futur SHA-256 fingerprint manualisht.",
+      "acceptanceCriteria": [
+        "Faqe /verify publike me 4 menyra verifikimi (si ne foto):",
+        "1) Original File: ngarko file -> llogarit SHA-256 -> kerko ne chain -> shfaq rezultatin",
+        "2) Certificate: ngarko certifikate (.ots, .p7s) -> verifiko nenshkrimin",
+        "3) SHA-2 Fingerprint: fut hash manualisht -> kerko ne chain -> shfaq rezultatin",
+        "4) Offline Verification: udhezime per verifikim offline me OpenTimestamps CLI",
+        "Rezultati shfaq: I VLEFSHËM / I PAVLEFSHËM me detaje (kush, kur, BTC block, chain position)",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Identike me seksionin 'Verify Time Stamp' ne foto - 4 menyra verifikimi."
+    },
+    {
+      "id": "US-007",
+      "title": "2-Step Signing Verification (Email OTP + TOTP)",
+      "description": "Procesi i nenshkrimit kerkon 2 hapa verifikimi: fillimisht kod 6-shifror ne email, pastaj (per perdoruesit KYC-verified) kod nga Google Authenticator.",
+      "acceptanceCriteria": [
+        "Kur perdoruesi klikon 'Nenshkruaj': Step 1 - dergon kod 6-shifror ne email (vlefshmerise 5 min)",
+        "UI: input per kodin e emailit me timer countdown",
+        "Pas verifikimit te kodit email: Step 2 - kerkon TOTP code nga Google Authenticator",
+        "UI: input per TOTP kodin (6 shifra)",
+        "Pas verifikimit te TOTP: nenshkrimi ekzekutohet",
+        "Nese perdoruesi nuk ka TOTP te aktivizuar: redirect ne /settings/security per ta aktivizuar",
+        "Nese perdoruesi nuk ka KYC te verifikuar: shfaq mesazh qe kerkohet KYC per nenshkrim",
+        "Rate limiting: max 5 tentativa per kod, max 3 dergime email per ore",
+        "AuditLog per cdo tentative (sukses/deshtim)",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Kjo siguron qe vetem personi i duhur (KYC verified + email access + telefon me TOTP) mund te nenshkruaje. Perputhje me eIDAS per nenshkrime te avancuara."
+    },
+    {
+      "id": "US-008",
+      "title": "Digital Signature Engine (eIDAS/ETSI compliant)",
+      "description": "Motor nenshkrimi dixhital qe krijon nenshkrime te avancuara elektronike ne perputhje me eIDAS dhe ETSI EN 319 422 standards.",
+      "acceptanceCriteria": [
+        "Gjenerim certifikatash X.509 per perdoruesit (node-forge) me: CN=emri, O=organizata, serialNumber=userId",
+        "Nenshkrim dixhital i PDF me PAdES (PDF Advanced Electronic Signatures) format",
+        "Suport per import certifikate .p12/.pfx nga perdoruesi",
+        "Cdo nenshkrim krijon automatikisht TimestampEntry ne chain (lidhet me SignatureId)",
+        "Verifikim nenshkrimi: kontrollo certifikaten, hash-in, timestamp-in, chain integrity",
+        "Metadata eIDAS ne nenshkrim: signing time, signing certificate, timestamp token",
+        "Certifikatat ruhen me private key te enkriptuar (AES-256)",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "eIDAS Level: Advanced Electronic Signature (AdES). Per Qualified (QES) do duhet HSM dhe QTSP ne te ardhmen."
+    },
+    {
+      "id": "US-009",
+      "title": "Signing Workflow & Ceremony",
+      "description": "Workflow per dergim dokumentash per nenshkrim tek persona te tjere, me template dhe pozicionim drag-and-drop.",
+      "acceptanceCriteria": [
+        "Forma per krijim signing request: zgjidh dokument, shto nenshkrues (email, emri, rendi)",
+        "Dergim email ftese me link unik per nenshkrim (Resend)",
+        "Faqe nenshkrimi /sign/:token - publike, pa nevoje llogari per pamje, por kerkon verifikim per nenshkrim",
+        "PDF viewer me drag-and-drop per vendosjen e nenshkrimit",
+        "Signature pad (vizatim me gisht/mouse) ose ngarkim imazh nenshkrimi",
+        "Per nenshkrues te jashtme (pa llogari): vetem email OTP verification",
+        "Per nenshkrues me llogari: email OTP + TOTP (2-step si US-007)",
+        "Notifikime email ne cdo hap: ftese, nenshkrim, perfundim",
+        "Status tracking: kush ka nenshkruar, kush eshte ne pritje",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-010",
+      "title": "Automatic Signature Seal / Vila e nenshkrimit",
+      "description": "Vila vizuale automatike ne PDF qe permban info nenshkrimit, QR code per verifikim, dhe lidhje me chain-in publik.",
+      "acceptanceCriteria": [
+        "Gjenerim automatik i viles ne PDF pas nenshkrimit",
+        "Vila permban: emri nenshkruesit, data/ora, SHA-256 hash, Timestamp ID, QR code",
+        "QR code lidhet me /explorer/:sequenceNumber per verifikim publik",
+        "3 template vila: Klasike (formale), Moderne (minimale), Zyrtare (me steme)",
+        "Pozicionim: ne vendin e zgjedhur ose automatikisht ne fund te faqes",
+        "Nese ka BTC confirmation: vila shfaq 'BTC Block #xxxxx'",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-011",
+      "title": "REST API v1 - eSign & Timestamp API per integrime",
+      "description": "API publike e dokumentuar per organizata qe duan te integrojne nenshkrimin elektronik dhe timestamp ne sistemet e tyre.",
+      "acceptanceCriteria": [
+        "API key management ne dashboard: gjenerim, revoke, permissions, rate limits",
+        "Auth: X-API-Key header",
+        "POST /api/v1/timestamp - krijo timestamp (file upload ose hash)",
+        "GET /api/v1/timestamp/:id - merr timestamp details + BTC status",
+        "POST /api/v1/timestamp/verify - verifiko hash",
+        "POST /api/v1/documents - ngarko dokument",
+        "POST /api/v1/documents/:id/signing-request - krijo kerkese nenshkrimi",
+        "GET /api/v1/documents/:id/status - status i dokumentit dhe nenshkrimeve",
+        "POST /api/v1/certificates/generate - gjenerimi i certifikates per organizate",
+        "Webhook callbacks per ndryshime statusi (document.signed, timestamp.btc_confirmed, etj)",
+        "Rate limiting: sipas planit (FREE: 100/day, PRO: 10k/day, ENTERPRISE: unlimited)",
+        "Response format JSON konsistent: { success, data, error, timestamp }",
+        "Error codes dhe mesazhe te qarta",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "API-ja mundeson organizatat te ndertojne mbi platformen tone."
+    },
+    {
+      "id": "US-012",
+      "title": "Certificate Generation per organizata",
+      "description": "Sistem per gjenerimin e certifikatave dixhitale per organizata dhe kompani qe duan te implementojne nenshkrimin elektronik.",
+      "acceptanceCriteria": [
+        "Faqe /certificates per menaxhim certifikatash",
+        "Gjenerim certifikate organizate (X.509) me: O=OrgName, C=AL, validity period",
+        "Gjenerim certifikate individuale nen organizaten",
+        "Download certifikate ne format .p12/.pfx (me password)",
+        "Revoke certifikate me arsye",
+        "Certificate chain: Root CA (doc.al) -> Organization CA -> User Certificate",
+        "CRL (Certificate Revocation List) endpoint: GET /api/crl",
+        "Typecheck passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "Platforma jone vepron si CA (Certificate Authority) per ekosistem."
+    },
+    {
+      "id": "US-013",
+      "title": "Template Maker - Ndertuesi i formave te nenshkrimit",
+      "description": "Sistem in-house ku cdo perdorues mund te ndertoje template per forma nenshkrimi elektronik, ti personalizoje, dhe ti perdore per klientet e tij.",
+      "acceptanceCriteria": [
+        "Faqe /templates me listen e template-ve te krijuara",
+        "Template builder drag-and-drop me fushat: nenshkrim, date, tekst, checkbox, dropdown, ngarkim file",
+        "Vendosje fushash ne pozicione te caktuara ne PDF (coordinates x,y per cdo fushe)",
+        "Preview i template me te dhena shembull",
+        "Ruajtje template si JSON schema",
+        "Perdorim template: zgjidh template -> ngarko PDF -> ploteso fushat -> dergo per nenshkrim",
+        "Template publike (share me link) ose private",
+        "Clone template per modifikim",
+        "Typecheck passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "Kjo i lejon bizneset te krijojne forma te personalizuara: kontrata, marreveshje, deklarata, etj."
+    },
+    {
+      "id": "US-014",
+      "title": "Document Management & Signing Dashboard",
+      "description": "Dashboard per menaxhim te dokumentave, nenshkrimeve ne pritje, dhe kerkesave - platforma qendrore per cdo perdorues.",
+      "acceptanceCriteria": [
+        "Layout me sidebar: Dashboard, Dokumenta, Nenshkrime, Timestamp Explorer, Certifikata, Templates, API Keys, Settings",
+        "Dashboard: statistika (dokumenta totale, ne pritje, te perfunduar, timestamps kete muaj), grafik aktiviteti",
+        "Dokumenta: lista me search, filter (status, date), sort, paginim, drag-drop upload",
+        "Nenshkrime ne pritje: lista me aksione (nenshkruaj, refuzo, shiko)",
+        "Kerkesa derguar: tracking kush ka nenshkruar",
+        "Quick actions: ngarko dokument, krijo timestamp, dergo per nenshkrim",
+        "Responsive design per mobile/tablet/desktop",
+        "Typecheck passes"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-015",
+      "title": "Audit Log, historik, dhe eksport",
+      "description": "Historik i plote i te gjitha veprimeve ne sistem per compliance dhe transparence.",
+      "acceptanceCriteria": [
+        "Regjistrim automatik i cdo veprimi: upload, sign, verify, timestamp, login, API call",
+        "Faqe /audit-log me tabele: data, perdoruesi, veprimi, detaje, IP",
+        "Filtra: perdorues, veprim, date range, dokument",
+        "Eksport ne CSV dhe PDF",
+        "Per cdo dokument: timeline e plote e veprimeve",
+        "Retention policy: 7 vjet (eIDAS requirement)",
+        "Typecheck passes"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-016",
+      "title": "Landing Page profesionale per www.doc.al",
+      "description": "Faqe kryesore profesionale qe prezanton platformen, sherbimet, dhe cmimet.",
+      "acceptanceCriteria": [
+        "Hero section: 'Nenshkrim Elektronik & Timestamp i Besueshem' me CTA",
+        "Features: eSign, Timestamp (Server + Bitcoin), Public Chain Explorer, API, Template Maker, Certificate Authority",
+        "Si funksionon: 3 hapa vizuale (Ngarko -> Nenshkruaj -> Verifiko)",
+        "Timestamp Explorer preview live (mini-version e /explorer)",
+        "Pricing: Free (10 docs/muaj, 50 timestamps), Pro (unlimited docs, 1000 timestamps, API), Enterprise (white-label, unlimited, SLA)",
+        "Trust badges: eIDAS compliant, ETSI EN 319 422, Bitcoin anchored",
+        "Footer: links, kontakt, social, legal",
+        "Responsive, Lighthouse score > 90",
+        "Typecheck passes"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

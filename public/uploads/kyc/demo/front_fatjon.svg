@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eaf0f7"/>
+      <stop offset="100%" stop-color="#d4dfe9"/>
+    </linearGradient>
+    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1565c0"/>
+      <stop offset="100%" stop-color="#0d47a1"/>
+    </linearGradient>
+  </defs>
+  <!-- Card body -->
+  <rect width="400" height="250" rx="12" fill="url(#bg)" stroke="#b0bec5" stroke-width="1.5"/>
+  <!-- Header bar -->
+  <rect width="400" height="40" rx="12" fill="url(#header)"/>
+  <rect y="28" width="400" height="12" fill="url(#header)"/>
+  <!-- Header icon - steering wheel placeholder -->
+  <circle cx="28" cy="20" r="13" fill="none" stroke="#fff" stroke-width="1.2"/>
+  <circle cx="28" cy="20" r="5" fill="none" stroke="#fff" stroke-width="0.8"/>
+  <line x1="28" y1="7" x2="28" y2="15" stroke="#fff" stroke-width="0.8"/>
+  <line x1="28" y1="25" x2="28" y2="33" stroke="#fff" stroke-width="0.8"/>
+  <line x1="15" y1="20" x2="23" y2="20" stroke="#fff" stroke-width="0.8"/>
+  <line x1="33" y1="20" x2="41" y2="20" stroke="#fff" stroke-width="0.8"/>
+  <!-- Header text -->
+  <text x="200" y="16" font-family="Arial, sans-serif" font-size="9" fill="#bbdefb" text-anchor="middle" letter-spacing="1.5">REPUBLIKA E SHQIPERISE</text>
+  <text x="200" y="32" font-family="Arial, sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold" letter-spacing="2">LEJE DREJTIMI / DRIVING LICENCE</text>
+  <!-- Photo placeholder -->
+  <rect x="18" y="52" width="90" height="110" rx="4" fill="#cfd8dc" stroke="#90a4ae" stroke-width="1"/>
+  <circle cx="63" cy="82" r="18" fill="#b0bec5"/>
+  <ellipse cx="63" cy="125" rx="26" ry="22" fill="#b0bec5"/>
+  <text x="63" y="155" font-family="Arial, sans-serif" font-size="7" fill="#78909c" text-anchor="middle">FOTO</text>
+  <!-- Fields -->
+  <text x="122" y="60" font-family="Arial, sans-serif" font-size="7" fill="#78909c">1. Mbiemri / Surname</text>
+  <text x="122" y="73" font-family="Arial, sans-serif" font-size="12" fill="#263238" font-weight="bold">DERVISHI</text>
+  <text x="122" y="88" font-family="Arial, sans-serif" font-size="7" fill="#78909c">2. Emri / First Name</text>
+  <text x="122" y="101" font-family="Arial, sans-serif" font-size="12" fill="#263238" font-weight="bold">FATJON</text>
+  <text x="122" y="116" font-family="Arial, sans-serif" font-size="7" fill="#78909c">3. Datelindja / Date of Birth</text>
+  <text x="122" y="129" font-family="Arial, sans-serif" font-size="11" fill="#263238">30.11.1990</text>
+  <text x="280" y="116" font-family="Arial, sans-serif" font-size="7" fill="#78909c">4b. Skadimi</text>
+  <text x="280" y="129" font-family="Arial, sans-serif" font-size="11" fill="#263238">15.04.2031</text>
+  <!-- License number -->
+  <text x="280" y="60" font-family="Arial, sans-serif" font-size="7" fill="#78909c">5. Nr. Lejes</text>
+  <text x="280" y="76" font-family="Arial, sans-serif" font-size="13" fill="#1565c0" font-weight="bold">J98765432B</text>
+  <!-- Categories -->
+  <text x="122" y="148" font-family="Arial, sans-serif" font-size="7" fill="#78909c">9. Kategorite / Categories</text>
+  <rect x="122" y="153" width="28" height="18" rx="3" fill="#1565c0"/>
+  <text x="136" y="166" font-family="Arial, sans-serif" font-size="10" fill="#fff" text-anchor="middle" font-weight="bold">B</text>
+  <rect x="156" y="153" width="28" height="18" rx="3" fill="#e0e0e0" stroke="#90a4ae" stroke-width="0.5"/>
+  <text x="170" y="166" font-family="Arial, sans-serif" font-size="10" fill="#90a4ae" text-anchor="middle">C</text>
+  <rect x="190" y="153" width="28" height="18" rx="3" fill="#e0e0e0" stroke="#90a4ae" stroke-width="0.5"/>
+  <text x="204" y="166" font-family="Arial, sans-serif" font-size="10" fill="#90a4ae" text-anchor="middle">D</text>
+  <!-- Address -->
+  <text x="18" y="185" font-family="Arial, sans-serif" font-size="7" fill="#78909c">8. Adresa / Address</text>
+  <text x="18" y="197" font-family="Arial, sans-serif" font-size="10" fill="#263238">Rruga Barrikadave, Nr. 15, Tirane</text>
+  <!-- Chip placeholder -->
+  <rect x="18" y="212" width="38" height="26" rx="4" fill="#c9b037" stroke="#a08c2e" stroke-width="0.8"/>
+  <line x1="27" y1="212" x2="27" y2="238" stroke="#a08c2e" stroke-width="0.5"/>
+  <line x1="37" y1="212" x2="37" y2="238" stroke="#a08c2e" stroke-width="0.5"/>
+  <line x1="47" y1="212" x2="47" y2="238" stroke="#a08c2e" stroke-width="0.5"/>
+  <line x1="18" y1="225" x2="56" y2="225" stroke="#a08c2e" stroke-width="0.5"/>
+  <!-- EU flag placeholder -->
+  <rect x="348" y="210" width="38" height="28" rx="3" fill="#003399"/>
+  <text x="367" y="229" font-family="Arial, sans-serif" font-size="8" fill="#ffcc00" text-anchor="middle">AL</text>
+  <!-- Signature line -->
+  <line x1="240" y1="235" x2="340" y2="235" stroke="#90a4ae" stroke-width="0.5"/>
+  <text x="290" y="245" font-family="Arial, sans-serif" font-size="7" fill="#90a4ae" text-anchor="middle">Nenshkrimi</text>
+  <!-- SPECIMEN watermark -->
+  <text x="200" y="145" font-family="Arial, sans-serif" font-size="36" fill="#1565c0" fill-opacity="0.06" text-anchor="middle" transform="rotate(-20,200,145)" font-weight="bold">SPECIMEN</text>
+</svg>

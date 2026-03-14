@@ -3,6 +3,12 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { sendSigningInvitation } from "@/lib/email";
 import { z } from "zod";
+import crypto from "crypto";
+
+/** Generate a cryptographically secure signing token (64 hex chars) */
+function generateSecureToken(): string {
+  return crypto.randomBytes(32).toString("hex");
+}
 
 const signingRequestSchema = z.object({
   signers: z.array(
@@ -53,7 +59,7 @@ export async function POST(
       },
     });
 
-    // Create signature entries for each signer
+    // Create signature entries for each signer with secure tokens
     const signatures = await Promise.all(
       validated.signers.map((signer) =>
         prisma.signature.create({
@@ -62,6 +68,7 @@ export async function POST(
             signerEmail: signer.email,
             signerName: signer.name,
             order: signer.order,
+            token: generateSecureToken(),
           },
         })
       )
@@ -81,7 +88,11 @@ export async function POST(
         sig.signerName,
         document.title,
         `${baseUrl}/sign/${sig.token}`,
-        session.user.name
+        session.user.name,
+        {
+          message: validated.message,
+          expiresAt,
+        }
       );
     }
 

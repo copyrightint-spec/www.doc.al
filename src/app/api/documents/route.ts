@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { computeSHA256 } from "@/lib/timestamp/engine";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,6 +10,10 @@ export async function POST(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Jo i autorizuar" }, { status: 401 });
     }
+
+    // Rate limit: 20 uploads per hour per user
+    const limited = rateLimit(req, "documentUpload", session.user.id);
+    if (limited) return limited;
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;

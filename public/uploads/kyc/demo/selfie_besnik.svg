@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e3eaf2"/>
+      <stop offset="100%" stop-color="#cdd8e4"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="300" height="300" rx="16" fill="url(#bg)" stroke="#b0bec5" stroke-width="1.5"/>
+  <!-- Camera frame indicator -->
+  <rect x="20" y="20" width="260" height="260" rx="130" fill="none" stroke="#90a4ae" stroke-width="1" stroke-dasharray="8,4"/>
+  <!-- Head -->
+  <circle cx="150" cy="100" r="45" fill="#b0bec5" stroke="#90a4ae" stroke-width="1"/>
+  <!-- Eyes -->
+  <circle cx="135" cy="92" r="4" fill="#607d8b"/>
+  <circle cx="165" cy="92" r="4" fill="#607d8b"/>
+  <!-- Mouth -->
+  <path d="M138 108 Q150 118 162 108" fill="none" stroke="#607d8b" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Shoulders/body -->
+  <ellipse cx="150" cy="195" rx="60" ry="45" fill="#b0bec5" stroke="#90a4ae" stroke-width="1"/>
+  <!-- Hands holding card -->
+  <!-- Left hand -->
+  <ellipse cx="105" cy="220" rx="14" ry="10" fill="#c8b89a" stroke="#a89878" stroke-width="0.8" transform="rotate(-15,105,220)"/>
+  <!-- Right hand -->
+  <ellipse cx="195" cy="220" rx="14" ry="10" fill="#c8b89a" stroke="#a89878" stroke-width="0.8" transform="rotate(15,195,220)"/>
+  <!-- ID Card being held -->
+  <rect x="95" y="210" width="110" height="68" rx="5" fill="#fff" stroke="#90a4ae" stroke-width="1"/>
+  <rect x="100" y="215" width="100" height="8" rx="2" fill="#c41e3a" opacity="0.7"/>
+  <!-- Mini photo on card -->
+  <rect x="104" y="228" width="22" height="27" rx="2" fill="#d4dce4"/>
+  <circle cx="115" cy="236" r="5" fill="#b0bec5"/>
+  <ellipse cx="115" cy="248" rx="7" ry="5" fill="#b0bec5"/>
+  <!-- Mini text lines on card -->
+  <rect x="132" y="230" width="58" height="3" rx="1" fill="#cfd8dc"/>
+  <rect x="132" y="238" width="50" height="3" rx="1" fill="#cfd8dc"/>
+  <rect x="132" y="246" width="44" height="3" rx="1" fill="#cfd8dc"/>
+  <rect x="132" y="254" width="54" height="3" rx="1" fill="#cfd8dc"/>
+  <!-- Label -->
+  <text x="150" y="295" font-family="Arial, sans-serif" font-size="9" fill="#607d8b" text-anchor="middle">Selfie me Dokument / Selfie with ID</text>
+  <!-- Name -->
+  <text x="150" y="16" font-family="Arial, sans-serif" font-size="10" fill="#607d8b" text-anchor="middle">BESNIK SHEHU</text>
+</svg>

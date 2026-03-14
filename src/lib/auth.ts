@@ -5,6 +5,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./db";
 import bcrypt from "bcryptjs";
 import type { UserRole, KycStatus } from "@/generated/prisma/enums";
+import { checkAccountLockout, recordFailedLogin, clearFailedLogins } from "./rate-limit";
+import { verifyTurnstileToken } from "./turnstile";
 
 declare module "next-auth" {
   interface Session {
@@ -52,22 +54,46 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        captchaToken: { label: "Captcha", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        // Verify CAPTCHA token
+        const captchaValid = await verifyTurnstileToken(credentials.captchaToken as string);
+        if (!captchaValid) {
+          throw new Error("Verifikimi CAPTCHA deshtoi. Provoni perseri.");
+        }
+
+        const email = credentials.email as string;
+
+        // Account lockout check
+        const lockout = checkAccountLockout(email);
+        if (lockout.locked) {
+          throw new Error(`Llogaria eshte bllokuar. Provoni pas ${lockout.remainingMinutes} minutash.`);
+        }
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email },
         });
 
-        if (!user || !user.password) return null;
+        if (!user || !user.password) {
+          recordFailedLogin(email);
+          return null;
+        }
 
         const isValid = await bcrypt.compare(
           credentials.password as string,
           user.password
         );
 
-        if (!isValid) return null;
+        if (!isValid) {
+          recordFailedLogin(email);
+          return null;
+        }
+
+        // Clear failed login counter on success
+        clearFailedLogins(email);
 
         return {
           id: user.id,

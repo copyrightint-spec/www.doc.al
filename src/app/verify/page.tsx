@@ -2,6 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import {
+  Upload,
+  FileCheck,
+  Hash,
+  Shield,
+  Terminal,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  ArrowRight,
+} from "lucide-react";
+import { cn } from "@/lib/cn";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert } from "@/components/ui/alert";
 
 interface VerifyResult {
   found: boolean;
@@ -14,8 +31,17 @@ interface VerifyResult {
   btcBlockHeight?: number | null;
   otsStatus?: string;
   message?: string;
-  document?: { id: string; title: string; fileName: string } | null;
-  signature?: { id: string; signerName: string; signerEmail: string; signedAt: string } | null;
+  document?: {
+    id: string;
+    title: string;
+    fileName: string;
+  } | null;
+  signature?: {
+    id: string;
+    signerName: string;
+    signerEmail: string;
+    signedAt: string;
+  } | null;
 }
 
 type VerifyMethod = "file" | "certificate" | "hash" | "offline";
@@ -30,7 +56,9 @@ export default function VerifyPage() {
   async function handleFileVerify(e: React.FormEvent) {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
-    const fileInput = form.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = form.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
     const file = fileInput?.files?.[0];
     if (!file) return;
 
@@ -92,7 +120,9 @@ export default function VerifyPage() {
   async function handleCertificateVerify(e: React.FormEvent) {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
-    const fileInput = form.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = form.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
     const file = fileInput?.files?.[0];
     if (!file) return;
 
@@ -122,160 +152,290 @@ export default function VerifyPage() {
   }
 
   const methods = [
-    { id: "file" as const, label: "Original File", desc: "(single-file timestamp)" },
-    { id: "certificate" as const, label: "Certificate", desc: "(needed for multiple files)" },
-    { id: "hash" as const, label: "SHA-2 Fingerprint", desc: "" },
-    { id: "offline" as const, label: "Offline", desc: "" },
+    {
+      id: "file" as const,
+      label: "Original File",
+      desc: "(single-file timestamp)",
+      icon: <Upload className="h-4 w-4" />,
+    },
+    {
+      id: "certificate" as const,
+      label: "Certificate",
+      desc: "(needed for multiple files)",
+      icon: <FileCheck className="h-4 w-4" />,
+    },
+    {
+      id: "hash" as const,
+      label: "SHA-2 Fingerprint",
+      desc: "",
+      icon: <Hash className="h-4 w-4" />,
+    },
+    {
+      id: "offline" as const,
+      label: "Offline",
+      desc: "",
+      icon: <Terminal className="h-4 w-4" />,
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <header className="border-b border-zinc-200 bg-white px-6 py-4 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto max-w-3xl flex items-center justify-between">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card px-6 py-4">
+        <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div>
-            <Link href="/" className="text-xl font-bold text-zinc-900 dark:text-zinc-50">doc.al</Link>
-            <h1 className="mt-1 text-sm text-zinc-500">Verify Time Stamp</h1>
+            <Link href="/" className="text-xl font-bold text-foreground">
+              doc.al
+            </Link>
+            <h1 className="mt-1 text-sm text-muted-foreground">
+              Verify Time Stamp
+            </h1>
           </div>
-          <Link href="/explorer" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
-            Explorer &rarr;
+          <Link
+            href="/explorer"
+            className="flex items-center gap-1 text-sm text-blue-600 hover:underline dark:text-blue-400"
+          >
+            Explorer
+            <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
       </header>
 
-      <div className="mx-auto max-w-3xl px-6 py-8 space-y-6">
+      <div className="mx-auto max-w-3xl space-y-6 px-6 py-8">
         {/* Method Tabs */}
         <div className="flex flex-wrap gap-2">
           {methods.map((m) => (
-            <button
+            <Button
               key={m.id}
-              onClick={() => { setMethod(m.id); setResult(null); setError(""); }}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                method === m.id
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "bg-white text-zinc-700 border border-zinc-300 hover:bg-zinc-50 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700"
-              }`}
+              variant={method === m.id ? "primary" : "secondary"}
+              size="sm"
+              onClick={() => {
+                setMethod(m.id);
+                setResult(null);
+                setError("");
+              }}
+              className="gap-1.5"
             >
-              {m.label} <span className="text-xs opacity-60">{m.desc}</span>
-            </button>
+              {m.icon}
+              {m.label}{" "}
+              {m.desc && (
+                <span className="text-xs opacity-60">{m.desc}</span>
+              )}
+            </Button>
           ))}
         </div>
 
         {/* Verify Forms */}
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          {method === "file" && (
-            <form onSubmit={handleFileVerify} className="space-y-4">
-              <div className="rounded-xl border-2 border-dashed border-green-300 bg-green-50 p-6 text-center dark:border-green-800 dark:bg-green-950/30">
-                <input type="file" className="hidden" id="verify-file" />
-                <label htmlFor="verify-file" className="cursor-pointer">
-                  <p className="font-medium text-green-800 dark:text-green-300">Original File</p>
-                  <p className="text-xs text-green-600 dark:text-green-400">(single-file timestamp)</p>
-                </label>
-              </div>
-              <button type="submit" disabled={loading} className="w-full rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900">
-                {loading ? "Duke verifikuar..." : "Send Fingerprint & Verify"}
-              </button>
-            </form>
-          )}
+        <Card>
+          <CardContent className="p-6">
+            {method === "file" && (
+              <form onSubmit={handleFileVerify} className="space-y-4">
+                <div className="rounded-xl border-2 border-dashed border-green-300 bg-green-50 p-6 text-center dark:border-green-800 dark:bg-green-950/30">
+                  <input type="file" className="hidden" id="verify-file" />
+                  <label htmlFor="verify-file" className="cursor-pointer">
+                    <Upload className="mx-auto h-8 w-8 text-green-600 dark:text-green-400" />
+                    <p className="mt-2 font-medium text-green-800 dark:text-green-300">
+                      Original File
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-400">
+                      (single-file timestamp)
+                    </p>
+                  </label>
+                </div>
+                <Button type="submit" disabled={loading} className="w-full">
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Duke verifikuar...
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="h-4 w-4" />
+                      Send Fingerprint & Verify
+                    </>
+                  )}
+                </Button>
+              </form>
+            )}
 
-          {method === "certificate" && (
-            <form onSubmit={handleCertificateVerify} className="space-y-4">
-              <div className="rounded-xl border-2 border-dashed border-yellow-300 bg-yellow-50 p-6 text-center dark:border-yellow-800 dark:bg-yellow-950/30">
-                <input type="file" accept=".ots,.p7s,.pem,.crt" className="hidden" id="verify-cert" />
-                <label htmlFor="verify-cert" className="cursor-pointer">
-                  <p className="font-medium text-yellow-800 dark:text-yellow-300">Certificate</p>
-                  <p className="text-xs text-yellow-600 dark:text-yellow-400">(needed for multiple files)</p>
-                </label>
-              </div>
-              <button type="submit" disabled={loading} className="w-full rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900">
-                {loading ? "Duke verifikuar..." : "Upload Certificate & Verify"}
-              </button>
-            </form>
-          )}
+            {method === "certificate" && (
+              <form onSubmit={handleCertificateVerify} className="space-y-4">
+                <div className="rounded-xl border-2 border-dashed border-yellow-300 bg-yellow-50 p-6 text-center dark:border-yellow-800 dark:bg-yellow-950/30">
+                  <input
+                    type="file"
+                    accept=".ots,.p7s,.pem,.crt"
+                    className="hidden"
+                    id="verify-cert"
+                  />
+                  <label htmlFor="verify-cert" className="cursor-pointer">
+                    <FileCheck className="mx-auto h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+                    <p className="mt-2 font-medium text-yellow-800 dark:text-yellow-300">
+                      Certificate
+                    </p>
+                    <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                      (needed for multiple files)
+                    </p>
+                  </label>
+                </div>
+                <Button type="submit" disabled={loading} className="w-full">
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Duke verifikuar...
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="h-4 w-4" />
+                      Upload Certificate & Verify
+                    </>
+                  )}
+                </Button>
+              </form>
+            )}
 
-          {method === "hash" && (
-            <form onSubmit={handleHashVerify} className="space-y-4">
-              <div className="rounded-xl border-2 border-dashed border-blue-300 bg-blue-50 p-6 dark:border-blue-800 dark:bg-blue-950/30">
-                <label className="block text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
-                  SHA-2 Fingerprint:
-                </label>
-                <input
-                  type="text"
-                  value={hashInput}
-                  onChange={(e) => setHashInput(e.target.value.trim())}
-                  placeholder="Fut SHA-256 hash (64 hex characters)..."
-                  className="w-full rounded-lg border border-blue-300 bg-white px-4 py-2.5 font-mono text-sm dark:border-blue-700 dark:bg-zinc-800 dark:text-zinc-100"
-                />
-              </div>
-              <button type="submit" disabled={loading} className="w-full rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900">
-                {loading ? "Duke verifikuar..." : "Verify"}
-              </button>
-            </form>
-          )}
+            {method === "hash" && (
+              <form onSubmit={handleHashVerify} className="space-y-4">
+                <div className="rounded-xl border-2 border-dashed border-blue-300 bg-blue-50 p-6 dark:border-blue-800 dark:bg-blue-950/30">
+                  <label className="mb-2 block text-sm font-medium text-blue-800 dark:text-blue-300">
+                    SHA-2 Fingerprint:
+                  </label>
+                  <Input
+                    type="text"
+                    value={hashInput}
+                    onChange={(e) => setHashInput(e.target.value.trim())}
+                    placeholder="Fut SHA-256 hash (64 hex characters)..."
+                    className="border-blue-300 bg-white font-mono dark:border-blue-700 dark:bg-slate-800"
+                  />
+                </div>
+                <Button type="submit" disabled={loading} className="w-full">
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Duke verifikuar...
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="h-4 w-4" />
+                      Verify
+                    </>
+                  )}
+                </Button>
+              </form>
+            )}
 
-          {method === "offline" && (
-            <div className="space-y-4 text-sm text-zinc-700 dark:text-zinc-300">
-              <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">Offline Verification Instructions</h3>
-              <p>Per te verifikuar nje timestamp offline duke perdorur OpenTimestamps:</p>
-              <ol className="list-decimal pl-6 space-y-2">
-                <li>Instaloni OpenTimestamps client: <code className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-xs">pip install opentimestamps-client</code></li>
-                <li>Shkarkoni skedarin .ots nga faqja e detajeve te timestamp-it</li>
-                <li>Ekzekutoni: <code className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-xs">ots verify document.ots</code></li>
-                <li>Per upgrade te proof-it: <code className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-xs">ots upgrade document.ots</code></li>
-              </ol>
-              <p className="text-xs text-zinc-500">
-                Verifikimi offline garanton qe nuk keni nevoje te besoni serverin tone - mund te verifikoni direkt ne Bitcoin blockchain.
-              </p>
-            </div>
-          )}
-        </div>
+            {method === "offline" && (
+              <div className="space-y-4 text-sm text-foreground">
+                <h3 className="font-semibold text-foreground">
+                  Offline Verification Instructions
+                </h3>
+                <p className="text-muted-foreground">
+                  Per te verifikuar nje timestamp offline duke perdorur
+                  OpenTimestamps:
+                </p>
+                <ol className="list-decimal space-y-2 pl-6 text-muted-foreground">
+                  <li>
+                    Instaloni OpenTimestamps client:{" "}
+                    <code className="rounded-lg bg-muted px-2 py-0.5 text-xs text-foreground">
+                      pip install opentimestamps-client
+                    </code>
+                  </li>
+                  <li>
+                    Shkarkoni skedarin .ots nga faqja e detajeve te timestamp-it
+                  </li>
+                  <li>
+                    Ekzekutoni:{" "}
+                    <code className="rounded-lg bg-muted px-2 py-0.5 text-xs text-foreground">
+                      ots verify document.ots
+                    </code>
+                  </li>
+                  <li>
+                    Per upgrade te proof-it:{" "}
+                    <code className="rounded-lg bg-muted px-2 py-0.5 text-xs text-foreground">
+                      ots upgrade document.ots
+                    </code>
+                  </li>
+                </ol>
+                <p className="text-xs text-muted-foreground">
+                  Verifikimi offline garanton qe nuk keni nevoje te besoni
+                  serverin tone - mund te verifikoni direkt ne Bitcoin
+                  blockchain.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Error */}
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
-            {error}
-          </div>
+          <Alert
+            variant="destructive"
+            icon={<XCircle className="h-5 w-5" />}
+            title={error}
+          />
         )}
 
         {/* Result */}
         {result && (
-          <div className={`rounded-xl border p-6 ${
-            result.found
-              ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30"
-              : "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30"
-          }`}>
-            <div className="flex items-center gap-3 mb-4">
-              <span className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold ${
-                result.found
-                  ? "bg-green-600 text-white"
-                  : "bg-red-600 text-white"
-              }`}>
-                {result.found ? "I VLEFSHËM" : "I PAVLEFSHËM"}
-              </span>
+          <div
+            className={cn(
+              "rounded-2xl border p-6",
+              result.found
+                ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30"
+                : "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30"
+            )}
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <Badge
+                variant={result.found ? "success" : "destructive"}
+                className="px-4 py-1.5 text-sm font-bold"
+              >
+                {result.found ? (
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle className="h-4 w-4" />I VLEFSHËM
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5">
+                    <XCircle className="h-4 w-4" />I PAVLEFSHËM
+                  </span>
+                )}
+              </Badge>
             </div>
 
             {result.found ? (
               <dl className="space-y-3 text-sm">
                 <div>
-                  <dt className="text-xs text-zinc-500">Chain Position</dt>
+                  <dt className="text-xs text-muted-foreground">
+                    Chain Position
+                  </dt>
                   <dd>
-                    <Link href={`/explorer/${result.sequenceNumber}`} className="font-mono font-bold text-blue-600 hover:underline">
+                    <Link
+                      href={`/explorer/${result.sequenceNumber}`}
+                      className="font-mono font-bold text-blue-600 hover:underline dark:text-blue-400"
+                    >
                       #{result.sequenceNumber}
                     </Link>
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-zinc-500">Timestamp</dt>
-                  <dd className="text-zinc-900 dark:text-zinc-100">
-                    {result.serverTimestamp && new Date(result.serverTimestamp).toLocaleString("en-GB", { timeZone: "UTC" })} UTC
+                  <dt className="text-xs text-muted-foreground">Timestamp</dt>
+                  <dd className="text-foreground">
+                    {result.serverTimestamp &&
+                      new Date(result.serverTimestamp).toLocaleString("en-GB", {
+                        timeZone: "UTC",
+                      })}{" "}
+                    UTC
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-zinc-500">Fingerprint</dt>
-                  <dd className="break-all font-mono text-xs">{result.fingerprint}</dd>
+                  <dt className="text-xs text-muted-foreground">Fingerprint</dt>
+                  <dd className="break-all font-mono text-xs text-foreground">
+                    {result.fingerprint}
+                  </dd>
                 </div>
                 {result.otsStatus === "CONFIRMED" && result.btcBlockHeight && (
                   <div>
-                    <dt className="text-xs text-zinc-500">Bitcoin Block</dt>
+                    <dt className="text-xs text-muted-foreground">
+                      Bitcoin Block
+                    </dt>
                     <dd className="font-medium text-green-700 dark:text-green-400">
                       Block #{result.btcBlockHeight}
                     </dd>
@@ -283,14 +443,21 @@ export default function VerifyPage() {
                 )}
                 {result.signature && (
                   <div>
-                    <dt className="text-xs text-zinc-500">Nenshkruar nga</dt>
-                    <dd>{result.signature.signerName} ({result.signature.signerEmail})</dd>
+                    <dt className="text-xs text-muted-foreground">
+                      Nenshkruar nga
+                    </dt>
+                    <dd className="text-foreground">
+                      {result.signature.signerName} (
+                      {result.signature.signerEmail})
+                    </dd>
                   </div>
                 )}
                 {result.document && (
                   <div>
-                    <dt className="text-xs text-zinc-500">Dokument</dt>
-                    <dd>{result.document.title} ({result.document.fileName})</dd>
+                    <dt className="text-xs text-muted-foreground">Dokument</dt>
+                    <dd className="text-foreground">
+                      {result.document.title} ({result.document.fileName})
+                    </dd>
                   </div>
                 )}
               </dl>

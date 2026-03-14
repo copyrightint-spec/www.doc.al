@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="550" viewBox="0 0 400 550">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a3a6e"/>
+      <stop offset="100%" stop-color="#0d2247"/>
+    </linearGradient>
+    <linearGradient id="inner" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f0f3f7"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+  </defs>
+  <!-- Passport cover/page -->
+  <rect width="400" height="550" rx="8" fill="url(#bg)"/>
+  <!-- Inner white page -->
+  <rect x="15" y="15" width="370" height="520" rx="4" fill="url(#inner)"/>
+  <!-- Top header -->
+  <text x="200" y="45" font-family="Arial, sans-serif" font-size="10" fill="#1a3a6e" text-anchor="middle" letter-spacing="2">REPUBLIKA E KOSOVES</text>
+  <text x="200" y="60" font-family="Arial, sans-serif" font-size="9" fill="#546e7a" text-anchor="middle" letter-spacing="1">REPUBLIC OF KOSOVO</text>
+  <!-- Coat of arms placeholder -->
+  <circle cx="200" cy="90" r="22" fill="none" stroke="#1a3a6e" stroke-width="1.5"/>
+  <text x="200" y="87" font-family="Arial, sans-serif" font-size="8" fill="#1a3a6e" text-anchor="middle">REPUBLIKA</text>
+  <text x="200" y="97" font-family="Arial, sans-serif" font-size="8" fill="#1a3a6e" text-anchor="middle">KOSOVES</text>
+  <!-- Six stars above emblem -->
+  <text x="170" y="72" font-family="Arial, sans-serif" font-size="8" fill="#1a3a6e">&#9733;</text>
+  <text x="180" y="68" font-family="Arial, sans-serif" font-size="8" fill="#1a3a6e">&#9733;</text>
+  <text x="193" y="66" font-family="Arial, sans-serif" font-size="8" fill="#1a3a6e">&#9733;</text>
+  <text x="206" y="66" font-family="Arial, sans-serif" font-size="8" fill="#1a3a6e">&#9733;</text>
+  <text x="218" y="68" font-family="Arial, sans-serif" font-size="8" fill="#1a3a6e">&#9733;</text>
+  <text x="228" y="72" font-family="Arial, sans-serif" font-size="8" fill="#1a3a6e">&#9733;</text>
+  <!-- PASSPORT text -->
+  <text x="200" y="130" font-family="Arial, sans-serif" font-size="14" fill="#1a3a6e" text-anchor="middle" font-weight="bold" letter-spacing="4">PASAPORTE / PASSPORT</text>
+  <!-- Passport type -->
+  <text x="35" y="158" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Type / Tipi</text>
+  <text x="35" y="172" font-family="Arial, sans-serif" font-size="13" fill="#263238" font-weight="bold">P</text>
+  <text x="90" y="158" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Country Code</text>
+  <text x="90" y="172" font-family="Arial, sans-serif" font-size="13" fill="#263238" font-weight="bold">RKS</text>
+  <text x="180" y="158" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Passport No. / Nr. Pasaportes</text>
+  <text x="180" y="172" font-family="Arial, sans-serif" font-size="15" fill="#c41e3a" font-weight="bold">1100789456</text>
+  <!-- Photo placeholder -->
+  <rect x="35" y="190" width="120" height="155" rx="4" fill="#cfd8dc" stroke="#90a4ae" stroke-width="1"/>
+  <circle cx="95" cy="240" r="28" fill="#b0bec5"/>
+  <ellipse cx="95" cy="305" rx="35" ry="28" fill="#b0bec5"/>
+  <text x="95" y="338" font-family="Arial, sans-serif" font-size="8" fill="#78909c" text-anchor="middle">FOTO</text>
+  <!-- Fields right side -->
+  <text x="175" y="200" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Mbiemri / Surname</text>
+  <text x="175" y="216" font-family="Arial, sans-serif" font-size="15" fill="#263238" font-weight="bold">KRASNIQI</text>
+  <text x="175" y="238" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Emri / Given Names</text>
+  <text x="175" y="254" font-family="Arial, sans-serif" font-size="15" fill="#263238" font-weight="bold">ARLIND</text>
+  <text x="175" y="276" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Shtetesia / Nationality</text>
+  <text x="175" y="290" font-family="Arial, sans-serif" font-size="12" fill="#263238">KOSOVAR / KOSOVARE</text>
+  <text x="175" y="312" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Datelindja / Date of Birth</text>
+  <text x="175" y="326" font-family="Arial, sans-serif" font-size="12" fill="#263238">22.07.1992</text>
+  <text x="175" y="348" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Gjinia / Sex</text>
+  <text x="175" y="362" font-family="Arial, sans-serif" font-size="12" fill="#263238">M / MASHKULL</text>
+  <text x="175" y="384" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Vendlindja / Place of Birth</text>
+  <text x="175" y="398" font-family="Arial, sans-serif" font-size="12" fill="#263238">Prishtine</text>
+  <!-- Validity -->
+  <text x="35" y="370" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Dt. Leshimit / Date of Issue</text>
+  <text x="35" y="384" font-family="Arial, sans-serif" font-size="11" fill="#263238">15.02.2022</text>
+  <text x="35" y="400" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Dt. Skadimit / Date of Expiry</text>
+  <text x="35" y="414" font-family="Arial, sans-serif" font-size="11" fill="#263238">15.02.2032</text>
+  <!-- Signature -->
+  <line x1="35" y1="440" x2="155" y2="440" stroke="#90a4ae" stroke-width="0.5"/>
+  <text x="95" y="452" font-family="Arial, sans-serif" font-size="7" fill="#90a4ae" text-anchor="middle">Nenshkrimi / Signature</text>
+  <!-- MRZ Zone -->
+  <rect x="25" y="465" width="350" height="62" rx="3" fill="#f5f5f0"/>
+  <text x="35" y="483" font-family="'Courier New', monospace" font-size="11" fill="#37474f" letter-spacing="1">P&lt;RKS&lt;KRASNIQI&lt;&lt;ARLIND&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+  <text x="35" y="501" font-family="'Courier New', monospace" font-size="11" fill="#37474f" letter-spacing="1">1100789456RKS9207225M3202155&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+  <text x="200" y="522" font-family="Arial, sans-serif" font-size="7" fill="#90a4ae" text-anchor="middle">Machine Readable Zone</text>
+  <!-- SPECIMEN watermark -->
+  <text x="200" y="300" font-family="Arial, sans-serif" font-size="44" fill="#1a3a6e" fill-opacity="0.05" text-anchor="middle" transform="rotate(-30,200,300)" font-weight="bold">SPECIMEN</text>
+</svg>

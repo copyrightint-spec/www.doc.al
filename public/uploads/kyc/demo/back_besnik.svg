@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8edf3"/>
+      <stop offset="100%" stop-color="#d1dae6"/>
+    </linearGradient>
+  </defs>
+  <!-- Card body -->
+  <rect width="400" height="250" rx="12" fill="url(#bg)" stroke="#b0bec5" stroke-width="1.5"/>
+  <!-- Top stripe -->
+  <rect y="0" width="400" height="6" rx="3" fill="#c41e3a"/>
+  <!-- Address section -->
+  <text x="20" y="30" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Adresa / Address</text>
+  <text x="20" y="44" font-family="Arial, sans-serif" font-size="11" fill="#263238">Rruga Myslym Shyri, Nr. 42</text>
+  <text x="20" y="58" font-family="Arial, sans-serif" font-size="11" fill="#263238">Tirane, 1001</text>
+  <text x="20" y="72" font-family="Arial, sans-serif" font-size="11" fill="#263238">Shqiperi</text>
+  <!-- Issuing authority -->
+  <text x="20" y="96" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Autoriteti Leshuese / Issuing Authority</text>
+  <text x="20" y="110" font-family="Arial, sans-serif" font-size="10" fill="#263238">Drejtoria e Pergjithshme e Gjendjes Civile</text>
+  <!-- Place of birth -->
+  <text x="250" y="30" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Vendlindja / Place of Birth</text>
+  <text x="250" y="44" font-family="Arial, sans-serif" font-size="11" fill="#263238">Tirane</text>
+  <!-- Blood type -->
+  <text x="250" y="66" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Grupi i Gjakut</text>
+  <text x="250" y="80" font-family="Arial, sans-serif" font-size="11" fill="#263238">A+</text>
+  <!-- Barcode placeholder -->
+  <rect x="250" y="92" width="130" height="40" rx="2" fill="#fff" stroke="#b0bec5" stroke-width="0.5"/>
+  <g fill="#37474f">
+    <rect x="258" y="97" width="2" height="30"/><rect x="263" y="97" width="1" height="30"/>
+    <rect x="267" y="97" width="3" height="30"/><rect x="273" y="97" width="1" height="30"/>
+    <rect x="277" y="97" width="2" height="30"/><rect x="282" y="97" width="1" height="30"/>
+    <rect x="286" y="97" width="3" height="30"/><rect x="292" y="97" width="1" height="30"/>
+    <rect x="296" y="97" width="2" height="30"/><rect x="301" y="97" width="1" height="30"/>
+    <rect x="305" y="97" width="3" height="30"/><rect x="311" y="97" width="2" height="30"/>
+    <rect x="316" y="97" width="1" height="30"/><rect x="320" y="97" width="2" height="30"/>
+    <rect x="325" y="97" width="3" height="30"/><rect x="331" y="97" width="1" height="30"/>
+    <rect x="335" y="97" width="2" height="30"/><rect x="340" y="97" width="1" height="30"/>
+    <rect x="344" y="97" width="3" height="30"/><rect x="350" y="97" width="1" height="30"/>
+    <rect x="354" y="97" width="2" height="30"/><rect x="359" y="97" width="1" height="30"/>
+    <rect x="363" y="97" width="3" height="30"/><rect x="369" y="97" width="2" height="30"/>
+    <rect x="374" y="97" width="1" height="30"/>
+  </g>
+  <!-- Divider line -->
+  <line x1="15" y1="145" x2="385" y2="145" stroke="#90a4ae" stroke-width="0.5"/>
+  <!-- MRZ Zone -->
+  <rect x="10" y="152" width="380" height="88" rx="4" fill="#f5f5f0"/>
+  <text x="20" y="172" font-family="'Courier New', monospace" font-size="11" fill="#37474f" letter-spacing="1">IDALB1234567890&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+  <text x="20" y="192" font-family="'Courier New', monospace" font-size="11" fill="#37474f" letter-spacing="1">8503155M3006015ALB&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+  <text x="20" y="212" font-family="'Courier New', monospace" font-size="11" fill="#37474f" letter-spacing="1">SHEHU&lt;&lt;BESNIK&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</text>
+  <text x="200" y="234" font-family="Arial, sans-serif" font-size="7" fill="#90a4ae" text-anchor="middle">Machine Readable Zone</text>
+  <!-- SPECIMEN watermark -->
+  <text x="200" y="120" font-family="Arial, sans-serif" font-size="36" fill="#c41e3a" fill-opacity="0.07" text-anchor="middle" transform="rotate(-20,200,120)" font-weight="bold">SPECIMEN</text>
+</svg>

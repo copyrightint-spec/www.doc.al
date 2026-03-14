@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 80" width="280" height="80">
+  <!-- D icon with speech bubble cutout -->
+  <path fill-rule="evenodd" d="M12 5 H42 C62 5 70 20 70 40 C70 60 62 75 42 75 H12 Z M22 20 H38 C50 20 56 28 56 40 C56 52 50 60 38 60 L30 60 L19 73 L24 60 L22 60 Z" fill="#0B5ED7"/>
+  <!-- doc.al text -->
+  <text x="82" y="55" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="40" fill="#1F2937" letter-spacing="-0.5">doc<tspan fill="#0B5ED7">.al</tspan></text>
+</svg>

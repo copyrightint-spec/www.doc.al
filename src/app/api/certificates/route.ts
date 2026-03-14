@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { generateUserCertificate, exportCertificateP12 } from "@/lib/crypto/certificates";
+import { exportCertificateP12 } from "@/lib/crypto/certificates";
 
 export async function GET() {
   try {
@@ -27,39 +27,6 @@ export async function GET() {
     });
 
     return NextResponse.json({ success: true, data: certificates });
-  } catch {
-    return NextResponse.json({ error: "Ndodhi nje gabim" }, { status: 500 });
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Jo i autorizuar" }, { status: 401 });
-    }
-
-    const body = await req.json();
-    const { organization, country, validityYears, type } = body;
-
-    const result = await generateUserCertificate(session.user.id, {
-      commonName: session.user.name,
-      organization,
-      country: country || "AL",
-      validityYears: validityYears || 2,
-      type: type || "PERSONAL",
-    });
-
-    await prisma.auditLog.create({
-      data: {
-        action: "CERTIFICATE_GENERATED",
-        entityType: "Certificate",
-        entityId: result.certificateId,
-        userId: session.user.id,
-      },
-    });
-
-    return NextResponse.json({ success: true, data: result }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Ndodhi nje gabim" }, { status: 500 });
   }

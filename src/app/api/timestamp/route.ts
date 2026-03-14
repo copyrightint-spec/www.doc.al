@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createTimestamp, computeSHA256 } from "@/lib/timestamp/engine";
 import type { TimestampType } from "@/generated/prisma/enums";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 30 timestamps per hour per IP
+  const limited = rateLimit(req, "timestamp");
+  if (limited) return limited;
+
   try {
     const contentType = req.headers.get("content-type") || "";
 

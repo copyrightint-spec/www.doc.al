@@ -1,6 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ShieldCheck, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Alert } from "@/components/ui/alert";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Props {
   onVerified: () => void;
@@ -108,105 +114,111 @@ export function SigningVerificationModal({ onVerified, onCancel }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl dark:bg-zinc-900">
-        <div className="mb-6 text-center">
-          <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
-            Verifikimi i Nenshkrimit
-          </h2>
-          <p className="mt-1 text-sm text-zinc-500">
-            {step === "otp" && "Hapi 1/2 - Kodi i emailit"}
-            {step === "totp" && "Hapi 2/2 - Google Authenticator"}
-            {step === "check" && "Duke kontrolluar..."}
-            {step === "error" && "Nuk mund te nenshkruani"}
-          </p>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-950 dark:text-red-400">
-            {error}
-          </div>
-        )}
-
-        {step === "error" && redirectTo && (
-          <div className="space-y-4">
-            <a
-              href={redirectTo}
-              className="block w-full rounded-lg bg-zinc-900 py-2.5 text-center text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
-            >
-              Shko ne Settings
-            </a>
-            <button onClick={onCancel} className="w-full text-sm text-zinc-500 hover:underline">
-              Anulo
-            </button>
-          </div>
-        )}
-
-        {step === "otp" && (
-          <form onSubmit={handleOtpVerify} className="space-y-4">
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Nje kod 6-shifror u dergua ne emailin tuaj.
-              {countdown > 0 && (
-                <span className="ml-2 text-zinc-400">
-                  Skadon per {formatCountdown(countdown)}
-                </span>
-              )}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <Card className="w-full max-w-md shadow-xl">
+        <CardContent className="p-8">
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+              <ShieldCheck className="h-6 w-6 text-foreground" strokeWidth={1.5} />
+            </div>
+            <h2 className="text-xl font-bold text-foreground">
+              Verifikimi i Nenshkrimit
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {step === "otp" && "Hapi 1/2 - Kodi i emailit"}
+              {step === "totp" && "Hapi 2/2 - Google Authenticator"}
+              {step === "check" && "Duke kontrolluar..."}
+              {step === "error" && "Nuk mund te nenshkruani"}
             </p>
-            <input
-              type="text"
-              value={otpCode}
-              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="000000"
-              maxLength={6}
-              autoFocus
-              className="w-full rounded-lg border border-zinc-300 px-4 py-3 text-center text-2xl font-mono tracking-[0.5em] outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-            />
-            <button
-              type="submit"
-              disabled={loading || otpCode.length !== 6}
-              className="w-full rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-            >
-              {loading ? "Duke verifikuar..." : "Verifiko Kodin"}
-            </button>
-            <button type="button" onClick={onCancel} className="w-full text-sm text-zinc-500 hover:underline">
-              Anulo
-            </button>
-          </form>
-        )}
-
-        {step === "totp" && (
-          <form onSubmit={handleTotpVerify} className="space-y-4">
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Fut kodin nga Google Authenticator.
-            </p>
-            <input
-              type="text"
-              value={totpCode}
-              onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="000000"
-              maxLength={6}
-              autoFocus
-              className="w-full rounded-lg border border-zinc-300 px-4 py-3 text-center text-2xl font-mono tracking-[0.5em] outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-            />
-            <button
-              type="submit"
-              disabled={loading || totpCode.length !== 6}
-              className="w-full rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-            >
-              {loading ? "Duke verifikuar..." : "Nenshkruaj"}
-            </button>
-            <button type="button" onClick={onCancel} className="w-full text-sm text-zinc-500 hover:underline">
-              Anulo
-            </button>
-          </form>
-        )}
-
-        {step === "check" && (
-          <div className="flex justify-center py-8">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900" />
           </div>
-        )}
-      </div>
+
+          {error && (
+            <Alert
+              variant="destructive"
+              title={error}
+              className="mb-4"
+            />
+          )}
+
+          {step === "error" && redirectTo && (
+            <div className="space-y-4">
+              <Button className="w-full" asChild>
+                <a href={redirectTo}>Shko ne Settings</a>
+              </Button>
+              <Button variant="ghost" className="w-full" onClick={onCancel}>
+                Anulo
+              </Button>
+            </div>
+          )}
+
+          {step === "otp" && (
+            <form onSubmit={handleOtpVerify} className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Nje kod 6-shifror u dergua ne emailin tuaj.
+                {countdown > 0 && (
+                  <span className="ml-2 text-muted-foreground/70">
+                    Skadon per {formatCountdown(countdown)}
+                  </span>
+                )}
+              </p>
+              <Input
+                type="text"
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="000000"
+                maxLength={6}
+                autoFocus
+                className="text-center text-2xl font-mono tracking-[0.5em]"
+              />
+              <Button
+                type="submit"
+                disabled={loading || otpCode.length !== 6}
+                className="w-full"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? "Duke verifikuar..." : "Verifiko Kodin"}
+              </Button>
+              <Button variant="ghost" type="button" onClick={onCancel} className="w-full">
+                Anulo
+              </Button>
+            </form>
+          )}
+
+          {step === "totp" && (
+            <form onSubmit={handleTotpVerify} className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Fut kodin nga Google Authenticator.
+              </p>
+              <Input
+                type="text"
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="000000"
+                maxLength={6}
+                autoFocus
+                className="text-center text-2xl font-mono tracking-[0.5em]"
+              />
+              <Button
+                type="submit"
+                disabled={loading || totpCode.length !== 6}
+                className="w-full"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? "Duke verifikuar..." : "Nenshkruaj"}
+              </Button>
+              <Button variant="ghost" type="button" onClick={onCancel} className="w-full">
+                Anulo
+              </Button>
+            </form>
+          )}
+
+          {step === "check" && (
+            <div className="flex justify-center py-8">
+              <Spinner />
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -2,17 +2,41 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { rateLimit } from "@/lib/rate-limit";
+import { verifyTurnstileToken } from "@/lib/turnstile";
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{10,}$/;
 
 const registerSchema = z.object({
   name: z.string().min(2, "Emri duhet te kete te pakten 2 karaktere"),
   email: z.string().email("Email i pavlefshem"),
-  password: z.string().min(8, "Fjalekalimi duhet te kete te pakten 8 karaktere"),
+  password: z
+    .string()
+    .min(10, "Fjalekalimi duhet te kete te pakten 10 karaktere")
+    .regex(
+      passwordRegex,
+      "Fjalekalimi duhet te permbaje: shkronje te madhe, te vogel, numer, dhe simbol"
+    ),
   organizationName: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 3 registrations per hour per IP
+  const limited = rateLimit(req, "register");
+  if (limited) return limited;
+
   try {
     const body = await req.json();
+
+    // Verify CAPTCHA
+    const captchaValid = await verifyTurnstileToken(body.captchaToken);
+    if (!captchaValid) {
+      return NextResponse.json(
+        { error: "Verifikimi CAPTCHA deshtoi. Provoni perseri." },
+        { status: 400 }
+      );
+    }
+
     const validated = registerSchema.parse(body);
 
     const existingUser = await prisma.user.findUnique({

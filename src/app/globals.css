@@ -2,25 +2,419 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --primary: #0f172a;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --accent: #3b82f6;
+  --accent-foreground: #1e40af;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --ring: #94a3b8;
+  --radius: 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #020617;
+    --foreground: #f8fafc;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --border: #334155;
+    --card: #0f172a;
+    --card-foreground: #f8fafc;
+    --primary: #f8fafc;
+    --primary-foreground: #0f172a;
+    --secondary: #1e293b;
+    --secondary-foreground: #f8fafc;
+    --accent: #3b82f6;
+    --accent-foreground: #93c5fd;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --ring: #475569;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-ring: var(--ring);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ─── TipTap Document Editor ─── */
+
+.doc-editor-wrapper {
+  min-height: 600px;
+  max-height: 80vh;
+}
+
+.doc-editor-content {
+  padding: 2rem 2.5rem;
+  min-height: 600px;
+  color: #000000;
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 14px;
+  line-height: 1.7;
+  outline: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .doc-editor-content {
+    color: #f1f5f9;
+  }
+}
+
+.doc-editor-content > *:first-child {
+  margin-top: 0;
+}
+
+/* Headings */
+.doc-editor-content h1 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #000000;
+  line-height: 1.3;
+}
+.doc-editor-content h2 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #000000;
+  line-height: 1.35;
+}
+.doc-editor-content h3 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #000000;
+  line-height: 1.4;
+}
+
+@media (prefers-color-scheme: dark) {
+  .doc-editor-content h1 { color: #f8fafc; }
+  .doc-editor-content h2 { color: #f8fafc; }
+  .doc-editor-content h3 { color: #f8fafc; }
+}
+
+/* Paragraphs */
+.doc-editor-content p {
+  margin-bottom: 0.75rem;
+}
+
+/* Lists */
+.doc-editor-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.doc-editor-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.doc-editor-content li {
+  margin-bottom: 0.25rem;
+}
+.doc-editor-content li p {
+  margin-bottom: 0.15rem;
+}
+
+/* Blockquote */
+.doc-editor-content blockquote {
+  border-left: 3px solid #000000;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: #000000;
+  font-style: italic;
+}
+@media (prefers-color-scheme: dark) {
+  .doc-editor-content blockquote {
+    color: #f1f5f9;
+    border-left-color: #f1f5f9;
+  }
+}
+
+/* Horizontal rule */
+.doc-editor-content hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 1.5rem 0;
+}
+@media (prefers-color-scheme: dark) {
+  .doc-editor-content hr {
+    border-top-color: #334155;
+  }
+}
+
+/* Highlight */
+.doc-editor-content mark {
+  background-color: #fef08a;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* Tables */
+.doc-editor-content .doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+}
+.doc-editor-content .doc-table th,
+.doc-editor-content .doc-table td {
+  border: 1px solid #cbd5e1;
+  padding: 0.5rem 0.75rem;
+  min-width: 80px;
+  vertical-align: top;
+  position: relative;
+}
+.doc-editor-content .doc-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  text-align: left;
+  color: #000000;
+}
+.doc-editor-content .doc-table td {
+  background: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .doc-editor-content .doc-table th,
+  .doc-editor-content .doc-table td {
+    border-color: #475569;
+  }
+  .doc-editor-content .doc-table th {
+    background: #1e293b;
+    color: #e2e8f0;
+  }
+  .doc-editor-content .doc-table td {
+    background: #0f172a;
+  }
+}
+
+/* Table resize handle */
+.doc-editor-content .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #3b82f6;
+  cursor: col-resize;
+  z-index: 10;
+}
+
+.doc-editor-content .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(59, 130, 246, 0.1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Images */
+.doc-editor-content .doc-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+/* Placeholder */
+.doc-editor-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #94a3b8;
+  pointer-events: none;
+  height: 0;
+  font-style: italic;
+}
+
+/* Code blocks */
+.doc-editor-content pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-family: "Geist Mono", monospace;
+  font-size: 13px;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.doc-editor-content code {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-radius: 0.25rem;
+  padding: 0.15rem 0.35rem;
+  font-family: "Geist Mono", monospace;
+  font-size: 0.9em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .doc-editor-content code {
+    background: #334155;
+    color: #e2e8f0;
+  }
+}
+
+/* Nested lists — preserve sub-levels from Word paste */
+.doc-editor-content ol ol {
+  list-style-type: lower-alpha;
+  margin-top: 0.25rem;
+}
+.doc-editor-content ol ol ol {
+  list-style-type: lower-roman;
+}
+.doc-editor-content ul ul {
+  list-style-type: circle;
+  margin-top: 0.25rem;
+}
+.doc-editor-content ul ul ul {
+  list-style-type: square;
+}
+
+/* Nested list indentation */
+.doc-editor-content li > ol,
+.doc-editor-content li > ul {
+  margin-bottom: 0;
+}
+
+/* ─── A4 PDF Preview ─── */
+
+.a4-preview-container {
+  width: 100%;
+}
+
+.a4-page {
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #000000 !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Force ALL text inside A4 preview to pure black */
+.a4-page * {
+  color: #000000 !important;
+}
+
+/* Exception: DRAFT watermark stays red */
+.a4-page [aria-hidden="true"] span {
+  color: rgba(220, 38, 38, 0.12) !important;
+}
+
+/* Remove editor border/shadow when inside A4 preview */
+.a4-page .doc-editor {
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.a4-page .doc-editor-wrapper {
+  min-height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.a4-page .doc-editor-content {
+  padding: 10mm 10mm 8mm 10mm;
+  min-height: auto;
+  color: #000000 !important;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.a4-page .doc-editor-content h1 {
+  font-size: 1.4rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.a4-page .doc-editor-content h2 {
+  font-size: 1.1rem;
+  margin-top: 0.8rem;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid #000;
+}
+
+.a4-page .doc-editor-content h3 {
+  font-size: 0.95rem;
+  margin-top: 0.6rem;
+  margin-bottom: 0.3rem;
+}
+
+.a4-page .doc-editor-content p {
+  margin-bottom: 0.5rem;
+}
+
+.a4-page .doc-editor-content h1,
+.a4-page .doc-editor-content h2,
+.a4-page .doc-editor-content h3,
+.a4-page .doc-editor-content p,
+.a4-page .doc-editor-content li,
+.a4-page .doc-editor-content blockquote,
+.a4-page .doc-editor-content td,
+.a4-page .doc-editor-content th,
+.a4-page .doc-editor-content span,
+.a4-page .doc-editor-content strong,
+.a4-page .doc-editor-content em {
+  color: #000000 !important;
+}
+
+.a4-page .doc-editor-content hr {
+  border-top-color: #000 !important;
+  margin: 0.8rem 0;
+}
+
+/* Responsive: scale down A4 on small screens */
+@media (max-width: 900px) {
+  .a4-page {
+    width: 100% !important;
+    min-height: auto !important;
+  }
+  .a4-page .doc-editor-content {
+    padding: 1.5rem;
+  }
+  .a4-preview-container {
+    padding: 1rem;
+  }
 }

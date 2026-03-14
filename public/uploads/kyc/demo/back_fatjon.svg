@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eaf0f7"/>
+      <stop offset="100%" stop-color="#d4dfe9"/>
+    </linearGradient>
+  </defs>
+  <!-- Card body -->
+  <rect width="400" height="250" rx="12" fill="url(#bg)" stroke="#b0bec5" stroke-width="1.5"/>
+  <!-- Top stripe -->
+  <rect y="0" width="400" height="6" rx="3" fill="#1565c0"/>
+  <!-- Categories table header -->
+  <text x="20" y="28" font-family="Arial, sans-serif" font-size="8" fill="#1565c0" font-weight="bold">Kategorite e Lejes se Drejtimit</text>
+  <!-- Table -->
+  <rect x="15" y="35" width="370" height="90" rx="4" fill="#fff" stroke="#b0bec5" stroke-width="0.5"/>
+  <!-- Header row -->
+  <rect x="15" y="35" width="370" height="18" rx="4" fill="#e3f2fd"/>
+  <text x="45" y="48" font-family="Arial, sans-serif" font-size="7" fill="#1565c0" text-anchor="middle" font-weight="bold">Kat.</text>
+  <text x="120" y="48" font-family="Arial, sans-serif" font-size="7" fill="#1565c0" text-anchor="middle" font-weight="bold">Dt. Leshimit</text>
+  <text x="220" y="48" font-family="Arial, sans-serif" font-size="7" fill="#1565c0" text-anchor="middle" font-weight="bold">Dt. Skadimit</text>
+  <text x="320" y="48" font-family="Arial, sans-serif" font-size="7" fill="#1565c0" text-anchor="middle" font-weight="bold">Kufizime</text>
+  <!-- Category rows -->
+  <text x="45" y="66" font-family="Arial, sans-serif" font-size="9" fill="#263238" text-anchor="middle">AM</text>
+  <text x="120" y="66" font-family="Arial, sans-serif" font-size="9" fill="#90a4ae" text-anchor="middle">-</text>
+  <text x="220" y="66" font-family="Arial, sans-serif" font-size="9" fill="#90a4ae" text-anchor="middle">-</text>
+  <text x="45" y="82" font-family="Arial, sans-serif" font-size="9" fill="#263238" text-anchor="middle">A</text>
+  <text x="120" y="82" font-family="Arial, sans-serif" font-size="9" fill="#90a4ae" text-anchor="middle">-</text>
+  <text x="220" y="82" font-family="Arial, sans-serif" font-size="9" fill="#90a4ae" text-anchor="middle">-</text>
+  <text x="45" y="98" font-family="Arial, sans-serif" font-size="9" fill="#263238" text-anchor="middle" font-weight="bold">B</text>
+  <text x="120" y="98" font-family="Arial, sans-serif" font-size="11" fill="#263238" text-anchor="middle">10.05.2011</text>
+  <text x="220" y="98" font-family="Arial, sans-serif" font-size="11" fill="#263238" text-anchor="middle">15.04.2031</text>
+  <text x="320" y="98" font-family="Arial, sans-serif" font-size="9" fill="#90a4ae" text-anchor="middle">-</text>
+  <text x="45" y="114" font-family="Arial, sans-serif" font-size="9" fill="#263238" text-anchor="middle">C</text>
+  <text x="120" y="114" font-family="Arial, sans-serif" font-size="9" fill="#90a4ae" text-anchor="middle">-</text>
+  <text x="220" y="114" font-family="Arial, sans-serif" font-size="9" fill="#90a4ae" text-anchor="middle">-</text>
+  <!-- Divider lines in table -->
+  <line x1="15" y1="53" x2="385" y2="53" stroke="#e0e0e0" stroke-width="0.5"/>
+  <line x1="15" y1="70" x2="385" y2="70" stroke="#e0e0e0" stroke-width="0.5"/>
+  <line x1="15" y1="87" x2="385" y2="87" stroke="#e0e0e0" stroke-width="0.5"/>
+  <line x1="15" y1="104" x2="385" y2="104" stroke="#e0e0e0" stroke-width="0.5"/>
+  <!-- Additional info -->
+  <text x="20" y="145" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Kode / Codes</text>
+  <text x="20" y="158" font-family="Arial, sans-serif" font-size="10" fill="#263238">01.06 - Syze korrektive</text>
+  <text x="250" y="145" font-family="Arial, sans-serif" font-size="7" fill="#78909c">Nr. Personal / ID No.</text>
+  <text x="250" y="158" font-family="Arial, sans-serif" font-size="11" fill="#263238" font-weight="bold">J98765432B</text>
+  <!-- Barcode -->
+  <rect x="20" y="172" width="160" height="40" rx="2" fill="#fff" stroke="#b0bec5" stroke-width="0.5"/>
+  <g fill="#37474f">
+    <rect x="26" y="177" width="2" height="30"/><rect x="31" y="177" width="1" height="30"/>
+    <rect x="35" y="177" width="3" height="30"/><rect x="41" y="177" width="1" height="30"/>
+    <rect x="45" y="177" width="2" height="30"/><rect x="50" y="177" width="1" height="30"/>
+    <rect x="54" y="177" width="3" height="30"/><rect x="60" y="177" width="1" height="30"/>
+    <rect x="64" y="177" width="2" height="30"/><rect x="69" y="177" width="1" height="30"/>
+    <rect x="73" y="177" width="3" height="30"/><rect x="79" y="177" width="2" height="30"/>
+    <rect x="84" y="177" width="1" height="30"/><rect x="88" y="177" width="2" height="30"/>
+    <rect x="93" y="177" width="3" height="30"/><rect x="99" y="177" width="1" height="30"/>
+    <rect x="103" y="177" width="2" height="30"/><rect x="108" y="177" width="1" height="30"/>
+    <rect x="112" y="177" width="3" height="30"/><rect x="118" y="177" width="1" height="30"/>
+    <rect x="122" y="177" width="2" height="30"/><rect x="127" y="177" width="1" height="30"/>
+    <rect x="131" y="177" width="3" height="30"/><rect x="137" y="177" width="2" height="30"/>
+    <rect x="142" y="177" width="1" height="30"/><rect x="146" y="177" width="2" height="30"/>
+    <rect x="151" y="177" width="3" height="30"/><rect x="157" y="177" width="1" height="30"/>
+    <rect x="161" y="177" width="2" height="30"/><rect x="166" y="177" width="1" height="30"/>
+    <rect x="170" y="177" width="3" height="30"/>
+  </g>
+  <!-- QR code placeholder -->
+  <rect x="300" y="170" width="80" height="60" rx="3" fill="#fff" stroke="#b0bec5" stroke-width="0.5"/>
+  <rect x="310" y="178" width="12" height="12" rx="1" fill="#37474f"/>
+  <rect x="358" y="178" width="12" height="12" rx="1" fill="#37474f"/>
+  <rect x="310" y="210" width="12" height="12" rx="1" fill="#37474f"/>
+  <rect x="326" y="178" width="4" height="4" fill="#37474f"/><rect x="334" y="178" width="4" height="4" fill="#37474f"/>
+  <rect x="342" y="178" width="4" height="4" fill="#37474f"/><rect x="326" y="186" width="4" height="4" fill="#37474f"/>
+  <rect x="334" y="194" width="4" height="4" fill="#37474f"/><rect x="342" y="194" width="4" height="4" fill="#37474f"/>
+  <rect x="326" y="202" width="4" height="4" fill="#37474f"/><rect x="334" y="210" width="4" height="4" fill="#37474f"/>
+  <rect x="350" y="202" width="4" height="4" fill="#37474f"/><rect x="358" y="210" width="4" height="4" fill="#37474f"/>
+  <rect x="342" y="218" width="4" height="4" fill="#37474f"/><rect x="358" y="218" width="4" height="4" fill="#37474f"/>
+  <!-- Bottom text -->
+  <text x="200" y="240" font-family="Arial, sans-serif" font-size="7" fill="#90a4ae" text-anchor="middle">Drejtoria e Sherbimeve te Transportit Rrugor</text>
+  <!-- SPECIMEN watermark -->
+  <text x="200" y="130" font-family="Arial, sans-serif" font-size="36" fill="#1565c0" fill-opacity="0.06" text-anchor="middle" transform="rotate(-20,200,130)" font-weight="bold">SPECIMEN</text>
+</svg>

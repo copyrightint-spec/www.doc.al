@@ -125,12 +125,73 @@ export async function POST(
           where: { id: signature.documentId },
           data: { status: "COMPLETED" },
         });
+
+        // If linked to a contract, update contract status and set effective date
+        const signingRequest = await prisma.signingRequest.findFirst({
+          where: { documentId: signature.documentId, contractId: { not: null } },
+          select: { contractId: true },
+        });
+        if (signingRequest?.contractId) {
+          await prisma.contract.update({
+            where: { id: signingRequest.contractId },
+            data: {
+              status: "COMPLETED",
+              effectiveAt: new Date(),
+            },
+          });
+        }
       } else {
         await prisma.document.update({
           where: { id: signature.documentId },
           data: { status: "PARTIALLY_SIGNED" },
         });
+
+        // If linked to a contract, update to PARTIALLY_SIGNED
+        const signingRequest = await prisma.signingRequest.findFirst({
+          where: { documentId: signature.documentId, contractId: { not: null } },
+          select: { contractId: true },
+        });
+        if (signingRequest?.contractId) {
+          await prisma.contract.update({
+            where: { id: signingRequest.contractId },
+            data: { status: "PARTIALLY_SIGNED" },
+          });
+        }
       }
+
+      // Update ContractParty.signedAt if linked to a contract
+      const linkedRequest = await prisma.signingRequest.findFirst({
+        where: { documentId: signature.documentId, contractId: { not: null } },
+        select: { contractId: true },
+      });
+      if (linkedRequest?.contractId) {
+        await prisma.contractParty.updateMany({
+          where: {
+            contractId: linkedRequest.contractId,
+            email: { equals: signature.signerEmail, mode: "insensitive" },
+            signedAt: null,
+          },
+          data: { signedAt: new Date() },
+        });
+      }
+
+      // Log eIDAS consent acceptance
+      await prisma.auditLog.create({
+        data: {
+          action: "EIDAS_CONSENT_ACCEPTED",
+          entityType: "Signature",
+          entityId: signature.id,
+          userId: user.id,
+          ipAddress: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
+          userAgent: req.headers.get("user-agent"),
+          metadata: {
+            documentId: signature.documentId,
+            signerEmail: signature.signerEmail,
+            consentText: "Pranoj kushtet e nenshkrimit elektronik sipas Rregullores eIDAS (BE Nr. 910/2014)",
+            timestamp: new Date().toISOString(),
+          },
+        },
+      });
 
       await prisma.auditLog.create({
         data: {

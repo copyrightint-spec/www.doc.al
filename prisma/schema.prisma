@@ -12,6 +12,7 @@ datasource db {
 enum UserRole {
   USER
   ADMIN
+  SUPER_ADMIN
   API_USER
 }
 
@@ -46,6 +47,21 @@ enum TimestampType {
   SINGLE_FILE
   SUBMITTED_HASH
   SIGNATURE
+  COMPANY_SEAL
+}
+
+enum SealStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum SealType {
+  COMPANY_SEAL
+  OFFICIAL_STAMP
+  INVOICE_SEAL
+  CUSTOM
 }
 
 enum OtsStatus {
@@ -56,6 +72,7 @@ enum OtsStatus {
 enum VerificationCodeType {
   EMAIL
   TOTP
+  SMS
 }
 
 enum OrganizationPlan {
@@ -72,22 +89,51 @@ enum SigningRequestStatus {
   EXPIRED
 }
 
+enum NotificationChannel {
+  EMAIL
+  SMS
+  SMS_VOICE
+}
+
+enum CertAlertStatus {
+  PENDING
+  SENT
+  ACKNOWLEDGED
+}
+
+enum ContractStatus {
+  DRAFT
+  PENDING_SIGNATURE
+  PARTIALLY_SIGNED
+  COMPLETED
+  CANCELLED
+}
+
 // ==================== MODELS ====================
 
 model User {
-  id             String    @id @default(cuid())
-  email          String    @unique
-  name           String
-  password       String?
-  role           UserRole  @default(USER)
-  kycStatus      KycStatus @default(PENDING)
-  kycDocumentUrl String?
-  totpSecret     String?
-  totpEnabled    Boolean   @default(false)
-  emailVerified  DateTime?
-  image          String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                           String              @id @default(cuid())
+  email                        String              @unique
+  name                         String
+  password                     String?
+  role                         UserRole            @default(USER)
+  kycStatus                    KycStatus           @default(PENDING)
+  kycDocumentUrl               String?
+  kycMetadata                  Json?
+  kycVerifiedAt                DateTime?
+  totpSecret                   String?
+  totpEnabled                  Boolean             @default(false)
+  emailVerified                DateTime?
+  image                        String?
+  phone                        String?
+  preferredNotificationChannel NotificationChannel @default(EMAIL)
+  signatureData                Json? // Saved signature profiles (drawn, text, image)
+  signatureStyle               String? // Active signature style: "draw" | "text" | "image"
+  signatureTitle               String? // Title/position shown on signature block
+  deactivatedAt                DateTime? // Soft-delete: KYC data retained until deactivation
+  kycDataRetainedUntil         DateTime? // KYC data must be kept until user finishes using platform
+  createdAt                    DateTime            @default(now())
+  updatedAt                    DateTime            @updatedAt
 
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
@@ -102,6 +148,10 @@ model User {
   signingRequests   SigningRequest[]
   accounts          Account[]
   sessions          Session[]
+  createdSeals      CompanySeal[]      @relation("SealCreator")
+  appliedSeals      AppliedSeal[]      @relation("SealApplicant")
+  contracts         Contract[]         @relation("ContractCreator")
+  contractParties   ContractParty[]
 
   @@index([email])
   @@index([organizationId])
@@ -140,41 +190,55 @@ model Organization {
   name                String
   domain              String?          @unique
   logo                String?
+  primaryColor        String?          @default("#dc2626")
   certificateTemplate String?
   apiQuota            Int              @default(100)
   plan                OrganizationPlan @default(FREE)
+  webhookUrl          String?
+  emailFromName       String?
+  // Enterprise plan features
+  verifiedAt          DateTime?
+  verificationNotes   String?
+  billingCycle        String?          @default("MONTHLY")
+  planExpiresAt       DateTime?
+  customQuotas        Json? // Override default plan quotas
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
-  users              User[]
-  documents          Document[]
-  certificates       Certificate[]
-  apiKeys            ApiKey[]
-  signingTemplates   SigningTemplate[]
+  users            User[]
+  documents        Document[]
+  certificates     Certificate[]
+  apiKeys          ApiKey[]
+  signingTemplates SigningTemplate[]
+  companySeals     CompanySeal[]
+  planQuotas       PlanQuota[]
+  contracts        Contract[]
 
   @@index([domain])
 }
 
 model Document {
-  id             String         @id @default(cuid())
-  title          String
-  fileName       String
-  fileHash       String
-  fileUrl        String
-  fileSize       Int
-  status         DocumentStatus @default(DRAFT)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  deletedAt      DateTime?
+  id        String         @id @default(cuid())
+  title     String
+  fileName  String
+  fileHash  String
+  fileUrl   String
+  fileSize  Int
+  status    DocumentStatus @default(DRAFT)
+  metadata  Json?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  deletedAt DateTime?
 
   ownerId        String
-  owner          User           @relation(fields: [ownerId], references: [id])
+  owner          User          @relation(fields: [ownerId], references: [id])
   organizationId String?
-  organization   Organization?  @relation(fields: [organizationId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  signatures      Signature[]
+  signatures       Signature[]
   timestampEntries TimestampEntry[]
   signingRequests  SigningRequest[]
+  appliedSeals     AppliedSeal[]
 
   @@index([fileHash])
   @@index([ownerId])
@@ -183,22 +247,26 @@ model Document {
 }
 
 model Signature {
-  id                String          @id @default(cuid())
-  status            SignatureStatus @default(PENDING)
-  signerEmail       String
-  signerName        String
-  signedAt          DateTime?
-  signatureImageUrl String?
-  position          Json?
-  order             Int             @default(0)
-  token             String          @unique @default(cuid())
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id                  String              @id @default(cuid())
+  status              SignatureStatus     @default(PENDING)
+  signerEmail         String
+  signerName          String
+  signedAt            DateTime?
+  signatureImageUrl   String?
+  position            Json?
+  order               Int                 @default(0)
+  token               String              @unique
+  notificationChannel NotificationChannel @default(EMAIL)
+  verificationSentAt  DateTime?
+  lastReminderAt      DateTime?
+  viewedAt            DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
   documentId    String
-  document      Document    @relation(fields: [documentId], references: [id])
+  document      Document     @relation(fields: [documentId], references: [id])
   signerId      String?
-  signer        User?       @relation(fields: [signerId], references: [id])
+  signer        User?        @relation(fields: [signerId], references: [id])
   certificateId String?
   certificate   Certificate? @relation(fields: [certificateId], references: [id])
 
@@ -223,6 +291,8 @@ model Certificate {
   revokedAt           DateTime?
   revokeReason        String?
   type                CertificateType @default(PERSONAL)
+  autoRenew           Boolean         @default(false)
+  renewalNotifiedAt   DateTime?
   createdAt           DateTime        @default(now())
 
   userId         String?
@@ -230,34 +300,54 @@ model Certificate {
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  signatures Signature[]
+  signatures    Signature[]
+  renewalAlerts CertificateRenewalAlert[]
+  companySeals  CompanySeal[]
 
   @@index([serialNumber])
   @@index([userId])
   @@index([type])
+  @@index([validTo])
+}
+
+model CertificateRenewalAlert {
+  id               String          @id @default(cuid())
+  daysBeforeExpiry Int
+  status           CertAlertStatus @default(PENDING)
+  sentAt           DateTime?
+  acknowledgedAt   DateTime?
+  createdAt        DateTime        @default(now())
+
+  certificateId String
+  certificate   Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+
+  @@unique([certificateId, daysBeforeExpiry])
+  @@index([status])
+  @@index([certificateId])
 }
 
 model TimestampEntry {
-  id                     String        @id @default(cuid())
-  sequenceNumber         Int           @unique @default(autoincrement())
-  fingerprint            String
-  sequentialFingerprint  String
-  type                   TimestampType @default(SINGLE_FILE)
-  serverTimestamp        DateTime      @default(now())
-  btcTxId                String?
-  btcBlockHeight         Int?
-  btcBlockHash           String?
-  otsProof               Bytes?
-  otsStatus              OtsStatus     @default(PENDING)
-  createdAt              DateTime      @default(now())
+  id                    String        @id @default(cuid())
+  sequenceNumber        Int           @unique @default(autoincrement())
+  fingerprint           String
+  sequentialFingerprint String
+  type                  TimestampType @default(SINGLE_FILE)
+  serverTimestamp       DateTime      @default(now())
+  btcTxId               String?
+  btcBlockHeight        Int?
+  btcBlockHash          String?
+  otsProof              Bytes?
+  otsStatus             OtsStatus     @default(PENDING)
+  createdAt             DateTime      @default(now())
 
-  documentId     String?
-  document       Document?   @relation(fields: [documentId], references: [id])
-  signatureId    String?
-  signature      Signature?  @relation(fields: [signatureId], references: [id])
-  previousEntryId String?   @unique
+  documentId      String?
+  document        Document?       @relation(fields: [documentId], references: [id])
+  signatureId     String?
+  signature       Signature?      @relation(fields: [signatureId], references: [id])
+  previousEntryId String?         @unique
   previousEntry   TimestampEntry? @relation("TimestampChain", fields: [previousEntryId], references: [id])
   nextEntry       TimestampEntry? @relation("TimestampChain")
+  appliedSeals    AppliedSeal[]
 
   @@index([sequenceNumber])
   @@index([fingerprint])
@@ -277,7 +367,7 @@ model ApiKey {
   createdAt   DateTime  @default(now())
 
   userId         String
-  user           User         @relation(fields: [userId], references: [id])
+  user           User          @relation(fields: [userId], references: [id])
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
@@ -286,13 +376,19 @@ model ApiKey {
 }
 
 model SigningTemplate {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  fields      Json
-  isPublic    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  category        String?
+  fields          Json
+  signerRoles     Json?
+  pdfmeTemplate   Json?
+  pdfBaseUrl      String?
+  previewImageUrl String?
+  isPublic        Boolean  @default(false)
+  usageCount      Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   userId         String
   user           User          @relation(fields: [userId], references: [id])
@@ -303,27 +399,36 @@ model SigningTemplate {
 
   @@index([userId])
   @@index([isPublic])
+  @@index([category])
 }
 
 model SigningRequest {
   id              String               @id @default(cuid())
-  status          SigningRequestStatus  @default(PENDING)
+  status          SigningRequestStatus @default(PENDING)
   recipientEmails Json
   message         String?
+  companyName     String?
+  companyLogo     String?
+  brandColor      String?              @default("#dc2626")
   expiresAt       DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
 
-  templateId String?
-  template   SigningTemplate? @relation(fields: [templateId], references: [id])
-  documentId String
-  document   Document         @relation(fields: [documentId], references: [id])
+  templateId  String?
+  template    SigningTemplate? @relation(fields: [templateId], references: [id])
+  documentId  String
+  document    Document         @relation(fields: [documentId], references: [id])
   requesterId String
   requester   User             @relation(fields: [requesterId], references: [id])
+  contractId  String?          @unique
+  contract    Contract?        @relation(fields: [contractId], references: [id])
 
   @@index([documentId])
   @@index([requesterId])
   @@index([status])
+  @@index([companyName])
 }
 
 model AuditLog {
@@ -337,12 +442,38 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   userId String?
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id])
 
   @@index([createdAt])
   @@index([userId])
   @@index([entityType, entityId])
   @@index([action])
+}
+
+model ContactRequest {
+  id                        String   @id @default(cuid())
+  companyName               String
+  contactName               String
+  email                     String
+  phone                     String?
+  position                  String?
+  employees                 String
+  industry                  String
+  documentsPerMonth         String
+  needsCertificateAuthority Boolean  @default(false)
+  needsApiIntegration       Boolean  @default(false)
+  needsWhiteLabel           Boolean  @default(false)
+  needsCustomTemplates      Boolean  @default(false)
+  currentSolution           String?
+  message                   String?
+  status                    String   @default("NEW")
+  notes                     String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([email])
 }
 
 model VerificationCode {
@@ -358,4 +489,207 @@ model VerificationCode {
 
   @@index([userId, type])
   @@index([code, type])
+}
+
+model CompanySeal {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        SealType @default(COMPANY_SEAL)
+
+  // Seal design
+  logoUrl        String?
+  sealImageUrl   String?
+  template       String  @default("official")
+  primaryColor   String? @default("#0f172a")
+  secondaryColor String? @default("#ffffff")
+  borderText     String? // Text around the seal border (e.g. company name)
+  centerText     String? // Center text (e.g. "VULE ZYRTARE")
+
+  // eIDAS / ETSI compliance
+  certificateId String?
+  certificate   Certificate? @relation(fields: [certificateId], references: [id])
+  eidasLevel    String       @default("ADVANCED") // BASIC, ADVANCED, QUALIFIED
+  etsiPolicy    String?      @default("ETSI EN 319 411-1")
+
+  // Status & Lifecycle
+  status       SealStatus @default(ACTIVE)
+  activatedAt  DateTime?
+  expiresAt    DateTime?
+  revokedAt    DateTime?
+  revokeReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdByUserId String
+  createdBy       User         @relation("SealCreator", fields: [createdByUserId], references: [id])
+
+  appliedSeals AppliedSeal[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([certificateId])
+}
+
+model AppliedSeal {
+  id String @id @default(cuid())
+
+  // Document sealed
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id])
+
+  // Seal used
+  sealId String
+  seal   CompanySeal @relation(fields: [sealId], references: [id])
+
+  // Application details
+  appliedAt       DateTime @default(now())
+  appliedByUserId String
+  appliedBy       User     @relation("SealApplicant", fields: [appliedByUserId], references: [id])
+
+  // Proof & verification
+  sealImageSnapshot String? @db.Text // Base64 PNG of seal as applied
+  certificationHash String  @unique
+  verificationUrl   String
+  qrCodeDataUri     String? @db.Text
+
+  // Dual timestamps (server + OTS/Bitcoin)
+  serverTimestamp  DateTime        @default(now())
+  timestampEntryId String?
+  timestampEntry   TimestampEntry? @relation(fields: [timestampEntryId], references: [id])
+
+  // Position on PDF
+  pageNumber Int   @default(1)
+  xPosition  Float @default(50)
+  yPosition  Float @default(50)
+
+  // Cryptographic signature of the seal application
+  digitalSignature String? @db.Text
+  signedPayload    String? @db.Text // What was signed (JSON)
+
+  createdAt DateTime @default(now())
+
+  @@unique([documentId, sealId])
+  @@index([documentId])
+  @@index([sealId])
+  @@index([certificationHash])
+}
+
+model PlanQuota {
+  id String @id @default(cuid())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  // Billing period
+  periodStart  DateTime
+  periodEnd    DateTime
+  billingCycle String   @default("MONTHLY") // MONTHLY, YEARLY
+
+  // Quota limits (set by plan)
+  maxTimestamps     Int @default(100)
+  maxSignatures     Int @default(50)
+  maxSeals          Int @default(0)   // seal APPLICATIONS per period
+  maxSealTemplates  Int @default(0)   // how many seal templates org can create (permanent, not per-period)
+  maxApiCalls       Int @default(1000)
+  maxDocuments      Int @default(100)
+  maxUsers          Int @default(5)
+
+  // Current usage
+  usedTimestamps Int @default(0)
+  usedSignatures Int @default(0)
+  usedSeals      Int @default(0)
+  usedApiCalls   Int @default(0)
+  usedDocuments  Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, periodStart, periodEnd])
+  @@index([organizationId])
+  @@index([periodEnd])
+}
+
+// ==================== CONTRACT BUILDER ====================
+
+model LegalBasis {
+  id             String   @id @default(cuid())
+  title          String
+  lawReference   String
+  description    String   @db.Text
+  suggestedTerms String   @db.Text
+  category       String   @default("general")
+  isActive       Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  contracts ContractLegalBasis[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model Contract {
+  id             String         @id @default(cuid())
+  contractNumber String         @unique
+  title          String
+  status         ContractStatus @default(DRAFT)
+  termsHtml      String         @db.Text
+  generatedAt    DateTime       @default(now())
+  effectiveAt    DateTime?
+  pdfUrl         String?
+  documentHash   String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  createdById    String
+  createdBy      User          @relation("ContractCreator", fields: [createdById], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  parties        ContractParty[]
+  legalBases     ContractLegalBasis[]
+  signingRequest SigningRequest?
+
+  @@index([createdById])
+  @@index([status])
+  @@index([organizationId])
+  @@index([contractNumber])
+}
+
+model ContractParty {
+  id          String    @id @default(cuid())
+  contractId  String
+  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  partyNumber Int
+  role        String
+  fullName    String
+  idNumber    String
+  address     String
+  phone       String    @default("")
+  email       String
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+  signedAt    DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([contractId, partyNumber])
+  @@index([contractId])
+  @@index([email])
+}
+
+model ContractLegalBasis {
+  id           String     @id @default(cuid())
+  contractId   String
+  contract     Contract   @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  legalBasisId String
+  legalBasis   LegalBasis @relation(fields: [legalBasisId], references: [id])
+
+  @@unique([contractId, legalBasisId])
+  @@index([contractId])
 }
