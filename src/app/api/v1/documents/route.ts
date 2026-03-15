@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { authenticateApiKey, apiError, apiSuccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { computeSHA256 } from "@/lib/timestamp/engine";
+import { uploadFile } from "@/lib/s3";
 
 export async function POST(req: NextRequest) {
   const auth = await authenticateApiKey(req);
@@ -17,7 +18,9 @@ export async function POST(req: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const fileHash = computeSHA256(buffer);
-    const fileUrl = `/uploads/api/${auth.userId}/${file.name}`;
+    const s3Key = `documents/${auth.userId}/${Date.now()}-${file.name}`;
+    await uploadFile(s3Key, buffer, file.type);
+    const fileUrl = s3Key;
 
     const document = await prisma.document.create({
       data: {

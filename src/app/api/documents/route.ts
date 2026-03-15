@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { computeSHA256 } from "@/lib/timestamp/engine";
 import { rateLimit } from "@/lib/rate-limit";
+import { uploadFile } from "@/lib/s3";
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,8 +35,9 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const fileHash = computeSHA256(buffer);
 
-    // TODO: Upload to S3
-    const fileUrl = `/uploads/documents/${session.user.id}/${file.name}`;
+    const s3Key = `documents/${session.user.id}/${Date.now()}-${file.name}`;
+    await uploadFile(s3Key, buffer, file.type);
+    const fileUrl = s3Key;
 
     const document = await prisma.document.create({
       data: {

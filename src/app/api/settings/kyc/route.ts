@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { uploadFile } from "@/lib/s3";
 
 export async function POST(req: NextRequest) {
   try {
@@ -89,24 +90,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Save files to private storage (NOT public directory)
-    const fs = await import("fs/promises");
-    const path = await import("path");
     const crypto = await import("crypto");
     const userId = session.user.id;
-    const uploadDir = path.join(process.cwd(), "storage", "kyc", userId);
-    await fs.mkdir(uploadDir, { recursive: true });
 
     async function saveFile(file: File, prefix: string): Promise<string> {
       const ext = file.name.split(".").pop() || "jpg";
-      // Use random name to prevent enumeration
       const randomId = crypto.randomBytes(16).toString("hex");
-      const safeName = `${prefix}_${randomId}.${ext}`;
+      const s3Key = `kyc/${userId}/${prefix}_${randomId}.${ext}`;
       const buffer = Buffer.from(await file.arrayBuffer());
-      const filePath = path.join(uploadDir, safeName);
-      await fs.writeFile(filePath, buffer);
-      // Return internal path (served via authenticated API, not public)
-      return `/api/settings/kyc/file/${userId}/${safeName}`;
+      await uploadFile(s3Key, buffer, file.type);
+      return s3Key;
     }
 
     const frontUrl = await saveFile(frontDocument, "front");
