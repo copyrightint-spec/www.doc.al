@@ -693,3 +693,83 @@ model ContractLegalBasis {
   @@unique([contractId, legalBasisId])
   @@index([contractId])
 }
+
+// ==================== EMAIL TRACKING ====================
+
+enum EmailStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  OPENED
+  BOUNCED
+  FAILED
+}
+
+model EmailLog {
+  id          String      @id @default(cuid())
+  trackingId  String      @unique @default(cuid())
+  from        String
+  to          String
+  subject     String
+  status      EmailStatus @default(QUEUED)
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  bouncedAt   DateTime?
+  failedAt    DateTime?
+  errorMessage String?
+
+  // Tracking
+  openCount   Int         @default(0)
+  firstOpenAt DateTime?
+  lastOpenAt  DateTime?
+  lastOpenIp  String?
+  lastOpenUa  String?
+
+  // Click tracking
+  clickCount  Int         @default(0)
+  firstClickAt DateTime?
+  lastClickAt  DateTime?
+
+  // Context - links email to document/signature/contract
+  entityType  String?     // "Document", "Signature", "Contract", "Verification"
+  entityId    String?
+  userId      String?     // recipient user id if known
+
+  metadata    Json?       // extra data (templateName, signerName, etc.)
+  createdAt   DateTime    @default(now())
+
+  opens       EmailOpen[]
+  clicks      EmailClick[]
+
+  @@index([trackingId])
+  @@index([to])
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model EmailOpen {
+  id         String   @id @default(cuid())
+  emailLogId String
+  emailLog   EmailLog @relation(fields: [emailLogId], references: [id], onDelete: Cascade)
+  ipAddress  String?
+  userAgent  String?
+  openedAt   DateTime @default(now())
+
+  @@index([emailLogId])
+  @@index([openedAt])
+}
+
+model EmailClick {
+  id         String   @id @default(cuid())
+  emailLogId String
+  emailLog   EmailLog @relation(fields: [emailLogId], references: [id], onDelete: Cascade)
+  url        String
+  ipAddress  String?
+  userAgent  String?
+  clickedAt  DateTime @default(now())
+
+  @@index([emailLogId])
+  @@index([clickedAt])
+}

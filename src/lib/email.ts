@@ -1,6 +1,109 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
+import { prisma } from "@/lib/db";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "docal-mail",
+  port: parseInt(process.env.SMTP_PORT || "587"),
+  secure: false,
+  tls: { rejectUnauthorized: false },
+});
+
+const BASE_URL = process.env.NEXTAUTH_URL || "https://www.doc.al";
+
+// ==================== TRACKING ====================
+
+function trackingPixel(trackingId: string): string {
+  return `<img src="${BASE_URL}/api/email/track/${trackingId}/open" width="1" height="1" style="display:none;" alt="" />`;
+}
+
+function trackLink(trackingId: string, url: string): string {
+  return `${BASE_URL}/api/email/track/${trackingId}/click?url=${encodeURIComponent(url)}`;
+}
+
+function wrapLinksWithTracking(html: string, trackingId: string): string {
+  return html.replace(
+    /href="(https?:\/\/[^"]+)"/g,
+    (_, url) => `href="${trackLink(trackingId, url)}"`
+  );
+}
+
+// ==================== CORE SEND ====================
+
+interface SendEmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  fromName?: string;
+  entityType?: string;
+  entityId?: string;
+  userId?: string;
+  metadata?: Record<string, unknown>;
+}
+
+async function sendEmail(options: SendEmailOptions): Promise<{ success: boolean; trackingId?: string }> {
+  const fromName = options.fromName || "doc.al";
+  const from = `${fromName} <noreply@doc.al>`;
+
+  // Create email log
+  const emailLog = await prisma.emailLog.create({
+    data: {
+      from,
+      to: options.to,
+      subject: options.subject,
+      status: "QUEUED",
+      entityType: options.entityType,
+      entityId: options.entityId,
+      userId: options.userId,
+      metadata: options.metadata ? JSON.parse(JSON.stringify(options.metadata)) : undefined,
+    },
+  });
+
+  // Add tracking pixel and wrap links
+  const trackedHtml = wrapLinksWithTracking(options.html, emailLog.trackingId) + trackingPixel(emailLog.trackingId);
+
+  try {
+    await transporter.sendMail({
+      from,
+      to: options.to,
+      subject: options.subject,
+      html: trackedHtml,
+    });
+
+    await prisma.emailLog.update({
+      where: { id: emailLog.id },
+      data: { status: "SENT", sentAt: new Date() },
+    });
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        action: "EMAIL_SENT",
+        entityType: options.entityType || "Email",
+        entityId: options.entityId || emailLog.id,
+        userId: options.userId,
+        metadata: {
+          to: options.to,
+          subject: options.subject,
+          trackingId: emailLog.trackingId,
+        },
+      },
+    });
+
+    return { success: true, trackingId: emailLog.trackingId };
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error("Failed to send email:", errorMessage);
+
+    await prisma.emailLog.update({
+      where: { id: emailLog.id },
+      data: { status: "FAILED", failedAt: new Date(), errorMessage },
+    });
+
+    return { success: false };
+  }
+}
+
+// ==================== TEMPLATE ====================
 
 function baseTemplate(content: string, brandColor = "#dc2626", companyName = "doc.al", companyLogo?: string | null) {
   const logoHtml = companyLogo
@@ -53,30 +156,29 @@ function baseTemplate(content: string, brandColor = "#dc2626", companyName = "do
   `;
 }
 
+// ==================== EMAIL FUNCTIONS ====================
+
 export async function sendVerificationCode(
   email: string,
-  code: string
+  code: string,
+  userId?: string
 ): Promise<boolean> {
-  try {
-    const content = `
-      <h2 style="margin: 0 0 16px; color: #18181b; font-size: 20px;">Verifikim</h2>
-      <p style="margin: 0 0 20px; color: #52525b; font-size: 15px; line-height: 1.5;">Kodi juaj i verifikimit eshte:</p>
-      <div style="background: #fafafa; padding: 20px; text-align: center; border-radius: 12px; margin: 0 0 20px; border: 1px solid #e4e4e7;">
-        <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #18181b; font-family: monospace;">${code}</span>
-      </div>
-      <p style="margin: 0; color: #71717a; font-size: 13px;">Ky kod skadon pas 5 minutash.</p>
-    `;
-    await resend.emails.send({
-      from: "doc.al <noreply@doc.al>",
-      to: email,
-      subject: "Kodi i verifikimit - doc.al",
-      html: baseTemplate(content),
-    });
-    return true;
-  } catch {
-    console.error("Failed to send verification email");
-    return false;
-  }
+  const content = `
+    <h2 style="margin: 0 0 16px; color: #18181b; font-size: 20px;">Verifikim</h2>
+    <p style="margin: 0 0 20px; color: #52525b; font-size: 15px; line-height: 1.5;">Kodi juaj i verifikimit eshte:</p>
+    <div style="background: #fafafa; padding: 20px; text-align: center; border-radius: 12px; margin: 0 0 20px; border: 1px solid #e4e4e7;">
+      <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #18181b; font-family: monospace;">${code}</span>
+    </div>
+    <p style="margin: 0; color: #71717a; font-size: 13px;">Ky kod skadon pas 5 minutash.</p>
+  `;
+  const result = await sendEmail({
+    to: email,
+    subject: "Kodi i verifikimit - doc.al",
+    html: baseTemplate(content),
+    entityType: "Verification",
+    userId,
+  });
+  return result.success;
 }
 
 export interface ContractEmailDetails {
@@ -100,98 +202,95 @@ export async function sendSigningInvitation(
     message?: string;
     expiresAt?: Date;
     contract?: ContractEmailDetails;
+    documentId?: string;
+    userId?: string;
   }
 ): Promise<boolean> {
-  try {
-    const brandColor = options?.brandColor || "#dc2626";
-    const companyName = options?.companyName || "doc.al";
-    const expiresText = options?.expiresAt
-      ? `<p style="margin: 0; color: #71717a; font-size: 12px; margin-top: 8px;">Skadon me: ${options.expiresAt.toLocaleDateString("sq-AL", { day: "numeric", month: "long", year: "numeric" })}</p>`
-      : "";
+  const brandColor = options?.brandColor || "#dc2626";
+  const companyName = options?.companyName || "doc.al";
+  const expiresText = options?.expiresAt
+    ? `<p style="margin: 0; color: #71717a; font-size: 12px; margin-top: 8px;">Skadon me: ${options.expiresAt.toLocaleDateString("sq-AL", { day: "numeric", month: "long", year: "numeric" })}</p>`
+    : "";
 
-    const messageText = options?.message
-      ? `<div style="background: #fafafa; padding: 12px 16px; border-radius: 8px; margin: 16px 0; border-left: 3px solid ${brandColor};">
-          <p style="margin: 0; color: #52525b; font-size: 14px;">${options.message}</p>
-        </div>`
-      : "";
+  const messageText = options?.message
+    ? `<div style="background: #fafafa; padding: 12px 16px; border-radius: 8px; margin: 16px 0; border-left: 3px solid ${brandColor};">
+        <p style="margin: 0; color: #52525b; font-size: 14px;">${options.message}</p>
+      </div>`
+    : "";
 
-    // Contract details section
-    const c = options?.contract;
-    const contractSection = c
-      ? `
-      <!-- Contract details card -->
-      <div style="border: 1px solid #e4e4e7; border-radius: 12px; padding: 20px; margin: 20px 0; background: #fafafa;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 13px; color: #3f3f46;">
-          <tr>
-            <td colspan="2" style="padding-bottom: 12px; border-bottom: 1px solid #e4e4e7;">
-              <p style="margin: 0; font-size: 16px; font-weight: 700; color: #18181b;">${c.contractTitle}</p>
-              <p style="margin: 4px 0 0; font-size: 12px; color: #71717a; font-family: monospace;">${c.contractNumber}</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 12px 0 4px; font-weight: 600; color: #52525b; width: 120px; vertical-align: top;">Gjeneruar nga:</td>
-            <td style="padding: 12px 0 4px;">${c.creatorName}${c.creatorEmail ? ` (${c.creatorEmail})` : ""}</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 0; font-weight: 600; color: #52525b; vertical-align: top;">Palet:</td>
-            <td style="padding: 4px 0;">
-              ${c.parties.map((p) => `<div style="margin-bottom: 4px;">${p.partyNumber}. <strong>${p.fullName}</strong> — ${p.role}</div>`).join("")}
-            </td>
-          </tr>
-        </table>
-      </div>
-      `
-      : "";
+  const c = options?.contract;
+  const contractSection = c
+    ? `
+    <div style="border: 1px solid #e4e4e7; border-radius: 12px; padding: 20px; margin: 20px 0; background: #fafafa;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 13px; color: #3f3f46;">
+        <tr>
+          <td colspan="2" style="padding-bottom: 12px; border-bottom: 1px solid #e4e4e7;">
+            <p style="margin: 0; font-size: 16px; font-weight: 700; color: #18181b;">${c.contractTitle}</p>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #71717a; font-family: monospace;">${c.contractNumber}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 12px 0 4px; font-weight: 600; color: #52525b; width: 120px; vertical-align: top;">Gjeneruar nga:</td>
+          <td style="padding: 12px 0 4px;">${c.creatorName}${c.creatorEmail ? ` (${c.creatorEmail})` : ""}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; font-weight: 600; color: #52525b; vertical-align: top;">Palet:</td>
+          <td style="padding: 4px 0;">
+            ${c.parties.map((p) => `<div style="margin-bottom: 4px;">${p.partyNumber}. <strong>${p.fullName}</strong> — ${p.role}</div>`).join("")}
+          </td>
+        </tr>
+      </table>
+    </div>
+    `
+    : "";
 
-    const content = `
-      <h2 style="margin: 0 0 8px; color: #18181b; font-size: 20px;">Pershendetje ${signerName},</h2>
-      <p style="margin: 0 0 16px; color: #52525b; font-size: 15px; line-height: 1.6;">
-        Ju jeni ftuar te nenshkruani nje kontrate. Ju lutem shikoni detajet me poshte dhe klikoni butonin per te vazhduar me nenshkrimin.
-      </p>
+  const content = `
+    <h2 style="margin: 0 0 8px; color: #18181b; font-size: 20px;">Pershendetje ${signerName},</h2>
+    <p style="margin: 0 0 16px; color: #52525b; font-size: 15px; line-height: 1.6;">
+      Ju jeni ftuar te nenshkruani nje kontrate. Ju lutem shikoni detajet me poshte dhe klikoni butonin per te vazhduar me nenshkrimin.
+    </p>
 
-      ${contractSection}
+    ${contractSection}
+    ${messageText}
 
-      ${messageText}
+    <div style="border: 1px solid #e4e4e7; border-radius: 12px; padding: 16px; margin: 16px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td width="48" style="vertical-align: top;">
+            <div style="width: 40px; height: 40px; background: ${brandColor}15; border-radius: 10px; text-align: center; line-height: 40px; color: ${brandColor}; font-size: 18px;">
+              📄
+            </div>
+          </td>
+          <td style="padding-left: 12px;">
+            <p style="margin: 0; font-weight: 600; color: #18181b; font-size: 14px;">${documentTitle}</p>
+            <p style="margin: 4px 0 0; color: #71717a; font-size: 12px;">Derguar nga: ${requesterName}</p>
+            ${expiresText}
+          </td>
+        </tr>
+      </table>
+    </div>
 
-      <!-- Document card -->
-      <div style="border: 1px solid #e4e4e7; border-radius: 12px; padding: 16px; margin: 16px 0;">
-        <table width="100%" cellpadding="0" cellspacing="0">
-          <tr>
-            <td width="48" style="vertical-align: top;">
-              <div style="width: 40px; height: 40px; background: ${brandColor}15; border-radius: 10px; text-align: center; line-height: 40px; color: ${brandColor}; font-size: 18px;">
-                📄
-              </div>
-            </td>
-            <td style="padding-left: 12px;">
-              <p style="margin: 0; font-weight: 600; color: #18181b; font-size: 14px;">${documentTitle}</p>
-              <p style="margin: 4px 0 0; color: #71717a; font-size: 12px;">Derguar nga: ${requesterName}</p>
-              ${expiresText}
-            </td>
-          </tr>
-        </table>
-      </div>
+    <a href="${signingUrl}" style="display: block; background: ${brandColor}; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 15px; margin: 24px 0;">
+      Nenshkruaj Kontraten
+    </a>
 
-      <a href="${signingUrl}" style="display: block; background: ${brandColor}; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 15px; margin: 24px 0;">
-        Nenshkruaj Kontraten
-      </a>
+    <p style="margin: 16px 0 0; color: #71717a; font-size: 13px; line-height: 1.5;">
+      Nese keni pyetje, kontaktoni ${requesterName} ose ekipin tone ne support@doc.al.
+    </p>
+  `;
 
-      <p style="margin: 16px 0 0; color: #71717a; font-size: 13px; line-height: 1.5;">
-        Nese keni pyetje, kontaktoni ${requesterName} ose ekipin tone ne support@doc.al.
-      </p>
-    `;
-
-    const subjectPrefix = c ? `${c.contractNumber} — ` : "";
-    await resend.emails.send({
-      from: `${companyName} <noreply@doc.al>`,
-      to: email,
-      subject: `${subjectPrefix}Kerkese per nenshkrim: ${documentTitle}`,
-      html: baseTemplate(content, brandColor, companyName, options?.companyLogo),
-    });
-    return true;
-  } catch {
-    console.error("Failed to send signing invitation");
-    return false;
-  }
+  const subjectPrefix = c ? `${c.contractNumber} — ` : "";
+  const result = await sendEmail({
+    to: email,
+    subject: `${subjectPrefix}Kerkese per nenshkrim: ${documentTitle}`,
+    html: baseTemplate(content, brandColor, companyName, options?.companyLogo),
+    fromName: companyName,
+    entityType: c ? "Contract" : "Document",
+    entityId: options?.documentId,
+    userId: options?.userId,
+    metadata: { signerName, requesterName, documentTitle, contractNumber: c?.contractNumber },
+  });
+  return result.success;
 }
 
 export async function sendSigningReminder(
@@ -203,49 +302,50 @@ export async function sendSigningReminder(
     companyName?: string;
     brandColor?: string;
     contract?: ContractEmailDetails;
+    documentId?: string;
+    userId?: string;
   }
 ): Promise<boolean> {
-  try {
-    const brandColor = options?.brandColor || "#dc2626";
-    const c = options?.contract;
+  const brandColor = options?.brandColor || "#dc2626";
+  const c = options?.contract;
 
-    const contractInfo = c
-      ? `
-      <div style="border: 1px solid #e4e4e7; border-radius: 12px; padding: 14px; margin: 16px 0; background: #fafafa;">
-        <p style="margin: 0 0 4px; font-size: 14px; font-weight: 700; color: #18181b;">${c.contractTitle}</p>
-        <p style="margin: 0 0 8px; font-size: 11px; color: #71717a; font-family: monospace;">${c.contractNumber}</p>
-        <p style="margin: 0; font-size: 12px; color: #52525b;">Gjeneruar nga: ${c.creatorName}</p>
-        <p style="margin: 4px 0 0; font-size: 12px; color: #52525b;">Palet: ${c.parties.map((p) => p.fullName).join(", ")}</p>
-      </div>
-      `
-      : `
-      <div style="border: 1px solid #e4e4e7; border-radius: 12px; padding: 16px; margin: 16px 0; background: #fffbeb;">
-        <p style="margin: 0; font-weight: 600; color: #18181b; font-size: 14px;">${documentTitle}</p>
-      </div>
-      `;
-
-    const content = `
-      <h2 style="margin: 0 0 8px; color: #18181b; font-size: 20px;">Kujtese: Nenshkrim ne pritje</h2>
-      <p style="margin: 0 0 16px; color: #52525b; font-size: 15px; line-height: 1.6;">
-        Pershendetje ${signerName}, ju keni nje kontrate qe pret nenshkrimin tuaj:
-      </p>
-      ${contractInfo}
-      <a href="${signingUrl}" style="display: block; background: ${brandColor}; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 15px; margin: 24px 0;">
-        Nenshkruaj Tani
-      </a>
+  const contractInfo = c
+    ? `
+    <div style="border: 1px solid #e4e4e7; border-radius: 12px; padding: 14px; margin: 16px 0; background: #fafafa;">
+      <p style="margin: 0 0 4px; font-size: 14px; font-weight: 700; color: #18181b;">${c.contractTitle}</p>
+      <p style="margin: 0 0 8px; font-size: 11px; color: #71717a; font-family: monospace;">${c.contractNumber}</p>
+      <p style="margin: 0; font-size: 12px; color: #52525b;">Gjeneruar nga: ${c.creatorName}</p>
+      <p style="margin: 4px 0 0; font-size: 12px; color: #52525b;">Palet: ${c.parties.map((p) => p.fullName).join(", ")}</p>
+    </div>
+    `
+    : `
+    <div style="border: 1px solid #e4e4e7; border-radius: 12px; padding: 16px; margin: 16px 0; background: #fffbeb;">
+      <p style="margin: 0; font-weight: 600; color: #18181b; font-size: 14px;">${documentTitle}</p>
+    </div>
     `;
-    const subjectPrefix = c ? `${c.contractNumber} — ` : "";
-    await resend.emails.send({
-      from: `${options?.companyName || "doc.al"} <noreply@doc.al>`,
-      to: email,
-      subject: `${subjectPrefix}Kujtese: ${documentTitle} - pret nenshkrimin tuaj`,
-      html: baseTemplate(content, brandColor),
-    });
-    return true;
-  } catch {
-    console.error("Failed to send signing reminder");
-    return false;
-  }
+
+  const content = `
+    <h2 style="margin: 0 0 8px; color: #18181b; font-size: 20px;">Kujtese: Nenshkrim ne pritje</h2>
+    <p style="margin: 0 0 16px; color: #52525b; font-size: 15px; line-height: 1.6;">
+      Pershendetje ${signerName}, ju keni nje kontrate qe pret nenshkrimin tuaj:
+    </p>
+    ${contractInfo}
+    <a href="${signingUrl}" style="display: block; background: ${brandColor}; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 15px; margin: 24px 0;">
+      Nenshkruaj Tani
+    </a>
+  `;
+  const subjectPrefix = c ? `${c.contractNumber} — ` : "";
+  const result = await sendEmail({
+    to: email,
+    subject: `${subjectPrefix}Kujtese: ${documentTitle} - pret nenshkrimin tuaj`,
+    html: baseTemplate(content, brandColor),
+    fromName: options?.companyName || "doc.al",
+    entityType: c ? "Contract" : "Document",
+    entityId: options?.documentId,
+    userId: options?.userId,
+    metadata: { signerName, documentTitle, type: "reminder" },
+  });
+  return result.success;
 }
 
 export async function sendCertificateRenewalAlert(
@@ -254,41 +354,39 @@ export async function sendCertificateRenewalAlert(
   serialNumber: string,
   subjectDN: string,
   validTo: Date,
-  daysRemaining: number
+  daysRemaining: number,
+  userId?: string
 ): Promise<boolean> {
-  try {
-    const urgencyColor = daysRemaining <= 30 ? "#dc2626" : daysRemaining <= 60 ? "#f59e0b" : "#3b82f6";
-    const content = `
-      <h2 style="margin: 0 0 8px; color: #18181b; font-size: 20px;">Certifikata po skadon</h2>
-      <p style="margin: 0 0 16px; color: #52525b; font-size: 15px; line-height: 1.6;">
-        Pershendetje ${userName},
+  const urgencyColor = daysRemaining <= 30 ? "#dc2626" : daysRemaining <= 60 ? "#f59e0b" : "#3b82f6";
+  const content = `
+    <h2 style="margin: 0 0 8px; color: #18181b; font-size: 20px;">Certifikata po skadon</h2>
+    <p style="margin: 0 0 16px; color: #52525b; font-size: 15px; line-height: 1.6;">
+      Pershendetje ${userName},
+    </p>
+    <div style="border: 2px solid ${urgencyColor}; border-radius: 12px; padding: 16px; margin: 16px 0;">
+      <p style="margin: 0 0 8px; font-weight: 600; color: ${urgencyColor}; font-size: 14px;">
+        ${daysRemaining <= 30 ? "⚠️ URGJENT" : daysRemaining <= 60 ? "⚡ Njoftim" : "ℹ️ Kujtese"}:
+        Certifikata juaj skadon per ${daysRemaining} dite
       </p>
-      <div style="border: 2px solid ${urgencyColor}; border-radius: 12px; padding: 16px; margin: 16px 0;">
-        <p style="margin: 0 0 8px; font-weight: 600; color: ${urgencyColor}; font-size: 14px;">
-          ${daysRemaining <= 30 ? "⚠️ URGJENT" : daysRemaining <= 60 ? "⚡ Njoftim" : "ℹ️ Kujtese"}:
-          Certifikata juaj skadon per ${daysRemaining} dite
-        </p>
-        <table style="width: 100%; font-size: 13px; color: #52525b;">
-          <tr><td style="padding: 4px 0; font-weight: 600;">Nr. Serie:</td><td>${serialNumber}</td></tr>
-          <tr><td style="padding: 4px 0; font-weight: 600;">Subjekti:</td><td>${subjectDN}</td></tr>
-          <tr><td style="padding: 4px 0; font-weight: 600;">Skadon:</td><td>${validTo.toLocaleDateString("sq-AL", { day: "numeric", month: "long", year: "numeric" })}</td></tr>
-        </table>
-      </div>
-      <a href="${process.env.NEXTAUTH_URL || "https://www.doc.al"}/dashboard/certificates" style="display: block; background: ${urgencyColor}; color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 14px; margin: 20px 0;">
-        Rinovojeni Certifikaten
-      </a>
-    `;
-    await resend.emails.send({
-      from: "doc.al <noreply@doc.al>",
-      to: email,
-      subject: `${daysRemaining <= 30 ? "⚠️ URGJENT: " : ""}Certifikata juaj skadon per ${daysRemaining} dite`,
-      html: baseTemplate(content),
-    });
-    return true;
-  } catch {
-    console.error("Failed to send certificate renewal alert");
-    return false;
-  }
+      <table style="width: 100%; font-size: 13px; color: #52525b;">
+        <tr><td style="padding: 4px 0; font-weight: 600;">Nr. Serie:</td><td>${serialNumber}</td></tr>
+        <tr><td style="padding: 4px 0; font-weight: 600;">Subjekti:</td><td>${subjectDN}</td></tr>
+        <tr><td style="padding: 4px 0; font-weight: 600;">Skadon:</td><td>${validTo.toLocaleDateString("sq-AL", { day: "numeric", month: "long", year: "numeric" })}</td></tr>
+      </table>
+    </div>
+    <a href="${BASE_URL}/dashboard/certificates" style="display: block; background: ${urgencyColor}; color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 14px; margin: 20px 0;">
+      Rinovojeni Certifikaten
+    </a>
+  `;
+  const result = await sendEmail({
+    to: email,
+    subject: `${daysRemaining <= 30 ? "⚠️ URGJENT: " : ""}Certifikata juaj skadon per ${daysRemaining} dite`,
+    html: baseTemplate(content),
+    entityType: "Certificate",
+    userId,
+    metadata: { serialNumber, daysRemaining },
+  });
+  return result.success;
 }
 
 export async function sendSigningCompleted(
@@ -301,64 +399,65 @@ export async function sendSigningCompleted(
     companyName?: string;
     companyLogo?: string | null;
     brandColor?: string;
+    documentId?: string;
+    userId?: string;
   }
 ): Promise<boolean> {
-  try {
-    const c = options?.contract;
-    const brandColor = options?.brandColor || "#18181b";
-    const companyName = options?.companyName || "doc.al";
+  const c = options?.contract;
+  const brandColor = options?.brandColor || "#18181b";
+  const companyName = options?.companyName || "doc.al";
 
-    const contractInfo = c
-      ? `
-      <div style="border: 1px solid #e4e4e7; border-radius: 12px; padding: 16px; margin: 16px 0; background: #fafafa;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 13px; color: #3f3f46;">
-          <tr>
-            <td colspan="2" style="padding-bottom: 10px; border-bottom: 1px solid #e4e4e7;">
-              <p style="margin: 0; font-size: 15px; font-weight: 700; color: #18181b;">${c.contractTitle}</p>
-              <p style="margin: 4px 0 0; font-size: 12px; color: #71717a; font-family: monospace;">${c.contractNumber}</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 10px 0 4px; font-weight: 600; color: #52525b; width: 120px; vertical-align: top;">Gjeneruar nga:</td>
-            <td style="padding: 10px 0 4px;">${c.creatorName}${c.creatorEmail ? ` (${c.creatorEmail})` : ""}</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 0; font-weight: 600; color: #52525b; vertical-align: top;">Palet:</td>
-            <td style="padding: 4px 0;">
-              ${c.parties.map((p) => `<div style="margin-bottom: 3px;">${p.partyNumber}. <strong>${p.fullName}</strong> — ${p.role}</div>`).join("")}
-            </td>
-          </tr>
-        </table>
-      </div>
-      `
-      : "";
+  const contractInfo = c
+    ? `
+    <div style="border: 1px solid #e4e4e7; border-radius: 12px; padding: 16px; margin: 16px 0; background: #fafafa;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 13px; color: #3f3f46;">
+        <tr>
+          <td colspan="2" style="padding-bottom: 10px; border-bottom: 1px solid #e4e4e7;">
+            <p style="margin: 0; font-size: 15px; font-weight: 700; color: #18181b;">${c.contractTitle}</p>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #71717a; font-family: monospace;">${c.contractNumber}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0 4px; font-weight: 600; color: #52525b; width: 120px; vertical-align: top;">Gjeneruar nga:</td>
+          <td style="padding: 10px 0 4px;">${c.creatorName}${c.creatorEmail ? ` (${c.creatorEmail})` : ""}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; font-weight: 600; color: #52525b; vertical-align: top;">Palet:</td>
+          <td style="padding: 4px 0;">
+            ${c.parties.map((p) => `<div style="margin-bottom: 3px;">${p.partyNumber}. <strong>${p.fullName}</strong> — ${p.role}</div>`).join("")}
+          </td>
+        </tr>
+      </table>
+    </div>
+    `
+    : "";
 
-    const content = `
-      <h2 style="margin: 0 0 8px; color: #18181b; font-size: 20px;">Kontrata u nenshkrua me sukses!</h2>
-      <p style="margin: 0 0 16px; color: #52525b; font-size: 15px; line-height: 1.6;">
-        Pershendetje ${signerName}, dokumenti <strong>"${documentTitle}"</strong> eshte nenshkruar me sukses nga te gjithe palet.
-      </p>
-      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin: 16px 0; text-align: center;">
-        <p style="margin: 0; color: #166534; font-weight: 600;">Perfunduar me sukses</p>
-        <p style="margin: 8px 0 0; color: #15803d; font-size: 13px;">Nenshkrimi eshte ankoruar ne blockchain</p>
-      </div>
-      ${contractInfo}
-      <a href="${verifyUrl}" style="display: block; background: ${brandColor}; color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 14px; margin: 20px 0;">
-        Verifiko Dokumentin
-      </a>
-      <p style="margin: 0; color: #71717a; font-size: 12px; line-height: 1.5;">
-        Nje kopje dixhitale e kontrates se nenshkruar do te ruhet ne llogarine tuaj ne doc.al.
-      </p>
-    `;
-    await resend.emails.send({
-      from: `${companyName} <noreply@doc.al>`,
-      to: email,
-      subject: `${c ? c.contractNumber + " — " : ""}Kontrata "${documentTitle}" u nenshkrua me sukses`,
-      html: baseTemplate(content, brandColor, companyName, options?.companyLogo),
-    });
-    return true;
-  } catch {
-    console.error("Failed to send signing completed email");
-    return false;
-  }
+  const content = `
+    <h2 style="margin: 0 0 8px; color: #18181b; font-size: 20px;">Kontrata u nenshkrua me sukses!</h2>
+    <p style="margin: 0 0 16px; color: #52525b; font-size: 15px; line-height: 1.6;">
+      Pershendetje ${signerName}, dokumenti <strong>"${documentTitle}"</strong> eshte nenshkruar me sukses nga te gjithe palet.
+    </p>
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin: 16px 0; text-align: center;">
+      <p style="margin: 0; color: #166534; font-weight: 600;">Perfunduar me sukses</p>
+      <p style="margin: 8px 0 0; color: #15803d; font-size: 13px;">Nenshkrimi eshte ankoruar ne blockchain</p>
+    </div>
+    ${contractInfo}
+    <a href="${verifyUrl}" style="display: block; background: ${brandColor}; color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 14px; margin: 20px 0;">
+      Verifiko Dokumentin
+    </a>
+    <p style="margin: 0; color: #71717a; font-size: 12px; line-height: 1.5;">
+      Nje kopje dixhitale e kontrates se nenshkruar do te ruhet ne llogarine tuaj ne doc.al.
+    </p>
+  `;
+  const result = await sendEmail({
+    to: email,
+    subject: `${c ? c.contractNumber + " — " : ""}Kontrata "${documentTitle}" u nenshkrua me sukses`,
+    html: baseTemplate(content, brandColor, companyName, options?.companyLogo),
+    fromName: companyName,
+    entityType: c ? "Contract" : "Document",
+    entityId: options?.documentId,
+    userId: options?.userId,
+    metadata: { signerName, documentTitle, type: "completed" },
+  });
+  return result.success;
 }
