@@ -24,20 +24,28 @@ export async function submitToOpenTimestamps(
     try {
       const response = await fetch(`${calendar}/digest`, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: hashBytes,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/vnd.opentimestamps.v1",
+        },
+        body: new Uint8Array(hashBytes),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (response.ok) {
         const proofBytes = Buffer.from(await response.arrayBuffer());
+        console.log(`[OTS] Successfully submitted hash ${hashHex.slice(0, 16)}... to ${calendar}, proof size: ${proofBytes.length} bytes`);
         return proofBytes;
+      } else {
+        console.log(`[OTS] Calendar ${calendar} returned ${response.status} for hash ${hashHex.slice(0, 16)}...`);
       }
-    } catch {
-      // Try next calendar
+    } catch (err) {
+      console.log(`[OTS] Failed to submit to ${calendar}:`, err instanceof Error ? err.message : "unknown error");
       continue;
     }
   }
 
+  console.log(`[OTS] All calendars failed for hash ${hashHex.slice(0, 16)}...`);
   return null;
 }
 
@@ -212,11 +220,18 @@ export async function anchorToBitcoin(timestampEntryId: string): Promise<boolean
     where: { id: timestampEntryId },
   });
 
-  if (!entry) return false;
+  if (!entry) {
+    console.log(`[OTS] Entry ${timestampEntryId} not found`);
+    return false;
+  }
 
+  console.log(`[OTS] Anchoring entry ${timestampEntryId}, fingerprint: ${entry.fingerprint.slice(0, 16)}...`);
   const proof = await submitToOpenTimestamps(entry.fingerprint);
 
-  if (!proof) return false;
+  if (!proof) {
+    console.log(`[OTS] Failed to get proof for entry ${timestampEntryId}`);
+    return false;
+  }
 
   await prisma.timestampEntry.update({
     where: { id: timestampEntryId },
