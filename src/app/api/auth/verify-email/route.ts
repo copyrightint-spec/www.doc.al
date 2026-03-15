@@ -5,7 +5,12 @@ import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, action } = await req.json();
+    const body = await req.json();
+    const { email, action, code } = body;
+
+    if (!email) {
+      return NextResponse.json({ error: "Email eshte i detyrueshem" }, { status: 400 });
+    }
 
     if (action === "send") {
       const user = await prisma.user.findUnique({ where: { email } });
@@ -13,25 +18,28 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Perdoruesi nuk u gjet" }, { status: 404 });
       }
 
-      const code = crypto.randomInt(100000, 999999).toString();
+      const verificationCode = crypto.randomInt(100000, 999999).toString();
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
       await prisma.verificationCode.create({
         data: {
           userId: user.id,
-          code,
+          code: verificationCode,
           type: "EMAIL",
           expiresAt,
         },
       });
 
-      await sendVerificationCode(email, code);
+      await sendVerificationCode(email, verificationCode, user.id);
 
       return NextResponse.json({ message: "Kodi u dergua" });
     }
 
     if (action === "verify") {
-      const { code } = await req.json();
+      if (!code) {
+        return NextResponse.json({ error: "Kodi eshte i detyrueshem" }, { status: 400 });
+      }
+
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user) {
         return NextResponse.json({ error: "Perdoruesi nuk u gjet" }, { status: 404 });
@@ -62,7 +70,18 @@ export async function POST(req: NextRequest) {
         data: { emailVerified: new Date() },
       });
 
-      return NextResponse.json({ message: "Email u verifikua" });
+      // Audit log
+      await prisma.auditLog.create({
+        data: {
+          action: "EMAIL_VERIFIED",
+          entityType: "User",
+          entityId: user.id,
+          userId: user.id,
+          metadata: { email },
+        },
+      });
+
+      return NextResponse.json({ message: "Email u verifikua me sukses" });
     }
 
     return NextResponse.json({ error: "Veprim i pavlefshem" }, { status: 400 });
