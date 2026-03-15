@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -59,26 +59,26 @@ const DOCUMENT_URL_LABELS: Record<string, string> = {
 };
 
 function S3Image({ s3Key, alt, className }: { s3Key: string; alt: string; className?: string }) {
-  const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
-  const fetched = useRef(false);
+  const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    if (fetched.current) return;
-    fetched.current = true;
-    fetch(`/api/files/${s3Key}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.url) setUrl(data.url);
-        else setError(true);
-      })
-      .catch(() => setError(true));
-  }, [s3Key]);
+  const src = `/api/files/${s3Key}`;
 
   if (error) return <div className="flex h-24 items-center justify-center rounded-lg border border-border bg-white"><span className="text-sm text-muted-foreground">Nuk u ngarkua</span></div>;
-  if (!url) return <div className="flex h-24 items-center justify-center rounded-lg border border-border bg-muted/30"><Spinner className="h-5 w-5" /></div>;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={url} alt={alt} className={className} />;
+
+  return (
+    <>
+      {!loaded && <div className="flex h-24 items-center justify-center rounded-lg border border-border bg-muted/30"><Spinner className="h-5 w-5" /></div>}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        className={cn(className, !loaded && "hidden")}
+        onLoad={() => setLoaded(true)}
+        onError={() => setError(true)}
+      />
+    </>
+  );
 }
 
 export default function AdminKycPage() {

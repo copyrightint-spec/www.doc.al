@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getFileUrl } from "@/lib/s3";
+import { getFileBuffer } from "@/lib/s3";
 
 export async function GET(
   req: NextRequest,
@@ -23,8 +23,28 @@ export async function GET(
   }
 
   try {
-    const presignedUrl = await getFileUrl(s3Key, 3600);
-    return NextResponse.json({ url: presignedUrl });
+    const buffer = await getFileBuffer(s3Key);
+
+    // Determine content type from file extension
+    const ext = s3Key.split(".").pop()?.toLowerCase() || "";
+    const contentTypes: Record<string, string> = {
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      webp: "image/webp",
+      svg: "image/svg+xml",
+      pdf: "application/pdf",
+      gif: "image/gif",
+    };
+    const contentType = contentTypes[ext] || "application/octet-stream";
+
+    return new NextResponse(new Uint8Array(buffer), {
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "private, max-age=3600",
+        "Content-Length": buffer.length.toString(),
+      },
+    });
   } catch {
     return NextResponse.json({ error: "Skedari nuk u gjet" }, { status: 404 });
   }

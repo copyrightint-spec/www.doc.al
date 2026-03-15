@@ -119,3 +119,95 @@ export async function PATCH(req: NextRequest) {
 
   return NextResponse.json({ success: true, data: user });
 }
+
+export async function DELETE(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized - Admin only" }, { status: 403 });
+  }
+
+  const { searchParams } = req.nextUrl;
+  const userId = searchParams.get("userId");
+
+  if (!userId) {
+    return NextResponse.json({ error: "userId required" }, { status: 400 });
+  }
+
+  // Prevent deleting yourself
+  if (userId === session.user.id) {
+    return NextResponse.json({ error: "Nuk mund te fshini veten tuaj" }, { status: 400 });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, name: true, role: true },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: "Perdoruesi nuk u gjet" }, { status: 404 });
+  }
+
+  // Only SUPER_ADMIN can delete admins
+  if (["ADMIN", "SUPER_ADMIN"].includes(user.role) && session.user.role !== "SUPER_ADMIN") {
+    return NextResponse.json({ error: "Vetem Super Admin mund te fshije administratore" }, { status: 403 });
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Delete related records
+      await tx.verificationCode.deleteMany({ where: { userId } });
+      await tx.apiKey.deleteMany({ where: { userId } });
+      await tx.auditLog.deleteMany({ where: { userId } });
+      await tx.signature.deleteMany({ where: { signerId: userId } });
+      await tx.certificate.deleteMany({ where: { userId } });
+      await tx.signingTemplate.deleteMany({ where: { userId } });
+      await tx.signingRequest.deleteMany({ where: { requesterId: userId } });
+      await tx.contractParty.deleteMany({ where: { userId } });
+      await tx.appliedSeal.deleteMany({ where: { appliedByUserId: userId } });
+      // EmailLog - set userId to null instead of deleting (preserve email audit trail)
+      await tx.emailLog.updateMany({ where: { userId }, data: { userId: null } });
+      // Contracts - delete contract legal bases first, then contracts
+      const contracts = await tx.contract.findMany({ where: { createdById: userId }, select: { id: true } });
+      if (contracts.length > 0) {
+        const contractIds = contracts.map((c) => c.id);
+        await tx.contractLegalBasis.deleteMany({ where: { contractId: { in: contractIds } } });
+        await tx.contractParty.deleteMany({ where: { contractId: { in: contractIds } } });
+        await tx.contract.deleteMany({ where: { createdById: userId } });
+      }
+      // Company seals created by user
+      await tx.companySeal.deleteMany({ where: { createdByUserId: userId } });
+      // Documents - delete associated signatures first
+      const docs = await tx.document.findMany({ where: { ownerId: userId }, select: { id: true } });
+      if (docs.length > 0) {
+        const docIds = docs.map((d) => d.id);
+        await tx.signature.deleteMany({ where: { documentId: { in: docIds } } });
+        await tx.document.deleteMany({ where: { ownerId: userId } });
+      }
+      // Account and Session
+      await tx.account.deleteMany({ where: { userId } });
+      await tx.session.deleteMany({ where: { userId } });
+      // Finally delete the user
+      await tx.user.delete({ where: { id: userId } });
+    });
+
+    // Audit log (create after transaction since user is deleted)
+    await prisma.auditLog.create({
+      data: {
+        action: "ADMIN_USER_DELETED",
+        entityType: "User",
+        entityId: userId,
+        userId: session.user.id,
+        metadata: {
+          deletedUserEmail: user.email,
+          deletedUserName: user.name,
+          deletedBy: session.user.email || session.user.id,
+        },
+      },
+    });
+
+    return NextResponse.json({ success: true, message: `Perdoruesi ${user.email} u fshi me sukses` });
+  } catch (error) {
+    console.error("Delete user error:", error);
+    return NextResponse.json({ error: "Gabim gjate fshirjes se perdoruesit" }, { status: 500 });
+  }
+}

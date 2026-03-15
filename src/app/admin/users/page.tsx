@@ -36,6 +36,8 @@ export default function AdminUsersPage() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [generatingCert, setGeneratingCert] = useState<string | null>(null);
+  const [deletingUser, setDeletingUser] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const showToast = (message: string, type: "success" | "error") => {
@@ -129,6 +131,27 @@ export default function AdminUsersPage() {
       showToast("Gabim gjate procesit", "error");
     } finally {
       setGeneratingCert(null);
+    }
+  }
+
+  async function deleteUser(userId: string) {
+    setDeletingUser(userId);
+    try {
+      const res = await fetch(`/api/admin/users?userId=${userId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message, "success");
+        fetchUsers();
+      } else {
+        showToast(data.error || "Gabim gjate fshirjes", "error");
+      }
+    } catch {
+      showToast("Gabim gjate fshirjes se perdoruesit", "error");
+    } finally {
+      setDeletingUser(null);
+      setConfirmDelete(null);
     }
   }
 
@@ -410,6 +433,54 @@ export default function AdminUsersPage() {
                                 description="Ndryshoni statusin e KYC ne VERIFIED per te gjeneruar certifikate."
                               />
                             )}
+
+                            {/* Delete User */}
+                            <div className="mt-6 border-t border-border pt-4">
+                              <h4 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2">Zona e Rrezikshme</h4>
+                              {confirmDelete === user.id ? (
+                                <div className="space-y-2">
+                                  <p className="text-sm text-muted-foreground">
+                                    Jeni te sigurt qe doni te fshini <strong>{user.name}</strong> ({user.email})?
+                                    Ky veprim nuk mund te kthehet mbrapsht.
+                                  </p>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="flex-1"
+                                      onClick={(e) => { e.stopPropagation(); deleteUser(user.id); }}
+                                      disabled={deletingUser === user.id}
+                                    >
+                                      {deletingUser === user.id ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                          <Spinner size="sm" />
+                                          Duke fshire...
+                                        </span>
+                                      ) : (
+                                        "Po, Fshije"
+                                      )}
+                                    </Button>
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      className="flex-1"
+                                      onClick={(e) => { e.stopPropagation(); setConfirmDelete(null); }}
+                                    >
+                                      Anulo
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="w-full"
+                                  onClick={(e) => { e.stopPropagation(); setConfirmDelete(user.id); }}
+                                >
+                                  Fshi Perdoruesin
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
