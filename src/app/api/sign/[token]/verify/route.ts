@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendVerificationCode } from "@/lib/email";
 import { createTimestamp } from "@/lib/timestamp/engine";
+import { rateLimit } from "@/lib/rate-limit";
 import crypto from "crypto";
 
 export async function POST(
@@ -26,6 +27,10 @@ export async function POST(
     }
 
     if (body.action === "send-otp") {
+      // Rate limit OTP sending: 3 per 10 minutes per IP
+      const otpSendLimit = rateLimit(req, "otpSend");
+      if (otpSendLimit) return otpSendLimit;
+
       const code = crypto.randomInt(100000, 999999).toString();
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
@@ -58,6 +63,10 @@ export async function POST(
     }
 
     if (body.action === "verify-and-sign") {
+      // Rate limit OTP verification: 5 attempts per 5 minutes per IP
+      const otpVerifyLimit = rateLimit(req, "otpVerify");
+      if (otpVerifyLimit) return otpVerifyLimit;
+
       const { code, signatureImage } = body;
 
       // Verify OTP
