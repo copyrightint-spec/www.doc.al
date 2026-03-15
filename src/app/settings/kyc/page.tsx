@@ -657,13 +657,20 @@ export default function KycPage() {
                 </CardContent>
               </Card>
 
-              {/* Data retention notice */}
-              <Alert
-                variant="info"
-                icon={<Lock className="h-4 w-4" />}
-                title="Ruajtja e te dhenave"
-                description="Per arsye sigurie, te dhenat tuaja te KYC (dokumentet, fotografite, informacioni personal) ruhen ne sistem deri sa te perfundoni perdorimin e platformes. Kjo eshte e nevojshme per te garantuar sigurine e nenshkrimeve dixhitale."
-              />
+              {/* Data processing consent */}
+              <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                <div className="flex items-start gap-2">
+                  <Lock className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                  <div className="text-sm text-muted-foreground leading-relaxed">
+                    <p className="font-medium text-foreground mb-1">Perpunimi i te dhenave personale</p>
+                    <p>
+                      Ne perputhje me Ligjin Nr. 9887, date 10.03.2008 &quot;Per Mbrojtjen e te Dhenave Personale&quot;
+                      (i ndryshuar), te dhenat tuaja personale dhe dokumentet e identifikimit do te perpunohen
+                      vetem per qellimin e verifikimit te identitetit dhe funksionimit te sherbimit te nenshkrimit elektronik.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
@@ -672,8 +679,11 @@ export default function KycPage() {
                   onChange={(e) => setConfirmed(e.target.checked)}
                   className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-ring"
                 />
-                <span className="text-sm text-foreground">
-                  Konfirmoj qe te dhenat e mesiperme jane te sakta dhe te verteta dhe pranoj qe te dhenat e KYC ruhen deri ne mbylljen e llogarise.
+                <span className="text-sm text-foreground leading-relaxed">
+                  Konfirmoj qe te dhenat e mesiperme jane te sakta dhe te verteta. Pranoj dhe jap pelqimin
+                  qe te dhenat e mia personale te perpunohen dhe verifikohen per qellim te funksionimit
+                  te sherbimit te nenshkrimit elektronik, ne perputhje me Ligjin Nr. 9887 &quot;Per Mbrojtjen
+                  e te Dhenave Personale&quot;.
                 </span>
               </label>
 

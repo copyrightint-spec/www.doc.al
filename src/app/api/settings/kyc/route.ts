@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
       submittedAt: new Date().toISOString(),
     };
 
-    // Update user record — KYC data is retained for security until account closure
+    // Update user record
     await prisma.user.update({
       where: { id: userId },
       data: {
@@ -153,10 +153,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// DELETE - Explicitly blocked: KYC data must be retained for security
 export async function DELETE() {
   return NextResponse.json(
-    { error: "Te dhenat e KYC nuk mund te fshihen per arsye sigurie. Ato ruhen deri ne mbylljen e llogarise." },
+    { error: "Te dhenat e KYC nuk mund te fshihen. Kontaktoni administratorin per ndihme." },
     { status: 403 }
   );
 }
