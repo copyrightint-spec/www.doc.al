@@ -60,14 +60,14 @@ export async function generateUserCertificate(
     cert.validity.notAfter.getFullYear() + (options.validityYears || 2)
   );
 
-  const attrs = [
+  const attrs: forge.pki.CertificateField[] = [
     { name: "commonName", value: options.commonName },
     { name: "countryName", value: options.country || "AL" },
-    { shortName: "serialNumber", value: userId },
+    { type: "2.5.4.5", value: userId },
   ];
 
   if (options.organization) {
-    attrs.push({ name: "organizationName", value: options.organization });
+    attrs.push({ name: "organizationName", value: options.organization } as forge.pki.CertificateField);
   }
 
   cert.setSubject(attrs);
