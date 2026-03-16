@@ -34,6 +34,21 @@ export async function POST(req: NextRequest) {
     const limited = rateLimit(req, "documentUpload", session.user.id);
     if (limited) return limited;
 
+    // Verify user is eligible to sign (KYC + TOTP + email verified)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { kycStatus: true, totpEnabled: true, emailVerified: true },
+    });
+    if (!user?.emailVerified) {
+      return NextResponse.json({ error: "Email nuk eshte verifikuar" }, { status: 403 });
+    }
+    if (user.kycStatus !== "VERIFIED") {
+      return NextResponse.json({ error: "KYC nuk eshte verifikuar" }, { status: 403 });
+    }
+    if (!user.totpEnabled) {
+      return NextResponse.json({ error: "2FA nuk eshte aktivizuar" }, { status: 403 });
+    }
+
     // Verify OTP completed within 10 minutes
     const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000);
     const recentOtp = await prisma.verificationCode.findFirst({
