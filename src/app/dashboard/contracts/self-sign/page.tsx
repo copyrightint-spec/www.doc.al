@@ -95,6 +95,9 @@ function generateTextSignatureDataUrl(name: string, fontValue: string): string {
   return canvas.toDataURL("image/png");
 }
 
+// DEBUG: Build version identifier - remove after testing
+const BUILD_VERSION = "v2-selfsign-41a2332-" + new Date().toISOString().slice(0, 10);
+
 // -- Main Component --
 export default function SelfSignPage() {
   // React-PDF lazy load state
@@ -1012,6 +1015,10 @@ export default function SelfSignPage() {
   // Phase: SIGN - Two panel layout with PDF viewer + sidebar
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col" style={{ margin: "-1.5rem", marginTop: "-1.5rem" }}>
+      {/* DEBUG BANNER - remove after testing */}
+      <div className="bg-yellow-500 text-black text-xs text-center py-1 font-mono">
+        DEBUG: {BUILD_VERSION} | Phase: {phase} | PDF: {pdfFile ? pdfFile.name : "none"} | Sig: {selectedSignature || "none"}
+      </div>
       {/* Top bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-4 py-2.5">
         <div className="flex items-center gap-3 min-w-0">
