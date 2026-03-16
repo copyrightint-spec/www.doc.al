@@ -297,26 +297,22 @@ export async function checkPendingConfirmations(): Promise<{
         },
       });
     } else {
-      console.log(`[OTS] Entry ${entry.id} still pending, no upgrade available`);
-      // Try re-submitting if calendar doesn't recognize the hash
-      try {
-        const testResponse = await fetch(`https://a.pool.opentimestamps.org/timestamp/${entry.fingerprint}`, {
-          headers: { Accept: "application/vnd.opentimestamps.v1" },
-          signal: AbortSignal.timeout(5000),
-        });
-        if (testResponse.status === 404) {
-          console.log(`[OTS] Entry ${entry.id} not found on calendar, re-submitting...`);
-          const newProof = await submitToOpenTimestamps(entry.fingerprint);
-          if (newProof) {
-            console.log(`[OTS] Entry ${entry.id} re-submitted successfully`);
-            await prisma.timestampEntry.update({
-              where: { id: entry.id },
-              data: { otsProof: new Uint8Array(newProof) },
-            });
-          }
+      // Check if stored proof has a pending attestation (meaning it was properly submitted)
+      const storedParsed = parseOtsProof(Buffer.from(entry.otsProof));
+      if (storedParsed.hasPendingAttestation) {
+        // Hash was submitted, just waiting for Bitcoin confirmation (404 from GET is normal)
+        console.log(`[OTS] Entry ${entry.id} has pending attestation, waiting for BTC confirmation...`);
+      } else {
+        // No pending attestation in proof - submission may have failed, re-submit
+        console.log(`[OTS] Entry ${entry.id} has no pending attestation, re-submitting...`);
+        const newProof = await submitToOpenTimestamps(entry.fingerprint);
+        if (newProof) {
+          console.log(`[OTS] Entry ${entry.id} re-submitted successfully`);
+          await prisma.timestampEntry.update({
+            where: { id: entry.id },
+            data: { otsProof: new Uint8Array(newProof) },
+          });
         }
-      } catch {
-        // Non-critical
       }
     }
   }
