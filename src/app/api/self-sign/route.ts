@@ -8,7 +8,7 @@ import { uploadFile } from "@/lib/s3";
 import { buildProofMetadata, publishToIPFS, getIPFSUrl } from "@/lib/ipfs";
 import { signPdf } from "@/lib/crypto/pdf-signer";
 import { generateUserCertificate } from "@/lib/crypto/certificates";
-import { sendSigningCompleted } from "@/lib/email";
+import { sendSigningCompleted, sendSignedDocument } from "@/lib/email";
 
 /**
  * POST /api/self-sign
@@ -269,8 +269,19 @@ export async function POST(req: NextRequest) {
           userId,
         }
       );
+      // Send signed PDF as separate email
+      const signedFileName = `${originalFile.name.replace(/\.pdf$/i, "")}_nenshkruar.pdf`;
+      await sendSignedDocument(
+        userEmail,
+        userName,
+        title,
+        finalPdfBuffer,
+        signedFileName,
+        `${process.env.NEXTAUTH_URL || "https://doc.al"}/verify/${signedHash}`,
+        { documentId: document.id, userId }
+      );
     } catch (emailError) {
-      console.error("[self-sign] Completion email failed (non-critical):", emailError);
+      console.error("[self-sign] Email failed (non-critical):", emailError);
     }
 
     // 9. Audit Logs

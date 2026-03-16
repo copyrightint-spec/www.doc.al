@@ -29,6 +29,12 @@ function wrapLinksWithTracking(html: string, trackingId: string): string {
 
 // ==================== CORE SEND ====================
 
+interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType?: string;
+}
+
 interface SendEmailOptions {
   to: string;
   subject: string;
@@ -38,6 +44,7 @@ interface SendEmailOptions {
   entityId?: string;
   userId?: string;
   metadata?: Record<string, unknown>;
+  attachments?: EmailAttachment[];
 }
 
 async function sendEmail(options: SendEmailOptions): Promise<{ success: boolean; trackingId?: string }> {
@@ -67,6 +74,11 @@ async function sendEmail(options: SendEmailOptions): Promise<{ success: boolean;
       to: options.to,
       subject: options.subject,
       html: trackedHtml,
+      attachments: options.attachments?.map((a) => ({
+        filename: a.filename,
+        content: a.content,
+        contentType: a.contentType || "application/pdf",
+      })),
     });
 
     await prisma.emailLog.update({
@@ -458,6 +470,63 @@ export async function sendSigningCompleted(
     entityId: options?.documentId,
     userId: options?.userId,
     metadata: { signerName, documentTitle, type: "completed" },
+  });
+  return result.success;
+}
+
+/**
+ * Send signed PDF document via email as attachment.
+ * Sent as a separate email after the completion notification.
+ */
+export async function sendSignedDocument(
+  email: string,
+  signerName: string,
+  documentTitle: string,
+  pdfBuffer: Buffer,
+  pdfFileName: string,
+  verifyUrl: string,
+  options?: {
+    documentId?: string;
+    userId?: string;
+  }
+): Promise<boolean> {
+  const content = `
+    <h2 style="margin: 0 0 8px; color: #18181b; font-size: 20px;">Dokumenti i Nenshkruar</h2>
+    <p style="margin: 0 0 16px; color: #52525b; font-size: 15px; line-height: 1.6;">
+      Pershendetje ${signerName}, bashkangjitur gjeni dokumentin <strong>"${documentTitle}"</strong> te nenshkruar dixhitalisht.
+    </p>
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin: 16px 0;">
+      <p style="margin: 0; color: #166534; font-weight: 600; font-size: 14px;">PDF i nenshkruar bashkangjitur</p>
+      <p style="margin: 8px 0 0; color: #15803d; font-size: 12px;">
+        Dokumenti permban nenshkrim dixhital te certifikuar, QR kod per verifikim,
+        dhe eshte i ankoruar ne Bitcoin blockchain dhe IPFS.
+      </p>
+    </div>
+    <a href="${verifyUrl}" style="display: block; background: #18181b; color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 14px; margin: 20px 0;">
+      Verifiko Dokumentin Online
+    </a>
+    <p style="margin: 0; color: #71717a; font-size: 11px; line-height: 1.5;">
+      Ky dokument eshte i nenshkruar sipas Rregullores eIDAS (BE Nr. 910/2014).
+      Prova kriptografike eshte e ruajtur ne blockchain-in Bitcoin dhe IPFS.
+      Ruajeni kete email si prove te nenshkrimit.
+    </p>
+  `;
+  const result = await sendEmail({
+    to: email,
+    subject: `Dokumenti i nenshkruar: "${documentTitle}"`,
+    html: baseTemplate(content, "#18181b", "doc.al"),
+    fromName: "doc.al",
+    entityType: "Document",
+    entityId: options?.documentId,
+    userId: options?.userId,
+    metadata: { signerName, documentTitle, type: "signed_document" },
+    attachments: [
+      {
+        filename: pdfFileName,
+        content: pdfBuffer,
+        contentType: "application/pdf",
+      },
+    ],
   });
   return result.success;
 }
