@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
 /**
+ * Mask signer name for public display: "Daniel Kordhoni" → "D**** K****"
+ */
+function maskSignerName(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((part) => {
+      if (part.length <= 1) return part;
+      return part[0] + "****";
+    })
+    .join(" ");
+}
+
+/**
  * API publike per verifikimin e dokumenteve DOC.AL.
  * Nuk kerkon autentifikim - eshte publike per kedo qe skanon QR kodin.
  */
@@ -102,7 +115,7 @@ export async function GET(
         stampedAt: stamp.stampedAt || document.createdAt.toISOString(),
         signerCount: document.signatures.length,
         signers: document.signatures.map((s) => ({
-          name: s.signerName,
+          name: maskSignerName(s.signerName),
           signedAt: s.signedAt ? s.signedAt.toISOString() : null,
           order: s.order,
         })),

@@ -36,6 +36,8 @@ interface VerificationData {
   blockchain: BlockchainInfo;
   chainIntegrity: boolean;
   fileHash: string;
+  ipfsCid: string | null;
+  ipfsUrl: string | null;
   documentCreatedAt: string;
 }
 
@@ -262,6 +264,49 @@ export default function VerifyPage() {
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     Block: #{data.blockchain.btcBlockHeight}
                   </p>
+                )}
+              </div>
+
+              {/* IPFS Decentralized Proof */}
+              <div className="px-6 py-4">
+                <span className="text-sm text-muted-foreground">
+                  Prove IPFS (Decentralized)
+                </span>
+                <div className="mt-2 flex items-center gap-2">
+                  {data.ipfsCid ? (
+                    <>
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40">
+                        <Check className="h-3.5 w-3.5 text-blue-600" strokeWidth={3} />
+                      </div>
+                      <span className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                        E publikuar ne IPFS
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                        <Clock className="h-3.5 w-3.5 text-slate-400" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        IPFS nuk eshte i disponueshem
+                      </span>
+                    </>
+                  )}
+                </div>
+                {data.ipfsCid && (
+                  <div className="mt-2">
+                    <a
+                      href={data.ipfsUrl || `https://ipfs.io/ipfs/${data.ipfsCid}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-all text-xs text-blue-600 hover:text-blue-500 hover:underline dark:text-blue-400"
+                    >
+                      ipfs.io/ipfs/{data.ipfsCid}
+                    </a>
+                    <p className="mt-1 text-[10px] text-muted-foreground">
+                      Prova kriptografike e nenshkrimit, e shperndare ne rrjetin global IPFS. Klikoni per ta verifikuar.
+                    </p>
+                  </div>
                 )}
               </div>
 
