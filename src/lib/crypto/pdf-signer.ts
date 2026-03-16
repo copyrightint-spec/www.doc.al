@@ -31,8 +31,13 @@ export interface PdfSignatureResult {
 }
 
 /**
- * Sign a PDF document with a digital signature.
- * Adds visual signature annotation and cryptographic signature.
+ * Sign a PDF document with a cryptographic digital signature.
+ *
+ * Adds a certification stamp box at the bottom of the last page
+ * and signs the document hash with the user's X.509 certificate.
+ *
+ * The visual signature (drawn/text/image) is already applied by the frontend.
+ * This function adds the official doc.al certification block + crypto signature.
  */
 export async function signPdf(
   pdfBuffer: Buffer,
@@ -42,76 +47,60 @@ export async function signPdf(
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  // Determine signature page and position
-  const pageIndex = options.position?.page ?? pdfDoc.getPageCount() - 1;
-  const page = pdfDoc.getPage(pageIndex);
+  // Add certification stamp on the last page
+  const lastPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1);
+  const pageW = lastPage.getWidth();
 
-  const sigX = options.position?.x ?? 50;
-  const sigY = options.position?.y ?? 50;
-  const sigWidth = options.position?.width ?? 250;
-  const sigHeight = options.position?.height ?? 80;
+  const stampX = 30;
+  const stampY = 15;
+  const stampW = pageW - 60;
+  const stampH = 40;
 
-  // Draw signature box
-  page.drawRectangle({
-    x: sigX,
-    y: sigY,
-    width: sigWidth,
-    height: sigHeight,
-    borderColor: rgb(0.1, 0.1, 0.2),
-    borderWidth: 1,
-    color: rgb(0.97, 0.97, 1),
-    opacity: 0.9,
+  // Draw stamp background
+  lastPage.drawRectangle({
+    x: stampX,
+    y: stampY,
+    width: stampW,
+    height: stampH,
+    borderColor: rgb(0.08, 0.08, 0.18),
+    borderWidth: 0.5,
+    color: rgb(0.96, 0.96, 1),
+    opacity: 0.95,
   });
 
-  // Draw signature image if provided
-  if (options.signatureImageBase64) {
-    try {
-      const imgBytes = Buffer.from(options.signatureImageBase64, "base64");
-      const image = await pdfDoc.embedPng(imgBytes).catch(() =>
-        pdfDoc.embedJpg(imgBytes)
-      );
-      const imgDims = image.scale(1);
-      const scale = Math.min(
-        (sigWidth - 20) / imgDims.width,
-        (sigHeight - 30) / imgDims.height
-      );
-      page.drawImage(image, {
-        x: sigX + 10,
-        y: sigY + 25,
-        width: imgDims.width * scale,
-        height: imgDims.height * scale,
-      });
-    } catch {
-      // Fall back to text signature
-    }
-  }
+  // Certification text
+  const signDate = new Date().toLocaleDateString("sq-AL", {
+    timeZone: "Europe/Paris",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-  // Draw signer name
-  page.drawText(options.signerName, {
-    x: sigX + 10,
-    y: sigY + sigHeight - 18,
-    size: 10,
+  lastPage.drawText("doc.al", {
+    x: stampX + 8,
+    y: stampY + stampH - 14,
+    size: 9,
     font: fontBold,
-    color: rgb(0.1, 0.1, 0.2),
+    color: rgb(0.08, 0.08, 0.18),
   });
 
-  // Draw date
-  const signDate = new Date().toISOString().split("T")[0];
-  page.drawText(`Nenshkruar: ${signDate}`, {
-    x: sigX + 10,
-    y: sigY + 5,
+  lastPage.drawText(`Nenshkrim Dixhital i Certifikuar | ${options.signerName} | ${signDate}`, {
+    x: stampX + 50,
+    y: stampY + stampH - 14,
     size: 7,
     font,
-    color: rgb(0.4, 0.4, 0.4),
+    color: rgb(0.3, 0.3, 0.3),
   });
 
-  // Draw doc.al watermark
-  page.drawText("doc.al | eIDAS Compliant", {
-    x: sigX + sigWidth - 130,
-    y: sigY + 5,
+  const certText = options.reason || "Nenshkrim dixhital permes doc.al";
+  lastPage.drawText(`${certText} | eIDAS 910/2014 | Verifikoni: doc.al/verify`, {
+    x: stampX + 8,
+    y: stampY + 6,
     size: 6,
     font,
-    color: rgb(0.6, 0.6, 0.6),
+    color: rgb(0.5, 0.5, 0.5),
   });
 
   // Save modified PDF
@@ -121,7 +110,7 @@ export async function signPdf(
   // Compute document hash
   const documentHash = computeSHA256(modifiedPdfBuffer);
 
-  // Sign the document hash with the certificate
+  // Sign the document hash with the certificate (cryptographic signature)
   const { signature, certificateInfo } = await signWithCertificate(
     options.certificateId,
     Buffer.from(documentHash, "hex")

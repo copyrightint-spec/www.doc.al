@@ -1,3 +1,5 @@
+const TIMEZONE = "Europe/Paris";
+
 export function relativeTime(dateStr: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
@@ -15,6 +17,7 @@ export function relativeTime(dateStr: string): string {
 
 export function formatDate(dateStr: string, options?: Intl.DateTimeFormatOptions): string {
   return new Date(dateStr).toLocaleDateString("sq-AL", {
+    timeZone: TIMEZONE,
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -24,10 +27,23 @@ export function formatDate(dateStr: string, options?: Intl.DateTimeFormatOptions
 
 export function formatDateTime(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("sq-AL", {
+    timeZone: TIMEZONE,
     day: "numeric",
     month: "short",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+  });
+}
+
+export function formatDateTimeFull(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("sq-AL", {
+    timeZone: TIMEZONE,
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
 }

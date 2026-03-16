@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { sendVerificationCode } from "@/lib/email";
+import { sendVerificationCode, sendSigningCompleted } from "@/lib/email";
 import { createTimestamp } from "@/lib/timestamp/engine";
 import { rateLimit } from "@/lib/rate-limit";
+import { buildProofMetadata, publishToIPFS } from "@/lib/ipfs";
 import crypto from "crypto";
 
 export async function POST(
@@ -115,10 +116,35 @@ export async function POST(
         .update(`${signature.document.fileHash}:${signature.signerEmail}:${new Date().toISOString()}`)
         .digest("hex");
 
-      await createTimestamp(signatureHash, "SIGNATURE", {
+      const timestampEntry = await createTimestamp(signatureHash, "SIGNATURE", {
         documentId: signature.documentId,
         signatureId: signature.id,
       });
+
+      // Publish proof to IPFS
+      try {
+        const proofMetadata = buildProofMetadata({
+          documentHash: signature.document.fileHash,
+          signedAt: new Date().toISOString(),
+          sequenceNumber: timestampEntry.sequenceNumber,
+          signerName: signature.signerName,
+          signerEmail: signature.signerEmail,
+          fingerprint: timestampEntry.fingerprint,
+          sequentialFingerprint: timestampEntry.sequentialFingerprint,
+          previousEntryId: timestampEntry.previousEntryId,
+          otsSubmitted: true,
+        });
+
+        const ipfsCid = await publishToIPFS(proofMetadata);
+        if (ipfsCid) {
+          await prisma.timestampEntry.update({
+            where: { id: timestampEntry.id },
+            data: { ipfsCid },
+          });
+        }
+      } catch (ipfsErr) {
+        console.error("[sign] IPFS publish failed (non-critical):", ipfsErr);
+      }
 
       // Check if all signatures are complete
       const pendingSignatures = await prisma.signature.count({
@@ -148,6 +174,28 @@ export async function POST(
               effectiveAt: new Date(),
             },
           });
+        }
+
+        // Send completion email to all signers + document owner
+        try {
+          const allSignatures = await prisma.signature.findMany({
+            where: { documentId: signature.documentId, status: "SIGNED" },
+            select: { signerEmail: true, signerName: true },
+          });
+          const baseUrl = process.env.NEXTAUTH_URL || "https://doc.al";
+          const verifyUrl = `${baseUrl}/verify/${signature.document.fileHash}`;
+
+          for (const sig of allSignatures) {
+            await sendSigningCompleted(
+              sig.signerEmail,
+              sig.signerName,
+              signature.document.title,
+              verifyUrl,
+              { documentId: signature.documentId }
+            );
+          }
+        } catch (emailErr) {
+          console.error("[sign] Completion email failed:", emailErr);
         }
       } else {
         await prisma.document.update({
