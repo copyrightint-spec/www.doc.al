@@ -9,6 +9,7 @@ export interface TimestampResult {
   sequentialFingerprint: string;
   type: TimestampType;
   serverTimestamp: Date;
+  previousEntryId: string | null;
 }
 
 /**
@@ -93,6 +94,7 @@ export async function createTimestamp(
     sequentialFingerprint: entry.sequentialFingerprint,
     type: entry.type,
     serverTimestamp: entry.serverTimestamp,
+    previousEntryId: lastEntry?.id ?? null,
   };
 }
 

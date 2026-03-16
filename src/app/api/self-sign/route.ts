@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
         signerEmail: userEmail,
         fingerprint: timestampEntry.fingerprint,
         sequentialFingerprint: timestampEntry.sequentialFingerprint,
-        previousEntryId: null,
+        previousEntryId: timestampEntry.previousEntryId,
         otsSubmitted: true,
       });
 
