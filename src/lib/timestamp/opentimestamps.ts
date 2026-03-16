@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/db";
 
-// OpenTimestamps calendar servers
+// OpenTimestamps calendar servers (direct calendars, same as opentimestamps.org website)
 const OTS_CALENDARS = [
+  "https://alice.btc.calendar.opentimestamps.org",
+  "https://bob.btc.calendar.opentimestamps.org",
+  "https://finney.calendar.eternitywall.com",
   "https://a.pool.opentimestamps.org",
-  "https://b.pool.opentimestamps.org",
-  "https://a.pool.eternitywall.com",
 ];
 
 // OTS binary format magic bytes and attestation markers
@@ -19,34 +20,45 @@ export async function submitToOpenTimestamps(
   hashHex: string
 ): Promise<Buffer | null> {
   const hashBytes = Buffer.from(hashHex, "hex");
+  let bestProof: Buffer | null = null;
 
-  for (const calendar of OTS_CALENDARS) {
-    try {
+  // Submit to ALL calendars (like opentimestamps.org website does)
+  const results = await Promise.allSettled(
+    OTS_CALENDARS.map(async (calendar) => {
       const response = await fetch(`${calendar}/digest`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
           Accept: "application/vnd.opentimestamps.v1",
         },
-        body: new Uint8Array(hashBytes),
-        signal: AbortSignal.timeout(10000),
+        body: hashBytes,
+        signal: AbortSignal.timeout(15000),
       });
 
       if (response.ok) {
         const proofBytes = Buffer.from(await response.arrayBuffer());
-        console.log(`[OTS] Successfully submitted hash ${hashHex.slice(0, 16)}... to ${calendar}, proof size: ${proofBytes.length} bytes`);
-        return proofBytes;
-      } else {
-        console.log(`[OTS] Calendar ${calendar} returned ${response.status} for hash ${hashHex.slice(0, 16)}...`);
+        console.log(`[OTS] Submitted to ${calendar}, proof: ${proofBytes.length} bytes`);
+        return { calendar, proof: proofBytes };
       }
-    } catch (err) {
-      console.log(`[OTS] Failed to submit to ${calendar}:`, err instanceof Error ? err.message : "unknown error");
-      continue;
+      console.log(`[OTS] ${calendar} returned ${response.status}`);
+      return null;
+    })
+  );
+
+  // Use the largest proof (usually contains more calendar attestations)
+  for (const result of results) {
+    if (result.status === "fulfilled" && result.value?.proof) {
+      if (!bestProof || result.value.proof.length > bestProof.length) {
+        bestProof = result.value.proof;
+      }
     }
   }
 
-  console.log(`[OTS] All calendars failed for hash ${hashHex.slice(0, 16)}...`);
-  return null;
+  if (!bestProof) {
+    console.log(`[OTS] All calendars failed for hash ${hashHex.slice(0, 16)}...`);
+  }
+
+  return bestProof;
 }
 
 /**
