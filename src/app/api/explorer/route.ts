@@ -116,6 +116,7 @@ export async function GET(req: NextRequest) {
         btcBlockHeight: entry.btcBlockHeight,
         btcBlockHash: entry.btcBlockHash,
         otsStatus: entry.otsStatus,
+        ipfsCid: entry.ipfsCid || null,
         document: entry.document ? {
           title: maskTitle(entry.document.title),
           fileName: maskFileName(entry.document.fileName),
@@ -171,6 +172,7 @@ export async function GET(req: NextRequest) {
           btcBlockHeight: true,
           btcBlockHash: true,
           otsStatus: true,
+          ipfsCid: true,
         },
       }),
       prisma.timestampEntry.count({ where }),

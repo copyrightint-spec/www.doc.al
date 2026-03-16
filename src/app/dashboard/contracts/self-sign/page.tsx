@@ -168,6 +168,8 @@ export default function SelfSignPage() {
     sequenceNumber?: number;
     fingerprint?: string;
     signedAt?: string;
+    ipfsCid?: string;
+    ipfsUrl?: string;
   } | null>(null);
 
   // Step statuses for done phase
@@ -527,6 +529,7 @@ export default function SelfSignPage() {
       { label: "Ruajtja ne server (S3)", status: "pending" },
       { label: "Regjistrimi i nenshkrimit", status: "pending" },
       { label: "Timestamp blockchain (OTS)", status: "pending" },
+      { label: "Prove IPFS (decentralized)", status: "pending" },
     ];
     setStepStatuses([...statuses]);
 
@@ -610,6 +613,7 @@ export default function SelfSignPage() {
       updateStatus(6, { status: "success" });
       updateStatus(7, { status: "success" });
       updateStatus(8, { status: "success" });
+      updateStatus(9, { status: data.data?.ipfsCid ? "success" : "pending" });
 
       // Save result for display
       setServerResult(data.data);
@@ -1058,6 +1062,14 @@ export default function SelfSignPage() {
                   <span className="text-muted-foreground">Nenshkruar me:</span>
                   <span className="text-foreground">{serverResult.signedAt ? new Date(serverResult.signedAt).toLocaleString("sq-AL") : "-"}</span>
                 </div>
+                {serverResult.ipfsCid && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">IPFS Proof:</span>
+                    <a href={serverResult.ipfsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[220px]">
+                      {serverResult.ipfsCid}
+                    </a>
+                  </div>
+                )}
                 {serverResult.fingerprint && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Verifiko:</span>

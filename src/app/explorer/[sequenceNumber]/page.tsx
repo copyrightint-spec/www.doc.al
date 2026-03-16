@@ -51,6 +51,7 @@ interface EntryDetail {
   btcBlockHeight: number | null;
   btcBlockHash: string | null;
   otsStatus: string;
+  ipfsCid: string | null;
   document: {
     title: string;
     fileName: string;
@@ -677,6 +678,38 @@ export default function EntryDetailPage({
             </div>
           )}
         </div>
+
+        {/* ========== IPFS PROOF ========== */}
+        {entry.ipfsCid && (
+          <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50 p-5 dark:border-blue-800 dark:from-blue-950/40 dark:to-cyan-950/30">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50">
+                <span className="text-sm">🌐</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-blue-800 dark:text-blue-200">IPFS Decentralized Proof</h3>
+                <p className="text-xs text-blue-600 dark:text-blue-400">Prove kriptografike e shperndare globalisht</p>
+              </div>
+            </div>
+            <div className="rounded-xl bg-white/60 px-4 py-2 dark:bg-slate-800/50">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-blue-700 dark:text-blue-400">CID</span>
+                <CopyButton text={entry.ipfsCid} />
+              </div>
+              <a
+                href={`https://ipfs.io/ipfs/${entry.ipfsCid}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 block break-all font-mono text-xs text-blue-800 hover:text-blue-600 hover:underline dark:text-blue-200"
+              >
+                {entry.ipfsCid}
+              </a>
+            </div>
+            <p className="mt-2 text-[10px] text-blue-500 dark:text-blue-500">
+              Prova kriptografike e nenshkrimit eshte e publikuar ne rrjetin global IPFS. Klikoni CID per ta verifikuar.
+            </p>
+          </div>
+        )}
 
         {/* ========== DOCUMENT ========== */}
         {entry.document && (

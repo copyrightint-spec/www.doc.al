@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { computeSHA256, createTimestamp } from "@/lib/timestamp/engine";
 import { rateLimit } from "@/lib/rate-limit";
 import { uploadFile } from "@/lib/s3";
+import { buildProofMetadata, publishToIPFS, getIPFSUrl } from "@/lib/ipfs";
 
 /**
  * POST /api/self-sign
@@ -146,7 +147,33 @@ export async function POST(req: NextRequest) {
       signatureId: signature.id,
     });
 
-    // 6. Create Audit Logs
+    // 6. Publish proof to IPFS (fire and forget - non-blocking)
+    let ipfsCid: string | null = null;
+    try {
+      const proofMetadata = buildProofMetadata({
+        documentHash: signedHash,
+        signedAt: now.toISOString(),
+        sequenceNumber: timestampEntry.sequenceNumber,
+        signerName: userName,
+        signerEmail: userEmail,
+        fingerprint: timestampEntry.fingerprint,
+        sequentialFingerprint: timestampEntry.sequentialFingerprint,
+        previousEntryId: null,
+        otsSubmitted: true,
+      });
+
+      ipfsCid = await publishToIPFS(proofMetadata);
+
+      if (ipfsCid) {
+        await prisma.timestampEntry.update({
+          where: { id: timestampEntry.id },
+          data: { ipfsCid },
+        });
+      }
+    } catch (ipfsError) {
+      console.error("[self-sign] IPFS publish failed (non-critical):", ipfsError);
+    }
+
     const auditBase = { userId, ipAddress, userAgent };
     await prisma.auditLog.createMany({
       data: [
@@ -185,6 +212,8 @@ export async function POST(req: NextRequest) {
         sequenceNumber: timestampEntry.sequenceNumber,
         fingerprint: timestampEntry.fingerprint,
         signedAt: now.toISOString(),
+        ipfsCid: ipfsCid || undefined,
+        ipfsUrl: ipfsCid ? getIPFSUrl(ipfsCid) : undefined,
       },
     });
   } catch (error) {

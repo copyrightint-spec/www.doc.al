@@ -338,6 +338,7 @@ model TimestampEntry {
   btcBlockHash          String?
   otsProof              Bytes?
   otsStatus             OtsStatus     @default(PENDING)
+  ipfsCid               String?
   createdAt             DateTime      @default(now())
 
   documentId      String?
