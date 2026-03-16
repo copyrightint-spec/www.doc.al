@@ -33,8 +33,8 @@ export async function POST(
       return NextResponse.json({ error: "Kontrata nuk u gjet ose nuk eshte ne status DRAFT" }, { status: 404 });
     }
 
-    if (contract.parties.length < 2) {
-      return NextResponse.json({ error: "Nevojiten te pakten 2 pale" }, { status: 400 });
+    if (contract.parties.length < 1) {
+      return NextResponse.json({ error: "Nevojitet te pakten 1 pale" }, { status: 400 });
     }
 
     // Generate document hash from contract content

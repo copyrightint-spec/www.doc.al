@@ -119,7 +119,7 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
         <div>
           <h3 className="text-lg font-semibold">Palet Kontraktuese</h3>
           <p className="text-sm text-muted-foreground">
-            Shtoni te pakten 2 pale per kontraten
+            Shtoni te pakten 1 pale per kontraten (mund te nenshkruani edhe vetem)
           </p>
         </div>
         <Button onClick={addParty} variant="secondary" size="sm">
@@ -170,14 +170,12 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
                     Ploteso nga llogaria
                   </Button>
                 )}
-                {parties.length > 1 && (
-                  <button
-                    onClick={() => removeParty(index)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </button>
-                )}
+                <button
+                  onClick={() => removeParty(index)}
+                  className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </button>
               </div>
             </div>
 

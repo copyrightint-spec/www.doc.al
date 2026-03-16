@@ -13,6 +13,11 @@ import {
   Move,
   Settings,
   AlertTriangle,
+  ShieldCheck,
+  CheckCircle,
+  XCircle,
+  Loader2,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +25,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
+import { Input } from "@/components/ui/input";
 
 // Dynamic import of react-pdf to avoid SSR issues (DOMMatrix, canvas)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,6 +53,15 @@ interface SignatureOption {
   dataUrl: string | null;
   type: "text" | "draw" | "image" | "new-draw";
 }
+
+interface StepStatus {
+  label: string;
+  status: "pending" | "success" | "error";
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+type Phase = "upload" | "sign" | "confirm" | "verify" | "done";
 
 const FONTS = [
   { value: "cursive", css: "'Brush Script MT', 'Segoe Script', cursive" },
@@ -97,8 +112,8 @@ export default function SelfSignPage() {
     });
   }, []);
 
-  // Phase: upload -> sign -> done
-  const [phase, setPhase] = useState<"upload" | "sign" | "done">("upload");
+  // Phase: upload -> sign -> confirm -> verify -> done
+  const [phase, setPhase] = useState<Phase>("upload");
 
   // PDF state
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -126,11 +141,34 @@ export default function SelfSignPage() {
   const isDrawingRef = useRef(false);
   const lastDrawPosRef = useRef({ x: 0, y: 0 });
 
+  // Confirm step
+  const [eidasConsent, setEidasConsent] = useState(false);
+
+  // Verify step
+  const [verifyStep, setVerifyStep] = useState<"check" | "otp" | "totp" | "error">("check");
+  const [otpCode, setOtpCode] = useState("");
+  const [totpCode, setTotpCode] = useState("");
+  const [verifyError, setVerifyError] = useState("");
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [redirectTo, setRedirectTo] = useState<string | null>(null);
+
   // Final state
   const [processing, setProcessing] = useState(false);
   const [signedPdfUrl, setSignedPdfUrl] = useState<string | null>(null);
   const [signedFileName, setSignedFileName] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  // Step statuses for done phase
+  const [stepStatuses, setStepStatuses] = useState<StepStatus[]>([]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
 
   // -- Load user's configured signatures --
   useEffect(() => {
@@ -353,11 +391,129 @@ export default function SelfSignPage() {
     };
   }, [isDraggingSig, sigWidthPct]);
 
+  // -- Verification flow --
+  async function startVerification() {
+    setPhase("verify");
+    setVerifyStep("check");
+    setVerifyError("");
+    setOtpCode("");
+    setTotpCode("");
+
+    try {
+      const res = await fetch("/api/signing/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "check" }),
+      });
+      const data = await res.json();
+
+      if (data.canSign) {
+        await sendOtp();
+      } else {
+        setVerifyError(data.reason || "Nuk mund te nenshkruani");
+        setRedirectTo(data.redirectTo || null);
+        setVerifyStep("error");
+      }
+    } catch {
+      setVerifyError("Gabim ne lidhjen me serverin (ERR-V001)");
+      setVerifyStep("error");
+    }
+  }
+
+  async function sendOtp() {
+    setVerifyLoading(true);
+    setVerifyError("");
+    try {
+      const res = await fetch("/api/signing/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "send-otp" }),
+      });
+      const data = await res.json();
+      setVerifyLoading(false);
+
+      if (res.ok) {
+        setVerifyStep("otp");
+        setCountdown(300);
+      } else {
+        setVerifyError(data.error || "Gabim gjate dergimit te kodit (ERR-V002)");
+      }
+    } catch {
+      setVerifyLoading(false);
+      setVerifyError("Gabim ne lidhjen me serverin (ERR-V003)");
+    }
+  }
+
+  async function handleOtpVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setVerifyLoading(true);
+    setVerifyError("");
+
+    try {
+      const res = await fetch("/api/signing/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "verify-otp", code: otpCode }),
+      });
+      const data = await res.json();
+      setVerifyLoading(false);
+
+      if (res.ok) {
+        setVerifyStep("totp");
+      } else {
+        setVerifyError(data.error || "Kodi eshte i gabuar ose ka skaduar (ERR-V004)");
+      }
+    } catch {
+      setVerifyLoading(false);
+      setVerifyError("Gabim ne lidhjen me serverin (ERR-V005)");
+    }
+  }
+
+  async function handleTotpVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setVerifyLoading(true);
+    setVerifyError("");
+
+    try {
+      const res = await fetch("/api/signing/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "verify-totp", token: totpCode }),
+      });
+      const data = await res.json();
+      setVerifyLoading(false);
+
+      if (res.ok && data.verified) {
+        // Verification complete - proceed to sign
+        await processAndSign();
+      } else {
+        setVerifyError(data.error || "Kodi 2FA eshte i gabuar (ERR-V006)");
+      }
+    } catch {
+      setVerifyLoading(false);
+      setVerifyError("Gabim ne lidhjen me serverin (ERR-V007)");
+    }
+  }
+
+  function formatCountdown(s: number) {
+    return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+  }
+
   // -- Generate signed PDF --
   const processAndSign = async () => {
     if (!pdfBytes || !signatureDataUrl || !placement) return;
     setProcessing(true);
     setError(null);
+
+    const statuses: StepStatus[] = [
+      { label: "Ngarkimi i dokumentit", status: "success" },
+      { label: "Vendosja e firmes", status: "success" },
+      { label: "Pranimi i kushteve eIDAS", status: "success" },
+      { label: "Verifikimi me email (OTP)", status: "success" },
+      { label: "Verifikimi 2FA (TOTP)", status: "success" },
+      { label: "Gjenerimi i PDF te nenshkruar", status: "pending" },
+    ];
+    setStepStatuses([...statuses]);
 
     try {
       const pdfDoc = await PDFDocument.load(pdfBytes);
@@ -390,9 +546,14 @@ export default function SelfSignPage() {
       const originalName = pdfFile?.name.replace(/\.pdf$/i, "") || "dokument";
       setSignedFileName(`${originalName}_nenshkruar.pdf`);
       setSignedPdfUrl(url);
+
+      statuses[5] = { label: "Gjenerimi i PDF te nenshkruar", status: "success" };
+      setStepStatuses([...statuses]);
       setPhase("done");
     } catch {
-      setError("Ndodhi nje gabim gjate procesimit te PDF.");
+      statuses[5] = { label: "Gjenerimi i PDF te nenshkruar", status: "error", errorCode: "ERR-S001", errorMessage: "Gabim gjate procesimit te PDF" };
+      setStepStatuses([...statuses]);
+      setError("Ndodhi nje gabim gjate procesimit te PDF (ERR-S001).");
     } finally {
       setProcessing(false);
     }
@@ -410,6 +571,12 @@ export default function SelfSignPage() {
     setSignedPdfUrl(null);
     setSignedFileName("");
     setError(null);
+    setEidasConsent(false);
+    setVerifyStep("check");
+    setOtpCode("");
+    setTotpCode("");
+    setVerifyError("");
+    setStepStatuses([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -428,9 +595,24 @@ export default function SelfSignPage() {
 
         <PageHeader
           title="Nenshkruaj Vete nje PDF"
-          subtitle="Ngarko dokumentin, vendos firmen me mouse ku deshironi, dhe shkarkoni."
+          subtitle="Ngarko dokumentin, vendos firmen, verifiko identitetin, dhe shkarkoni."
           className="mb-8"
         />
+
+        {/* Step indicator */}
+        <div className="mb-8 flex items-center justify-center gap-1">
+          {["Ngarko", "Vendos Firmen", "Konfirmo", "Verifiko", "Perfundo"].map((label, i) => (
+            <div key={label} className="flex items-center gap-1">
+              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
+                i === 0 ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900" : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+              }`}>
+                <span>{i + 1}</span>
+                <span className="hidden sm:inline">{label}</span>
+              </div>
+              {i < 4 && <div className="h-px w-4 bg-slate-200 dark:bg-slate-700" />}
+            </div>
+          ))}
+        </div>
 
         {error && (
           <Alert
@@ -465,48 +647,98 @@ export default function SelfSignPage() {
     );
   }
 
-  // Phase: DONE
-  if (phase === "done" && signedPdfUrl) {
+  // Phase: CONFIRM
+  if (phase === "confirm") {
     return (
-      <div className="mx-auto max-w-3xl p-6 lg:p-8">
-        <Card>
-          <CardContent className="p-8">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                <Check className="h-8 w-8 text-green-600" strokeWidth={2} />
+      <div className="mx-auto max-w-2xl p-6 lg:p-8">
+        <Button variant="ghost" size="sm" onClick={() => setPhase("sign")} className="mb-6">
+          <ChevronLeft className="h-4 w-4" />
+          Kthehu te vendosja e firmes
+        </Button>
+
+        {/* Step indicator */}
+        <div className="mb-8 flex items-center justify-center gap-1">
+          {["Ngarko", "Vendos Firmen", "Konfirmo", "Verifiko", "Perfundo"].map((label, i) => (
+            <div key={label} className="flex items-center gap-1">
+              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
+                i < 2 ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                : i === 2 ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+              }`}>
+                {i < 2 ? <Check className="h-3 w-3" /> : <span>{i + 1}</span>}
+                <span className="hidden sm:inline">{label}</span>
               </div>
-              <h2 className="text-xl font-bold text-foreground">Dokumenti u Nenshkrua me Sukses!</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Firma juaj u vendos ne faqen {(placement?.pageIndex || 0) + 1} te dokumentit.
-              </p>
+              {i < 4 && <div className={`h-px w-4 ${i < 2 ? "bg-green-300" : "bg-slate-200 dark:bg-slate-700"}`} />}
+            </div>
+          ))}
+        </div>
+
+        <Card>
+          <CardContent className="p-6 space-y-6">
+            <div className="text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+                <Eye className="h-6 w-6 text-foreground" strokeWidth={1.5} />
+              </div>
+              <h2 className="text-lg font-bold text-foreground">Konfirmoni Nenshkrimin</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Rishikoni detajet perpara se te vazhdoni</p>
             </div>
 
-            <div className="mx-auto mt-6 max-w-sm">
-              <Card className="flex items-center gap-3 p-4">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30">
-                  <FileText className="h-5 w-5 text-green-600" strokeWidth={1.5} />
+            {/* Document info */}
+            <div className="rounded-xl border border-border p-4 space-y-2">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary" strokeWidth={1.5} />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{pdfFile?.name}</p>
+                  <p className="text-xs text-muted-foreground">{pdfFile && formatBytes(pdfFile.size)} &middot; {numPages} faqe</p>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground">{signedFileName}</p>
-                  <p className="text-xs text-muted-foreground">PDF i nenshkruar</p>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Badge variant="info">Faqja {(placement?.pageIndex || 0) + 1}</Badge>
+                <span>Firma e vendosur</span>
+              </div>
+              {signatureDataUrl && (
+                <div className="mt-2 rounded-lg border border-border bg-white dark:bg-slate-900 p-2 inline-block">
+                  <img src={signatureDataUrl} alt="Firma" className="h-10 object-contain" />
                 </div>
-              </Card>
+              )}
             </div>
 
-            <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Button asChild>
-                <a href={signedPdfUrl} download={signedFileName}>
-                  <Download className="h-4 w-4" />
-                  Shkarko PDF
-                </a>
+            {/* eIDAS consent */}
+            <div className={`rounded-xl border-2 p-4 transition-colors ${
+              eidasConsent ? "border-green-500 bg-green-50 dark:bg-green-950/20" : "border-border"
+            }`}>
+              <label className="flex gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={eidasConsent}
+                  onChange={(e) => setEidasConsent(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500 flex-shrink-0"
+                />
+                <span className="text-xs text-muted-foreground leading-relaxed">
+                  Pranoj kushtet e nenshkrimit elektronik sipas Rregullores eIDAS (BE Nr. 910/2014)
+                  dhe Ligjit Nr. 9880 per Nenshkrimin Elektronik. Duke nenshkruar dokumentin
+                  &quot;{pdfFile?.name}&quot;, deklaroj se kam lexuar e kuptuar permbajtjen dhe bie
+                  dakord qe nenshkrimi im elektronik ka te njejten vlere juridike si nenshkrimi doreskrimi.
+                </span>
+              </label>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => setPhase("sign")}
+                className="flex-1"
+              >
+                Kthehu
               </Button>
-              <Button variant="secondary" onClick={resetAll}>
-                Nenshkruaj tjeter
-              </Button>
-              <Button variant="secondary" asChild>
-                <Link href="/dashboard/contracts">
-                  Kthehu te eSign
-                </Link>
+              <Button
+                onClick={startVerification}
+                disabled={!eidasConsent}
+                className="flex-1"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Vazhdo me Verifikimin
               </Button>
             </div>
           </CardContent>
@@ -515,21 +747,281 @@ export default function SelfSignPage() {
     );
   }
 
+  // Phase: VERIFY
+  if (phase === "verify") {
+    return (
+      <div className="mx-auto max-w-md p-6 lg:p-8">
+        {/* Step indicator */}
+        <div className="mb-8 flex items-center justify-center gap-1">
+          {["Ngarko", "Vendos Firmen", "Konfirmo", "Verifiko", "Perfundo"].map((label, i) => (
+            <div key={label} className="flex items-center gap-1">
+              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
+                i < 3 ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                : i === 3 ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+              }`}>
+                {i < 3 ? <Check className="h-3 w-3" /> : <span>{i + 1}</span>}
+                <span className="hidden sm:inline">{label}</span>
+              </div>
+              {i < 4 && <div className={`h-px w-4 ${i < 3 ? "bg-green-300" : "bg-slate-200 dark:bg-slate-700"}`} />}
+            </div>
+          ))}
+        </div>
+
+        <Card>
+          <CardContent className="p-8">
+            <div className="mb-6 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+                <ShieldCheck className="h-6 w-6 text-foreground" strokeWidth={1.5} />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">
+                Verifikimi i Identitetit
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {verifyStep === "otp" && "Hapi 1/2 — Kodi nga emaili"}
+                {verifyStep === "totp" && "Hapi 2/2 — Google Authenticator"}
+                {verifyStep === "check" && "Duke kontrolluar..."}
+                {verifyStep === "error" && "Nuk mund te vazhdoni"}
+              </p>
+            </div>
+
+            {verifyError && (
+              <Alert
+                variant="destructive"
+                title={verifyError}
+                className="mb-4"
+              />
+            )}
+
+            {verifyStep === "error" && (
+              <div className="space-y-4">
+                {redirectTo && (
+                  <Button className="w-full" asChild>
+                    <a href={redirectTo}>Shko ne Settings</a>
+                  </Button>
+                )}
+                <Button variant="secondary" className="w-full" onClick={() => setPhase("confirm")}>
+                  Kthehu
+                </Button>
+              </div>
+            )}
+
+            {verifyStep === "check" && (
+              <div className="flex justify-center py-8">
+                <Spinner />
+              </div>
+            )}
+
+            {verifyStep === "otp" && (
+              <form onSubmit={handleOtpVerify} className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Nje kod 6-shifror u dergua ne emailin tuaj.
+                  {countdown > 0 && (
+                    <span className="ml-2 text-muted-foreground/70">
+                      Skadon per {formatCountdown(countdown)}
+                    </span>
+                  )}
+                </p>
+                <Input
+                  type="text"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="000000"
+                  maxLength={6}
+                  autoFocus
+                  className="text-center text-2xl font-mono tracking-[0.5em]"
+                />
+                <Button
+                  type="submit"
+                  disabled={verifyLoading || otpCode.length !== 6}
+                  className="w-full"
+                >
+                  {verifyLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {verifyLoading ? "Duke verifikuar..." : "Verifiko Kodin"}
+                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    type="button"
+                    onClick={sendOtp}
+                    disabled={verifyLoading || countdown > 240}
+                    className="flex-1 text-xs"
+                  >
+                    Dergo perseri
+                  </Button>
+                  <Button variant="ghost" type="button" onClick={() => setPhase("confirm")} className="flex-1 text-xs">
+                    Anulo
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {verifyStep === "totp" && (
+              <form onSubmit={handleTotpVerify} className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Fut kodin 6-shifror nga Google Authenticator.
+                </p>
+                <Input
+                  type="text"
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="000000"
+                  maxLength={6}
+                  autoFocus
+                  className="text-center text-2xl font-mono tracking-[0.5em]"
+                />
+                <Button
+                  type="submit"
+                  disabled={verifyLoading || totpCode.length !== 6}
+                  className="w-full"
+                >
+                  {verifyLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ShieldCheck className="h-4 w-4" />
+                  )}
+                  {verifyLoading ? "Duke nenshkruar..." : "Nenshkruaj Dokumentin"}
+                </Button>
+                <Button variant="ghost" type="button" onClick={() => setPhase("confirm")} className="w-full text-xs">
+                  Anulo
+                </Button>
+              </form>
+            )}
+
+            {processing && (
+              <div className="flex flex-col items-center gap-3 py-8">
+                <Spinner />
+                <p className="text-sm text-muted-foreground">Duke procesuar nenshkrimin...</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Phase: DONE
+  if (phase === "done") {
+    return (
+      <div className="mx-auto max-w-2xl p-6 lg:p-8">
+        {/* Step indicator - all complete */}
+        <div className="mb-8 flex items-center justify-center gap-1">
+          {["Ngarko", "Vendos Firmen", "Konfirmo", "Verifiko", "Perfundo"].map((label, i) => (
+            <div key={label} className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1.5 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
+                <Check className="h-3 w-3" />
+                <span className="hidden sm:inline">{label}</span>
+              </div>
+              {i < 4 && <div className="h-px w-4 bg-green-300" />}
+            </div>
+          ))}
+        </div>
+
+        <Card>
+          <CardContent className="p-8">
+            {/* Success header */}
+            <div className="text-center mb-6">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                <Check className="h-8 w-8 text-green-600" strokeWidth={2} />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">Dokumenti u Nenshkrua me Sukses!</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Te gjitha hapat u kryen me sukses.
+              </p>
+            </div>
+
+            {/* Step-by-step status */}
+            <div className="mb-6 rounded-xl border border-border divide-y divide-border">
+              {stepStatuses.map((s, i) => (
+                <div key={i} className="flex items-center gap-3 px-4 py-3">
+                  {s.status === "success" ? (
+                    <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                  ) : s.status === "error" ? (
+                    <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                  ) : (
+                    <Loader2 className="h-5 w-5 text-muted-foreground animate-spin flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium ${
+                      s.status === "error" ? "text-red-600" : "text-foreground"
+                    }`}>
+                      {s.label}
+                    </p>
+                    {s.errorMessage && (
+                      <p className="text-xs text-red-500">{s.errorMessage} ({s.errorCode})</p>
+                    )}
+                  </div>
+                  {s.status === "success" && (
+                    <Badge variant="success" className="text-[10px]">OK</Badge>
+                  )}
+                  {s.status === "error" && (
+                    <Badge variant="destructive" className="text-[10px]">{s.errorCode}</Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* File download */}
+            {signedPdfUrl && (
+              <>
+                <div className="mx-auto max-w-sm mb-6">
+                  <Card className="flex items-center gap-3 p-4">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30">
+                      <FileText className="h-5 w-5 text-green-600" strokeWidth={1.5} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">{signedFileName}</p>
+                      <p className="text-xs text-muted-foreground">PDF i nenshkruar</p>
+                    </div>
+                  </Card>
+                </div>
+
+                <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                  <Button asChild>
+                    <a href={signedPdfUrl} download={signedFileName}>
+                      <Download className="h-4 w-4" />
+                      Shkarko PDF
+                    </a>
+                  </Button>
+                  <Button variant="secondary" onClick={resetAll}>
+                    Nenshkruaj tjeter
+                  </Button>
+                  <Button variant="secondary" asChild>
+                    <Link href="/dashboard/contracts">
+                      Kthehu te eSign
+                    </Link>
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {error && !signedPdfUrl && (
+              <div className="text-center space-y-4">
+                <Alert variant="destructive" title={error} />
+                <Button variant="secondary" onClick={() => setPhase("confirm")}>
+                  Provo perseri
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Phase: SIGN - Two panel layout with PDF viewer + sidebar
   return (
-    <div className="-m-6 lg:-m-8 flex h-[calc(100vh-3.5rem)] flex-col">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col" style={{ margin: "-1.5rem", marginTop: "-1.5rem" }}>
       {/* Top bar */}
-      <div className="flex items-center justify-between border-b border-border bg-card px-4 py-2.5">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/dashboard/contracts">
-              <ChevronLeft className="h-3.5 w-3.5" />
-              eSign
-            </Link>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-4 py-2.5">
+        <div className="flex items-center gap-3 min-w-0">
+          <Button variant="ghost" size="sm" onClick={resetAll}>
+            <ChevronLeft className="h-3.5 w-3.5" />
+            Kthehu
           </Button>
-          <div className="h-4 w-px bg-border" />
-          <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 text-primary" strokeWidth={1.5} />
+          <div className="h-4 w-px bg-border hidden sm:block" />
+          <div className="flex items-center gap-2 min-w-0 hidden sm:flex">
+            <FileText className="h-4 w-4 text-primary flex-shrink-0" strokeWidth={1.5} />
             <span className="text-sm font-medium text-foreground truncate max-w-[200px]">{pdfFile?.name}</span>
             <span className="text-[10px] text-muted-foreground">{pdfFile && formatBytes(pdfFile.size)}</span>
             <Badge>{numPages} faqe</Badge>
@@ -537,61 +1029,57 @@ export default function SelfSignPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {error && <span className="text-xs text-red-500">{error}</span>}
+          {error && <span className="text-xs text-red-500 hidden sm:inline">{error}</span>}
           {!signatureDataUrl && (
-            <span className="text-xs text-yellow-600 dark:text-yellow-400">Zgjidhni nje firme nga paneli i majte</span>
+            <span className="text-xs text-yellow-600 dark:text-yellow-400">Zgjidhni nje firme</span>
           )}
           {placement && (
             <Badge variant="success">Faqja {placement.pageIndex + 1}</Badge>
           )}
           <Button
             size="sm"
-            onClick={processAndSign}
-            disabled={processing || !placement || !signatureDataUrl}
+            onClick={() => setPhase("confirm")}
+            disabled={!placement || !signatureDataUrl}
           >
-            {processing ? (
-              <Spinner size="sm" className="border-white/30 border-t-white" />
-            ) : (
-              <Check className="h-3.5 w-3.5" />
-            )}
-            {processing ? "Duke procesuar..." : "Nenshkruaj"}
+            <Check className="h-3.5 w-3.5" />
+            Vazhdo
           </Button>
         </div>
       </div>
 
       {/* Main split layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar - signature picker */}
-        <div className="w-72 flex-shrink-0 overflow-y-auto border-r border-border bg-muted/50 p-4">
+        {/* Left sidebar - signature picker (collapsible on mobile) */}
+        <div className="w-64 flex-shrink-0 overflow-y-auto border-r border-border bg-muted/50 p-3 hidden md:block">
           {/* Signature options from settings */}
-          <div className="mb-4">
+          <div className="mb-3">
             <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Zgjidhni Firmen</h3>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {signatureOptions.map((opt) => (
                 <button
                   key={opt.id}
                   onClick={() => selectSignature(opt)}
-                  className={`flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left transition-all ${
+                  className={`flex w-full items-center gap-2.5 rounded-xl border-2 p-2.5 text-left transition-all ${
                     activeSignatureId === opt.id
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-slate-400 dark:hover:border-slate-600"
                   }`}
                 >
-                  <div className="flex h-10 w-16 flex-shrink-0 items-center justify-center rounded-xl border border-border bg-card">
+                  <div className="flex h-9 w-14 flex-shrink-0 items-center justify-center rounded-lg border border-border bg-card">
                     {opt.dataUrl ? (
-                      <img src={opt.dataUrl} alt="" className="h-8 w-14 object-contain" />
+                      <img src={opt.dataUrl} alt="" className="h-7 w-12 object-contain" />
                     ) : (
                       <span className="text-xs text-muted-foreground">--</span>
                     )}
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-foreground">{opt.label}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-foreground truncate">{opt.label}</p>
                     <p className="text-[10px] text-muted-foreground">
                       {opt.type === "text" ? "Nga cilesimet" : opt.type === "draw" ? "Vizatim" : opt.type === "image" ? "Imazh" : "E re"}
                     </p>
                   </div>
                   {activeSignatureId === opt.id && (
-                    <Check className="ml-auto h-4 w-4 text-primary" />
+                    <Check className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                   )}
                 </button>
               ))}
@@ -606,18 +1094,18 @@ export default function SelfSignPage() {
           </div>
 
           {/* Draw new signature */}
-          <div className="mb-4">
+          <div className="mb-3">
             <button
               onClick={() => setShowDrawPanel(!showDrawPanel)}
-              className="flex w-full items-center gap-2 rounded-xl border-2 border-dashed border-slate-300 px-3 py-2.5 text-xs font-medium text-muted-foreground hover:border-slate-400 hover:text-foreground dark:border-slate-600 dark:hover:border-slate-500 transition-colors"
+              className="flex w-full items-center gap-2 rounded-xl border-2 border-dashed border-slate-300 px-3 py-2 text-xs font-medium text-muted-foreground hover:border-slate-400 hover:text-foreground dark:border-slate-600 dark:hover:border-slate-500 transition-colors"
             >
-              <PenTool className="h-4 w-4" strokeWidth={1.5} />
+              <PenTool className="h-3.5 w-3.5" strokeWidth={1.5} />
               {showDrawPanel ? "Mbyll" : "Vizato firme te re"}
             </button>
 
             {showDrawPanel && (
-              <Card className="mt-2 p-3">
-                <div className="rounded-xl border border-slate-300 bg-white dark:border-slate-600">
+              <Card className="mt-2 p-2.5">
+                <div className="rounded-lg border border-slate-300 bg-white dark:border-slate-600">
                   <canvas
                     ref={drawCanvasRef}
                     className="w-full cursor-crosshair touch-none"
@@ -644,8 +1132,8 @@ export default function SelfSignPage() {
           </div>
 
           {/* Signature size */}
-          <div className="mb-4">
-            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Madhesia</h3>
+          <div className="mb-3">
+            <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Madhesia</h3>
             <input
               type="range"
               min={10}
@@ -662,27 +1150,48 @@ export default function SelfSignPage() {
           </div>
 
           {/* Instructions */}
-          <Card className="mb-4 bg-muted p-3">
-            <h4 className="mb-1.5 text-[11px] font-semibold text-foreground">Si te perdorni:</h4>
-            <ol className="space-y-1 text-[10px] text-muted-foreground list-decimal list-inside">
+          <Card className="mb-3 bg-muted p-2.5">
+            <h4 className="mb-1 text-[11px] font-semibold text-foreground">Si te perdorni:</h4>
+            <ol className="space-y-0.5 text-[10px] text-muted-foreground list-decimal list-inside">
               <li>Zgjidhni firmen nga lista lart</li>
               <li>Klikoni ne PDF ku deshironi firmen</li>
               <li>Terhiqni firmen per ta levizur</li>
-              <li>Klikoni &quot;Nenshkruaj&quot; per te perfunduar</li>
+              <li>Klikoni &quot;Vazhdo&quot; per konfirmim</li>
             </ol>
           </Card>
 
           {/* Link to settings */}
-          <Button variant="secondary" size="sm" asChild className="w-full">
+          <Button variant="secondary" size="sm" asChild className="w-full text-xs">
             <Link href="/settings/signature">
-              <Settings className="h-4 w-4" strokeWidth={1.5} />
-              Konfiguro firmat ne Cilesimet
+              <Settings className="h-3.5 w-3.5" strokeWidth={1.5} />
+              Konfiguro firmat
             </Link>
           </Button>
         </div>
 
+        {/* Mobile signature bar */}
+        <div className="md:hidden absolute bottom-0 left-0 right-0 z-20 border-t border-border bg-card p-3 flex items-center gap-2 overflow-x-auto">
+          {signatureOptions.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => selectSignature(opt)}
+              className={`flex-shrink-0 rounded-lg border-2 p-1.5 ${
+                activeSignatureId === opt.id ? "border-primary" : "border-border"
+              }`}
+            >
+              {opt.dataUrl && <img src={opt.dataUrl} alt="" className="h-8 w-16 object-contain" />}
+            </button>
+          ))}
+          <button
+            onClick={() => setShowDrawPanel(!showDrawPanel)}
+            className="flex-shrink-0 rounded-lg border-2 border-dashed border-slate-300 p-1.5"
+          >
+            <PenTool className="h-8 w-8 text-muted-foreground p-1" />
+          </button>
+        </div>
+
         {/* Right: PDF viewer with signature overlay */}
-        <div className="flex-1 overflow-y-auto bg-slate-200 p-6 dark:bg-slate-950" style={{ cursor: signatureDataUrl && !placement ? "crosshair" : "default" }}>
+        <div className="flex-1 overflow-y-auto bg-slate-200 p-4 md:p-6 dark:bg-slate-950" style={{ cursor: signatureDataUrl && !placement ? "crosshair" : "default" }}>
           {pdfUrl && pdfReady && ReactPDF && (() => {
             const PdfDocument = ReactPDF!.Document;
             const PdfPage = ReactPDF!.Page;

@@ -183,10 +183,10 @@ export default function ContractBuilderPage() {
   // Validation for each step
   function canProceed(): boolean {
     switch (step) {
-      case 0: // Parties
+      case 0: // Parties - minimum 1 party (self-sign) or more
         return (
           title.trim().length > 0 &&
-          parties.length >= 2 &&
+          parties.length >= 1 &&
           parties.every(
             (p) => p.fullName.trim() && p.email.trim() && p.role.trim(),
           )

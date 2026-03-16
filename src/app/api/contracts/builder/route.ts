@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
     if (!title?.trim()) {
       return NextResponse.json({ error: "Titulli eshte i detyrueshem" }, { status: 400 });
     }
-    if (!parties || parties.length < 2) {
-      return NextResponse.json({ error: "Nevojiten te pakten 2 pale" }, { status: 400 });
+    if (!parties || parties.length < 1) {
+      return NextResponse.json({ error: "Nevojitet te pakten 1 pale" }, { status: 400 });
     }
     if (!termsHtml?.trim()) {
       return NextResponse.json({ error: "Termat jane te detyrueshem" }, { status: 400 });
