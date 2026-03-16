@@ -146,11 +146,14 @@ export async function checkOtsConfirmation(
     try {
       const response = await fetch(`${calendar}/timestamp/${hashHex}`, {
         method: "GET",
-        headers: { Accept: "application/octet-stream" },
+        headers: { Accept: "application/vnd.opentimestamps.v1" },
+        signal: AbortSignal.timeout(10000),
       });
 
+      console.log(`[OTS] Calendar ${calendar}/timestamp/${hashHex.slice(0, 16)}... returned ${response.status}`);
       if (response.ok) {
         const upgradedBytes = Buffer.from(await response.arrayBuffer());
+        console.log(`[OTS] Got upgraded proof from ${calendar}, size: ${upgradedBytes.length} bytes`);
 
         // Check if the upgraded proof has a bitcoin attestation
         const parsed = parseOtsProof(upgradedBytes);
@@ -265,12 +268,15 @@ export async function checkPendingConfirmations(): Promise<{
   for (const entry of pendingEntries) {
     if (!entry.otsProof) continue;
 
+    console.log(`[OTS] Checking entry ${entry.id}, fingerprint: ${entry.fingerprint.slice(0, 16)}...`);
+
     const result = await checkOtsConfirmation(
       entry.fingerprint,
       Buffer.from(entry.otsProof)
     );
 
     if (result.confirmed) {
+      console.log(`[OTS] Entry ${entry.id} CONFIRMED at block #${result.btcBlockHeight}`);
       await prisma.timestampEntry.update({
         where: { id: entry.id },
         data: {
@@ -283,13 +289,35 @@ export async function checkPendingConfirmations(): Promise<{
       });
       confirmed++;
     } else if (result.upgradedProof) {
-      // Save partially upgraded proof
+      console.log(`[OTS] Entry ${entry.id} partially upgraded, saving new proof`);
       await prisma.timestampEntry.update({
         where: { id: entry.id },
         data: {
           otsProof: new Uint8Array(result.upgradedProof),
         },
       });
+    } else {
+      console.log(`[OTS] Entry ${entry.id} still pending, no upgrade available`);
+      // Try re-submitting if calendar doesn't recognize the hash
+      try {
+        const testResponse = await fetch(`https://a.pool.opentimestamps.org/timestamp/${entry.fingerprint}`, {
+          headers: { Accept: "application/vnd.opentimestamps.v1" },
+          signal: AbortSignal.timeout(5000),
+        });
+        if (testResponse.status === 404) {
+          console.log(`[OTS] Entry ${entry.id} not found on calendar, re-submitting...`);
+          const newProof = await submitToOpenTimestamps(entry.fingerprint);
+          if (newProof) {
+            console.log(`[OTS] Entry ${entry.id} re-submitted successfully`);
+            await prisma.timestampEntry.update({
+              where: { id: entry.id },
+              data: { otsProof: new Uint8Array(newProof) },
+            });
+          }
+        }
+      } catch {
+        // Non-critical
+      }
     }
   }
 
