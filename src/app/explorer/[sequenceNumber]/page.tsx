@@ -679,36 +679,151 @@ export default function EntryDetailPage({
           )}
         </div>
 
-        {/* ========== IPFS PROOF ========== */}
+        {/* ========== IPFS BLOCKCHAIN PROOF ========== */}
         {entry.ipfsCid && (
-          <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50 p-5 dark:border-blue-800 dark:from-blue-950/40 dark:to-cyan-950/30">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50">
-                <span className="text-sm">🌐</span>
+          <Card className="border-blue-200 dark:border-blue-800 overflow-hidden">
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/30 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/50">
+                    <svg className="h-5 w-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-blue-800 dark:text-blue-200">IPFS Decentralized Proof</h3>
+                    <p className="text-xs text-blue-600 dark:text-blue-400">
+                      Prove kriptografike e ruajtur ne blockchain-in IPFS
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href={`https://ipfs.io/ipfs/${entry.ipfsCid}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+                >
+                  Shiko ne IPFS
+                </a>
               </div>
-              <div>
-                <h3 className="font-semibold text-blue-800 dark:text-blue-200">IPFS Decentralized Proof</h3>
-                <p className="text-xs text-blue-600 dark:text-blue-400">Prove kriptografike e shperndare globalisht</p>
+
+              {/* CID */}
+              <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 px-4 py-3 mb-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-blue-600 dark:text-blue-400">Content Identifier (CID)</span>
+                  <CopyButton text={entry.ipfsCid} />
+                </div>
+                <code className="block break-all font-mono text-xs text-blue-800 dark:text-blue-200">
+                  {entry.ipfsCid}
+                </code>
               </div>
+
+              {/* Interpreted IPFS Data */}
+              <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 p-4 space-y-3">
+                <h4 className="text-[11px] font-medium uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                  Te dhenat e ruajtura ne IPFS Blockchain
+                </h4>
+
+                <div className="grid gap-2">
+                  <div className="flex items-start gap-3 rounded-lg bg-blue-50/50 dark:bg-slate-700/30 p-3">
+                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 mt-0.5">
+                      <svg className="h-3.5 w-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12h6m-3-3v6"/><circle cx="12" cy="12" r="10"/></svg>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-medium uppercase text-blue-500 dark:text-blue-400">Platforma</p>
+                      <p className="text-sm font-semibold text-foreground">doc.al</p>
+                      <p className="text-[10px] text-muted-foreground">Platforma e Nenshkrimit Elektronik &amp; Timestamp</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-lg bg-blue-50/50 dark:bg-slate-700/30 p-3">
+                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 mt-0.5">
+                      <svg className="h-3.5 w-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-medium uppercase text-blue-500 dark:text-blue-400">Hash i Dokumentit</p>
+                      <code className="text-xs font-mono text-foreground break-all">{entry.fingerprint}</code>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Gjurma dixhitale SHA-256 e dokumentit te nenshkruar</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-lg bg-blue-50/50 dark:bg-slate-700/30 p-3">
+                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 mt-0.5">
+                      <svg className="h-3.5 w-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-medium uppercase text-blue-500 dark:text-blue-400">Nenshkruesi</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {entry.signature ? `${entry.signature.signerName}` : "I panjohur"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">Identiteti i maskuar per mbrojtje te privatesis</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-lg bg-blue-50/50 dark:bg-slate-700/30 p-3">
+                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 mt-0.5">
+                      <svg className="h-3.5 w-3.5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-medium uppercase text-blue-500 dark:text-blue-400">Verifikimi</p>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/40 dark:text-green-400">
+                          <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                          eIDAS 910/2014
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/40 dark:text-green-400">
+                          <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                          Email OTP
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/40 dark:text-green-400">
+                          <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                          2FA TOTP
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-1">Nenshkrimi u verifikua me 3 metoda te pavarura</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-lg bg-blue-50/50 dark:bg-slate-700/30 p-3">
+                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 mt-0.5">
+                      <svg className="h-3.5 w-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-medium uppercase text-blue-500 dark:text-blue-400">Zinxhiri (Chain)</p>
+                      <div className="space-y-1 mt-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Numri:</span>
+                          <span className="font-mono font-semibold text-foreground">#{entry.sequenceNumber}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-muted-foreground">Sequential Fingerprint:</span>
+                          <code className="block text-[10px] font-mono text-foreground break-all mt-0.5">{entry.sequentialFingerprint}</code>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-1">Lidhet me entry-t e meparshme duke formuar nje zinxhir te panderpritur</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-lg bg-orange-50/50 dark:bg-orange-900/10 p-3">
+                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/50 mt-0.5">
+                      <svg className="h-3.5 w-3.5 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-medium uppercase text-orange-600 dark:text-orange-400">Bitcoin Blockchain</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {entry.otsStatus === "CONFIRMED" ? `Konfirmuar - Block #${entry.btcBlockHeight}` : "Ne pritje te konfirmimit"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">Hash-i eshte derguar ne OpenTimestamps per ankorim ne Bitcoin</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p className="mt-3 text-[10px] text-blue-500 dark:text-blue-500 leading-relaxed">
+                Keto te dhena jane te ruajtura ne menyre te perhershme ne rrjetin global te blockchain-it IPFS.
+                Askush nuk mund t&apos;i ndryshoje ose fshije ato. Dokumenti origjinal nuk ruhet ne IPFS -
+                vetem prova kriptografike (hash) qe verteton ekzistencen e tij ne momentin e nenshkrimit.
+              </p>
             </div>
-            <div className="rounded-xl bg-white/60 px-4 py-2 dark:bg-slate-800/50">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-blue-700 dark:text-blue-400">CID</span>
-                <CopyButton text={entry.ipfsCid} />
-              </div>
-              <a
-                href={`https://ipfs.io/ipfs/${entry.ipfsCid}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-1 block break-all font-mono text-xs text-blue-800 hover:text-blue-600 hover:underline dark:text-blue-200"
-              >
-                {entry.ipfsCid}
-              </a>
-            </div>
-            <p className="mt-2 text-[10px] text-blue-500 dark:text-blue-500">
-              Prova kriptografike e nenshkrimit eshte e publikuar ne rrjetin global IPFS. Klikoni CID per ta verifikuar.
-            </p>
-          </div>
+          </Card>
         )}
 
         {/* ========== DOCUMENT ========== */}

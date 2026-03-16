@@ -270,7 +270,7 @@ export default function VerifyPage() {
               {/* IPFS Decentralized Proof */}
               <div className="px-6 py-4">
                 <span className="text-sm text-muted-foreground">
-                  Prove IPFS (Decentralized)
+                  IPFS Decentralized Proof
                 </span>
                 <div className="mt-2 flex items-center gap-2">
                   {data.ipfsCid ? (
@@ -279,7 +279,7 @@ export default function VerifyPage() {
                         <Check className="h-3.5 w-3.5 text-blue-600" strokeWidth={3} />
                       </div>
                       <span className="text-sm font-medium text-blue-700 dark:text-blue-400">
-                        E publikuar ne IPFS
+                        E ruajtur ne blockchain IPFS
                       </span>
                     </>
                   ) : (
@@ -304,7 +304,9 @@ export default function VerifyPage() {
                       ipfs.io/ipfs/{data.ipfsCid}
                     </a>
                     <p className="mt-1 text-[10px] text-muted-foreground">
-                      Prova kriptografike e nenshkrimit, e shperndare ne rrjetin global IPFS. Klikoni per ta verifikuar.
+                      Prova kriptografike e nenshkrimit eshte e ruajtur ne blockchain-in global te decentralizuar IPFS.
+                      Kjo prove eshte e shperndare ne te gjithe boten dhe nuk mund te ndryshohet ose fshihet nga askush.
+                      Klikoni per ta verifikuar direkt ne rrjetin IPFS.
                     </p>
                   </div>
                 )}
