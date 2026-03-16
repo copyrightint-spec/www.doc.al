@@ -95,9 +95,6 @@ function generateTextSignatureDataUrl(name: string, fontValue: string): string {
   return canvas.toDataURL("image/png");
 }
 
-// DEBUG: Build version identifier - remove after testing
-const BUILD_VERSION = "v2-selfsign-41a2332-" + new Date().toISOString().slice(0, 10);
-
 // -- Main Component --
 export default function SelfSignPage() {
   // React-PDF lazy load state
@@ -161,6 +158,17 @@ export default function SelfSignPage() {
   const [signedPdfUrl, setSignedPdfUrl] = useState<string | null>(null);
   const [signedFileName, setSignedFileName] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  // Server result data
+  const [serverResult, setServerResult] = useState<{
+    documentId?: string;
+    signatureId?: string;
+    documentHash?: string;
+    timestampId?: string;
+    sequenceNumber?: number;
+    fingerprint?: string;
+    signedAt?: string;
+  } | null>(null);
 
   // Step statuses for done phase
   const [stepStatuses, setStepStatuses] = useState<StepStatus[]>([]);
@@ -502,11 +510,12 @@ export default function SelfSignPage() {
     return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   }
 
-  // -- Generate signed PDF --
+  // -- Generate signed PDF and submit to server --
   const processAndSign = async () => {
-    if (!pdfBytes || !signatureDataUrl || !placement) return;
+    if (!pdfBytes || !pdfFile || !signatureDataUrl || !placement) return;
     setProcessing(true);
     setError(null);
+    setServerResult(null);
 
     const statuses: StepStatus[] = [
       { label: "Ngarkimi i dokumentit", status: "success" },
@@ -515,10 +524,19 @@ export default function SelfSignPage() {
       { label: "Verifikimi me email (OTP)", status: "success" },
       { label: "Verifikimi 2FA (TOTP)", status: "success" },
       { label: "Gjenerimi i PDF te nenshkruar", status: "pending" },
+      { label: "Ruajtja ne server (S3)", status: "pending" },
+      { label: "Regjistrimi i nenshkrimit", status: "pending" },
+      { label: "Timestamp blockchain (OTS)", status: "pending" },
     ];
     setStepStatuses([...statuses]);
 
+    const updateStatus = (idx: number, s: Partial<StepStatus>) => {
+      statuses[idx] = { ...statuses[idx], ...s };
+      setStepStatuses([...statuses]);
+    };
+
     try {
+      // Step 6: Generate signed PDF locally
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const signatureImage = await pdfDoc.embedPng(signatureDataUrl);
 
@@ -544,19 +562,75 @@ export default function SelfSignPage() {
       });
 
       const signedBytes = await pdfDoc.save();
-      const blob = new Blob([signedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      const originalName = pdfFile?.name.replace(/\.pdf$/i, "") || "dokument";
-      setSignedFileName(`${originalName}_nenshkruar.pdf`);
-      setSignedPdfUrl(url);
+      updateStatus(5, { status: "success" });
 
-      statuses[5] = { label: "Gjenerimi i PDF te nenshkruar", status: "success" };
-      setStepStatuses([...statuses]);
+      // Step 7-9: Upload to server, create records, timestamp
+      updateStatus(6, { status: "pending" });
+
+      const originalName = pdfFile.name.replace(/\.pdf$/i, "") || "dokument";
+      const signedFileName = `${originalName}_nenshkruar.pdf`;
+
+      const formData = new FormData();
+      formData.append("originalFile", pdfFile);
+      formData.append(
+        "signedFile",
+        new File([signedBytes.buffer as ArrayBuffer], signedFileName, { type: "application/pdf" })
+      );
+      formData.append("title", pdfFile.name);
+      formData.append("signatureImage", signatureDataUrl);
+      formData.append(
+        "placement",
+        JSON.stringify({
+          pageIndex: placement.pageIndex,
+          xPct: placement.xPct,
+          yPct: placement.yPct,
+          sigWidthPct,
+        })
+      );
+
+      const res = await fetch("/api/self-sign", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        updateStatus(6, {
+          status: "error",
+          errorCode: "ERR-S002",
+          errorMessage: data.error || "Gabim gjate ngarkimit ne server",
+        });
+        setError(data.error || "Gabim gjate ngarkimit ne server (ERR-S002)");
+        setProcessing(false);
+        return;
+      }
+
+      // All server steps succeeded
+      updateStatus(6, { status: "success" });
+      updateStatus(7, { status: "success" });
+      updateStatus(8, { status: "success" });
+
+      // Save result for display
+      setServerResult(data.data);
+
+      // Create download URL from local bytes
+      const blob = new Blob([signedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
+      setSignedPdfUrl(URL.createObjectURL(blob));
+      setSignedFileName(signedFileName);
       setPhase("done");
-    } catch {
-      statuses[5] = { label: "Gjenerimi i PDF te nenshkruar", status: "error", errorCode: "ERR-S001", errorMessage: "Gabim gjate procesimit te PDF" };
-      setStepStatuses([...statuses]);
-      setError("Ndodhi nje gabim gjate procesimit te PDF (ERR-S001).");
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Gabim i papritur";
+      // Find first pending status and mark as error
+      const pendingIdx = statuses.findIndex((s) => s.status === "pending");
+      if (pendingIdx >= 0) {
+        updateStatus(pendingIdx, {
+          status: "error",
+          errorCode: "ERR-S001",
+          errorMessage: errMsg,
+        });
+      }
+      setError(`Ndodhi nje gabim: ${errMsg} (ERR-S001)`);
     } finally {
       setProcessing(false);
     }
@@ -580,6 +654,7 @@ export default function SelfSignPage() {
     setTotpCode("");
     setVerifyError("");
     setStepStatuses([]);
+    setServerResult(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -964,6 +1039,36 @@ export default function SelfSignPage() {
               ))}
             </div>
 
+            {/* Server result details */}
+            {serverResult && (
+              <div className="mb-6 rounded-xl border border-border p-4 space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Document Hash:</span>
+                  <span className="font-mono text-foreground truncate max-w-[220px]">{serverResult.documentHash}</span>
+                </div>
+                {serverResult.sequenceNumber && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Timestamp #:</span>
+                    <Link href={`/explorer/${serverResult.sequenceNumber}`} className="text-primary hover:underline">
+                      #{serverResult.sequenceNumber}
+                    </Link>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Nenshkruar me:</span>
+                  <span className="text-foreground">{serverResult.signedAt ? new Date(serverResult.signedAt).toLocaleString("sq-AL") : "-"}</span>
+                </div>
+                {serverResult.fingerprint && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Verifiko:</span>
+                    <Link href={`/verify/${serverResult.fingerprint}`} className="text-primary hover:underline">
+                      Shiko verifikimin
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* File download */}
             {signedPdfUrl && (
               <>
@@ -988,6 +1093,11 @@ export default function SelfSignPage() {
                   </Button>
                   <Button variant="secondary" onClick={resetAll}>
                     Nenshkruaj tjeter
+                  </Button>
+                  <Button variant="secondary" asChild>
+                    <Link href="/dashboard/documents">
+                      Shiko Dokumentat
+                    </Link>
                   </Button>
                   <Button variant="secondary" asChild>
                     <Link href="/dashboard/contracts">
@@ -1015,10 +1125,6 @@ export default function SelfSignPage() {
   // Phase: SIGN - Two panel layout with PDF viewer + sidebar
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col" style={{ margin: "-1.5rem", marginTop: "-1.5rem" }}>
-      {/* DEBUG BANNER - remove after testing */}
-      <div className="bg-yellow-500 text-black text-xs text-center py-1 font-mono">
-        DEBUG: {BUILD_VERSION} | Phase: {phase} | PDF: {pdfFile ? pdfFile.name : "none"} | Sig: {activeSignatureId || "none"}
-      </div>
       {/* Top bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-4 py-2.5">
         <div className="flex items-center gap-3 min-w-0">
