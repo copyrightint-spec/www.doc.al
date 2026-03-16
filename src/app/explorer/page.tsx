@@ -46,6 +46,7 @@ interface TimestampEntry {
   btcBlockHeight: number | null;
   btcBlockHash: string | null;
   otsStatus: string;
+  ipfsCid: string | null;
 }
 
 interface EntryDetail {
@@ -393,6 +394,7 @@ export default function ExplorerPage() {
                 <TableHead>Type</TableHead>
                 <TableHead>Sequential Fingerprint (SHA-256)</TableHead>
                 <TableHead>BTC</TableHead>
+                <TableHead>Decentralized Proof</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -459,6 +461,27 @@ export default function ExplorerPage() {
                         <Badge variant="warning">
                           <span className="h-2 w-2 rounded-full bg-yellow-500 animate-pulse" />
                           Pending
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {entry.ipfsCid ? (
+                        <a
+                          href={`https://ipfs.io/ipfs/${entry.ipfsCid}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Badge variant="info" className="hover:bg-blue-200 dark:hover:bg-blue-800 cursor-pointer">
+                            <span className="h-2 w-2 rounded-full bg-blue-500" />
+                            IPFS
+                          </Badge>
+                        </a>
+                      ) : (
+                        <Badge variant="default" className="opacity-40">
+                          <span className="h-2 w-2 rounded-full bg-slate-400" />
+                          —
                         </Badge>
                       )}
                     </TableCell>
