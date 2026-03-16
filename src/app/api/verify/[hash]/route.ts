@@ -19,8 +19,8 @@ export async function GET(
       );
     }
 
-    // Kerko dokumentin qe permban kete hash certifikimi ne metadata
-    const documents = await prisma.document.findMany({
+    // Strategy 1: Search by certificationHash in metadata (legacy stamp flow)
+    const allCompleted = await prisma.document.findMany({
       where: { status: "COMPLETED" },
       include: {
         signatures: { orderBy: { order: "asc" } },
@@ -30,24 +30,47 @@ export async function GET(
       },
     });
 
-    const document = documents.find((d) => {
+    let document = allCompleted.find((d) => {
       const meta = d.metadata as Record<string, unknown> | null;
       const stamp = meta?.docAlStamp as Record<string, unknown> | undefined;
       return stamp?.certificationHash === hash;
     });
 
+    // Strategy 2: Search by fileHash (self-sign flow)
+    if (!document) {
+      document = allCompleted.find((d) => d.fileHash === hash);
+    }
+
+    // Strategy 3: Search by timestamp fingerprint
+    if (!document) {
+      const tsEntry = await prisma.timestampEntry.findFirst({
+        where: { fingerprint: hash },
+        include: {
+          document: {
+            include: {
+              signatures: { orderBy: { order: "asc" } },
+              timestampEntries: { orderBy: { serverTimestamp: "desc" } },
+            },
+          },
+        },
+      });
+      if (tsEntry?.document) {
+        document = tsEntry.document;
+      }
+    }
+
     if (!document) {
       return NextResponse.json(
         {
           valid: false,
-          error: "Dokumenti nuk u gjet. Ky hash certifikimi nuk eshte i regjistruar.",
+          error: "Dokumenti nuk u gjet. Ky hash nuk eshte i regjistruar.",
         },
         { status: 404 }
       );
     }
 
-    const meta = document.metadata as Record<string, unknown>;
-    const stamp = meta.docAlStamp as Record<string, unknown>;
+    const meta = (document.metadata as Record<string, unknown>) || {};
+    const stamp = (meta.docAlStamp as Record<string, unknown>) || {};
 
     // Masko titullin per privatesi (trego vetem fillimin dhe fundin)
     const title = document.title;
@@ -75,8 +98,8 @@ export async function GET(
       valid: true,
       data: {
         documentTitle: maskedTitle,
-        certificationHash: stamp.certificationHash,
-        stampedAt: stamp.stampedAt,
+        certificationHash: stamp.certificationHash || document.fileHash,
+        stampedAt: stamp.stampedAt || document.createdAt.toISOString(),
         signerCount: document.signatures.length,
         signers: document.signatures.map((s) => ({
           name: s.signerName,
@@ -86,6 +109,10 @@ export async function GET(
         blockchain: blockchainStatus,
         chainIntegrity,
         fileHash: document.fileHash,
+        ipfsCid: document.timestampEntries[0]?.ipfsCid || null,
+        ipfsUrl: document.timestampEntries[0]?.ipfsCid
+          ? `https://ipfs.io/ipfs/${document.timestampEntries[0].ipfsCid}`
+          : null,
         documentCreatedAt: document.createdAt.toISOString(),
       },
     });
