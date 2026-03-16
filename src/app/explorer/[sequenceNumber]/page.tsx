@@ -644,9 +644,14 @@ export default function EntryDetailPage({
                   <span className="text-sm text-green-700 dark:text-green-400">
                     Block Height
                   </span>
-                  <span className="font-mono text-sm font-bold text-green-800 dark:text-green-200">
+                  <a
+                    href={`https://mempool.space/block/${entry.btcBlockHeight}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-sm font-bold text-green-800 hover:text-green-600 hover:underline dark:text-green-200"
+                  >
                     #{entry.btcBlockHeight}
-                  </span>
+                  </a>
                 </div>
               )}
               {entry.btcTxId && (
@@ -657,9 +662,14 @@ export default function EntryDetailPage({
                     </span>
                     <CopyButton text={entry.btcTxId} />
                   </div>
-                  <code className="mt-1 block break-all font-mono text-xs text-green-800 dark:text-green-200">
+                  <a
+                    href={`https://mempool.space/tx/${entry.btcTxId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 block break-all font-mono text-xs text-green-800 hover:text-green-600 hover:underline dark:text-green-200"
+                  >
                     {entry.btcTxId}
-                  </code>
+                  </a>
                 </div>
               )}
               {entry.btcBlockHash && (
@@ -670,9 +680,14 @@ export default function EntryDetailPage({
                     </span>
                     <CopyButton text={entry.btcBlockHash} />
                   </div>
-                  <code className="mt-1 block break-all font-mono text-xs text-green-800 dark:text-green-200">
+                  <a
+                    href={`https://mempool.space/block/${entry.btcBlockHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 block break-all font-mono text-xs text-green-800 hover:text-green-600 hover:underline dark:text-green-200"
+                  >
                     {entry.btcBlockHash}
-                  </code>
+                  </a>
                 </div>
               )}
             </div>

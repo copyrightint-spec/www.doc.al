@@ -256,14 +256,24 @@ export default function VerifyPage() {
                   )}
                 </div>
                 {data.blockchain.btcTxId && (
-                  <p className="mt-1 break-all text-xs text-muted-foreground">
+                  <a
+                    href={`https://mempool.space/tx/${data.blockchain.btcTxId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 block break-all text-xs text-green-700 hover:text-green-500 hover:underline dark:text-green-400"
+                  >
                     TX: {data.blockchain.btcTxId}
-                  </p>
+                  </a>
                 )}
                 {data.blockchain.btcBlockHeight && (
-                  <p className="mt-0.5 text-xs text-muted-foreground">
+                  <a
+                    href={`https://mempool.space/block/${data.blockchain.btcBlockHeight}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-0.5 block text-xs text-green-700 hover:text-green-500 hover:underline dark:text-green-400"
+                  >
                     Block: #{data.blockchain.btcBlockHeight}
-                  </p>
+                  </a>
                 )}
               </div>
 
