@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import QRCode from "qrcode";
 import { computeSHA256 } from "@/lib/timestamp/engine";
 import { signWithCertificate } from "./certificates";
 
@@ -7,6 +8,8 @@ export interface PdfSignatureOptions {
   signerName: string;
   reason?: string;
   location?: string;
+  /** Document hash for QR code verification URL */
+  documentHashForQR?: string;
   position?: {
     page: number;
     x: number;
@@ -33,11 +36,11 @@ export interface PdfSignatureResult {
 /**
  * Sign a PDF document with a cryptographic digital signature.
  *
- * Adds a certification stamp box at the bottom of the last page
+ * Adds a certification stamp with QR code at the bottom of the last page
  * and signs the document hash with the user's X.509 certificate.
  *
  * The visual signature (drawn/text/image) is already applied by the frontend.
- * This function adds the official doc.al certification block + crypto signature.
+ * This function adds the official doc.al certification block + QR + crypto signature.
  */
 export async function signPdf(
   pdfBuffer: Buffer,
@@ -47,14 +50,35 @@ export async function signPdf(
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  // Add certification stamp on the last page
   const lastPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1);
   const pageW = lastPage.getWidth();
 
+  // Compute hash of incoming PDF for QR code
+  const preHash = options.documentHashForQR || computeSHA256(pdfBuffer);
+  const baseUrl = process.env.NEXTAUTH_URL || "https://doc.al";
+  const verifyUrl = `${baseUrl}/verify/${preHash}`;
+
+  // Generate QR code as PNG data URL
+  let qrImage;
+  try {
+    const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
+      width: 150,
+      margin: 1,
+      color: { dark: "#18181b", light: "#ffffff" },
+      errorCorrectionLevel: "M",
+    });
+    const qrBytes = Buffer.from(qrDataUrl.split(",")[1], "base64");
+    qrImage = await pdfDoc.embedPng(qrBytes);
+  } catch {
+    // QR generation failed - continue without it
+  }
+
+  // Stamp dimensions
   const stampX = 30;
-  const stampY = 15;
+  const stampY = 10;
   const stampW = pageW - 60;
-  const stampH = 40;
+  const qrSize = 55;
+  const stampH = qrSize + 10;
 
   // Draw stamp background
   lastPage.drawRectangle({
@@ -64,9 +88,22 @@ export async function signPdf(
     height: stampH,
     borderColor: rgb(0.08, 0.08, 0.18),
     borderWidth: 0.5,
-    color: rgb(0.96, 0.96, 1),
+    color: rgb(0.97, 0.97, 1),
     opacity: 0.95,
   });
+
+  // Draw QR code (left side)
+  if (qrImage) {
+    lastPage.drawImage(qrImage, {
+      x: stampX + 5,
+      y: stampY + 5,
+      width: qrSize,
+      height: qrSize,
+    });
+  }
+
+  // Text area starts after QR
+  const textX = stampX + (qrImage ? qrSize + 12 : 8);
 
   // Certification text
   const signDate = new Date().toLocaleDateString("sq-AL", {
@@ -78,39 +115,61 @@ export async function signPdf(
     minute: "2-digit",
   });
 
-  lastPage.drawText("doc.al", {
-    x: stampX + 8,
+  // Line 1: doc.al branding
+  lastPage.drawText("doc.al — Nenshkrim Dixhital i Certifikuar", {
+    x: textX,
     y: stampY + stampH - 14,
-    size: 9,
+    size: 8,
     font: fontBold,
     color: rgb(0.08, 0.08, 0.18),
   });
 
-  lastPage.drawText(`Nenshkrim Dixhital i Certifikuar | ${options.signerName} | ${signDate}`, {
-    x: stampX + 50,
-    y: stampY + stampH - 14,
+  // Line 2: Signer + date
+  lastPage.drawText(`${options.signerName} | ${signDate}`, {
+    x: textX,
+    y: stampY + stampH - 26,
     size: 7,
     font,
-    color: rgb(0.3, 0.3, 0.3),
+    color: rgb(0.25, 0.25, 0.25),
   });
 
-  const certText = options.reason || "Nenshkrim dixhital permes doc.al";
-  lastPage.drawText(`${certText} | eIDAS 910/2014 | Verifikoni: doc.al/verify`, {
-    x: stampX + 8,
-    y: stampY + 6,
+  // Line 3: Regulation
+  lastPage.drawText("eIDAS 910/2014 | Bitcoin Blockchain | IPFS Decentralized Proof", {
+    x: textX,
+    y: stampY + stampH - 37,
     size: 6,
+    font,
+    color: rgb(0.45, 0.45, 0.45),
+  });
+
+  // Line 4: Verify URL + hash
+  lastPage.drawText(`Verifikoni: doc.al/verify | Hash: ${preHash.slice(0, 24)}...`, {
+    x: textX,
+    y: stampY + stampH - 48,
+    size: 5.5,
     font,
     color: rgb(0.5, 0.5, 0.5),
   });
+
+  // Line 5: Reason
+  if (options.reason) {
+    lastPage.drawText(options.reason, {
+      x: textX,
+      y: stampY + stampH - 57,
+      size: 5,
+      font,
+      color: rgb(0.55, 0.55, 0.55),
+    });
+  }
 
   // Save modified PDF
   const modifiedPdfBytes = await pdfDoc.save();
   const modifiedPdfBuffer = Buffer.from(modifiedPdfBytes);
 
-  // Compute document hash
+  // Compute final document hash
   const documentHash = computeSHA256(modifiedPdfBuffer);
 
-  // Sign the document hash with the certificate (cryptographic signature)
+  // Sign the document hash with the certificate (cryptographic RSA-SHA256)
   const { signature, certificateInfo } = await signWithCertificate(
     options.certificateId,
     Buffer.from(documentHash, "hex")
