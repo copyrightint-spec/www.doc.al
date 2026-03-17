@@ -528,7 +528,7 @@ export default function SelfSignPage() {
       { label: "Gjenerimi i PDF te nenshkruar", status: "pending" },
       { label: "Ruajtja ne server (S3)", status: "pending" },
       { label: "Regjistrimi i nenshkrimit", status: "pending" },
-      { label: "Timestamp blockchain (OTS)", status: "pending" },
+      { label: "STAMLES Polygon Blockchain", status: "pending" },
       { label: "Prove IPFS (decentralized)", status: "pending" },
     ];
     setStepStatuses([...statuses]);
@@ -1067,6 +1067,18 @@ export default function SelfSignPage() {
                     <span className="text-muted-foreground">IPFS Proof:</span>
                     <a href={serverResult.ipfsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[220px]">
                       {serverResult.ipfsCid}
+                    </a>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Polygon:</span>
+                  <span className="text-purple-500 font-medium">STAMLES Queued</span>
+                </div>
+                {serverResult.fingerprint && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">STAMLES:</span>
+                    <a href={`http://37.187.226.220:3001/verify/${serverResult.fingerprint}`} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:underline">
+                      Verifiko ne STAMLES
                     </a>
                   </div>
                 )}
