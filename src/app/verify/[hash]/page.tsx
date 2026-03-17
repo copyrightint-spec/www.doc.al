@@ -229,52 +229,30 @@ export default function VerifyPage() {
                 </div>
               </div>
 
-              {/* Blockchain Status */}
+              {/* Polygon Blockchain */}
               <div className="px-6 py-4">
                 <span className="text-sm text-muted-foreground">
-                  Ankorim Blockchain (Bitcoin)
+                  Polygon Blockchain (STAMLES)
                 </span>
                 <div className="mt-2 flex items-center gap-2">
-                  {data.blockchain.anchored ? (
-                    <>
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/40">
-                        <Check className="h-3.5 w-3.5 text-green-600" strokeWidth={3} />
-                      </div>
-                      <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                        I konfirmuar ne Bitcoin
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/40">
-                        <Clock className="h-3.5 w-3.5 text-yellow-600" />
-                      </div>
-                      <span className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
-                        Ne pritje te konfirmimit
-                      </span>
-                    </>
-                  )}
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/40">
+                    <Check className="h-3.5 w-3.5 text-purple-600" strokeWidth={3} />
+                  </div>
+                  <span className="text-sm font-medium text-purple-700 dark:text-purple-400">
+                    I regjistruar ne Polygon
+                  </span>
                 </div>
-                {data.blockchain.btcTxId && (
-                  <a
-                    href={`https://mempool.space/tx/${data.blockchain.btcTxId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-1 block break-all text-xs text-green-700 hover:text-green-500 hover:underline dark:text-green-400"
-                  >
-                    TX: {data.blockchain.btcTxId}
-                  </a>
-                )}
-                {data.blockchain.btcBlockHeight && (
-                  <a
-                    href={`https://mempool.space/block/${data.blockchain.btcBlockHeight}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-0.5 block text-xs text-green-700 hover:text-green-500 hover:underline dark:text-green-400"
-                  >
-                    Block: #{data.blockchain.btcBlockHeight}
-                  </a>
-                )}
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  Hash-i eshte ne STAMLES Merkle batch queue per Polygon blockchain.
+                </p>
+                <a
+                  href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 block text-xs text-purple-600 hover:text-purple-500 hover:underline dark:text-purple-400"
+                >
+                  Shiko ne PolygonScan
+                </a>
               </div>
 
               {/* IPFS Decentralized Proof */}

@@ -60,6 +60,7 @@ interface EntryDetail {
   btcBlockHeight: number | null;
   btcBlockHash: string | null;
   otsStatus: string;
+  ipfsCid: string | null;
   document: {
     title: string;
     fileName: string;
@@ -393,8 +394,8 @@ export default function ExplorerPage() {
                 <TableHead>Fingerprint (SHA-256)</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Sequential Fingerprint (SHA-256)</TableHead>
-                <TableHead>BTC</TableHead>
-                <TableHead>Decentralized Proof</TableHead>
+                <TableHead>Polygon</TableHead>
+                <TableHead>IPFS</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -453,14 +454,21 @@ export default function ExplorerPage() {
                     </TableCell>
                     <TableCell>
                       {entry.otsStatus === "CONFIRMED" ? (
-                        <Badge variant="success">
-                          <span className="h-2 w-2 rounded-full bg-green-500" />
-                          Block #{entry.btcBlockHeight}
-                        </Badge>
+                        <a
+                          href={entry.btcBlockHeight ? `https://amoy.polygonscan.com/block/${entry.btcBlockHeight}` : "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Badge variant="success" className="hover:bg-green-200 dark:hover:bg-green-800 cursor-pointer">
+                            <span className="h-2 w-2 rounded-full bg-green-500" />
+                            Confirmed
+                          </Badge>
+                        </a>
                       ) : (
                         <Badge variant="warning">
-                          <span className="h-2 w-2 rounded-full bg-yellow-500 animate-pulse" />
-                          Pending
+                          <span className="h-2 w-2 rounded-full bg-purple-500 animate-pulse" />
+                          Queued
                         </Badge>
                       )}
                     </TableCell>
@@ -585,82 +593,49 @@ export default function ExplorerPage() {
                                 </div>
                               </div>
 
-                              {/* Right: BTC + Document + Signature */}
+                              {/* Right: Polygon + IPFS + Document + Signature */}
                               <div className="space-y-4">
-                                {/* Bitcoin */}
-                                <div
-                                  className={cn(
-                                    "rounded-xl border p-3",
-                                    detail.otsStatus === "CONFIRMED"
-                                      ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30"
-                                      : "border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30"
-                                  )}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <span
-                                      className={cn(
-                                        "h-2.5 w-2.5 rounded-full",
-                                        detail.otsStatus === "CONFIRMED"
-                                          ? "bg-green-500"
-                                          : "bg-yellow-500 animate-pulse"
-                                      )}
-                                    />
-                                    <span
-                                      className={cn(
-                                        "text-sm font-medium",
-                                        detail.otsStatus === "CONFIRMED"
-                                          ? "text-green-800 dark:text-green-300"
-                                          : "text-yellow-800 dark:text-yellow-300"
-                                      )}
-                                    >
-                                      {detail.otsStatus === "CONFIRMED"
-                                        ? "Konfirmuar ne Bitcoin"
-                                        : "Ne pritje konfirmimi..."}
+                                {/* Polygon Blockchain */}
+                                <div className="rounded-xl border border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30 p-3">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
+                                    <span className="text-sm font-medium text-purple-800 dark:text-purple-300">
+                                      Polygon Blockchain (STAMLES)
                                     </span>
                                   </div>
-                                  {detail.otsStatus === "CONFIRMED" && (
-                                    <div className="mt-2 space-y-1 text-xs">
-                                      {detail.btcBlockHeight && (
-                                        <div className="flex justify-between">
-                                          <span className="text-green-700 dark:text-green-400">
-                                            Block Height:
-                                          </span>
-                                          <span className="font-mono font-medium text-green-900 dark:text-green-200">
-                                            #{detail.btcBlockHeight}
-                                          </span>
-                                        </div>
-                                      )}
-                                      {detail.btcTxId && (
-                                        <div>
-                                          <span className="text-green-700 dark:text-green-400">
-                                            TX ID:
-                                          </span>
-                                          <div className="mt-0.5 flex items-center gap-1">
-                                            <code className="break-all font-mono text-[10px] text-green-800 dark:text-green-300">
-                                              {detail.btcTxId}
-                                            </code>
-                                            <CopyButton text={detail.btcTxId} />
-                                          </div>
-                                        </div>
-                                      )}
-                                      {detail.btcBlockHash && (
-                                        <div>
-                                          <span className="text-green-700 dark:text-green-400">
-                                            Block Hash:
-                                          </span>
-                                          <div className="mt-0.5 flex items-center gap-1">
-                                            <code className="break-all font-mono text-[10px] text-green-800 dark:text-green-300">
-                                              {detail.btcBlockHash}
-                                            </code>
-                                            <CopyButton
-                                              text={detail.btcBlockHash}
-                                            />
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
+                                  <p className="text-[10px] text-purple-600 dark:text-purple-400">
+                                    Hash i dokumentit eshte ne rradhe per Merkle batching ne Polygon.
+                                    Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle tree dhe root-i ruhet on-chain.
+                                  </p>
+                                  <a
+                                    href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-2 inline-flex items-center gap-1 text-[10px] text-purple-600 hover:text-purple-500 hover:underline dark:text-purple-400"
+                                  >
+                                    Shiko kontrakten ne PolygonScan
+                                  </a>
                                 </div>
+
+                                {/* IPFS */}
+                                {detail.ipfsCid && (
+                                  <div className="rounded-xl border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 p-3">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                                      <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                                        IPFS Decentralized Proof
+                                      </span>
+                                    </div>
+                                    <a
+                                      href={`https://ipfs.io/ipfs/${detail.ipfsCid}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block break-all font-mono text-[10px] text-blue-700 hover:text-blue-500 hover:underline dark:text-blue-300 mt-1"
+                                    >
+                                      {detail.ipfsCid}
+                                    </a>
+                                  </div>
+                                )}
 
                                 {/* Document */}
                                 {detail.document && (

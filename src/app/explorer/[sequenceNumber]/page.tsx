@@ -602,96 +602,30 @@ export default function EntryDetailPage({
         </Card>
 
         {/* ========== BITCOIN BLOCKCHAIN ========== */}
-        <div
-          className={cn(
-            "rounded-2xl border p-6",
-            entry.otsStatus === "CONFIRMED"
-              ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30"
-              : "border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30"
-          )}
-        >
-          <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Bitcoin Blockchain
+        <div className="rounded-2xl border border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30 p-6">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+            Polygon Blockchain (STAMLES)
           </h2>
 
           <div className="flex items-center gap-3">
-            <span
-              className={cn(
-                "h-3 w-3 rounded-full",
-                entry.otsStatus === "CONFIRMED"
-                  ? "bg-green-500"
-                  : "bg-yellow-500 animate-pulse"
-              )}
-            />
-            <span
-              className={cn(
-                "text-lg font-medium",
-                entry.otsStatus === "CONFIRMED"
-                  ? "text-green-800 dark:text-green-200"
-                  : "text-yellow-800 dark:text-yellow-200"
-              )}
-            >
-              {entry.otsStatus === "CONFIRMED"
-                ? "Konfirmuar ne Bitcoin Blockchain"
-                : "Ne pritje te konfirmimit..."}
+            <span className="h-3 w-3 rounded-full bg-purple-500" />
+            <span className="text-lg font-medium text-purple-800 dark:text-purple-200">
+              Merkle Batching ne Polygon
             </span>
           </div>
+          <p className="mt-2 text-xs text-purple-600 dark:text-purple-400">
+            Hash-i i dokumentit eshte i regjistruar ne STAMLES dhe do te perfshihet ne batch-in e ardhshem
+            ne Polygon blockchain permes Merkle tree. Verifikoni ne{" "}
+            <a
+              href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-purple-700 hover:underline dark:text-purple-300"
+            >
+              PolygonScan
+            </a>.
+          </p>
 
-          {entry.otsStatus === "CONFIRMED" && (
-            <div className="mt-4 space-y-3">
-              {entry.btcBlockHeight && (
-                <div className="flex items-center justify-between rounded-xl bg-slate-100/50 px-4 py-2 dark:bg-slate-800/50">
-                  <span className="text-sm text-green-700 dark:text-green-400">
-                    Block Height
-                  </span>
-                  <a
-                    href={`https://mempool.space/block/${entry.btcBlockHeight}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono text-sm font-bold text-green-800 hover:text-green-600 hover:underline dark:text-green-200"
-                  >
-                    #{entry.btcBlockHeight}
-                  </a>
-                </div>
-              )}
-              {entry.btcTxId && (
-                <div className="rounded-xl bg-slate-100/50 px-4 py-2 dark:bg-slate-800/50">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-green-700 dark:text-green-400">
-                      Transaction ID
-                    </span>
-                    <CopyButton text={entry.btcTxId} />
-                  </div>
-                  <a
-                    href={`https://mempool.space/tx/${entry.btcTxId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-1 block break-all font-mono text-xs text-green-800 hover:text-green-600 hover:underline dark:text-green-200"
-                  >
-                    {entry.btcTxId}
-                  </a>
-                </div>
-              )}
-              {entry.btcBlockHash && (
-                <div className="rounded-xl bg-slate-100/50 px-4 py-2 dark:bg-slate-800/50">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-green-700 dark:text-green-400">
-                      Block Hash
-                    </span>
-                    <CopyButton text={entry.btcBlockHash} />
-                  </div>
-                  <a
-                    href={`https://mempool.space/block/${entry.btcBlockHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-1 block break-all font-mono text-xs text-green-800 hover:text-green-600 hover:underline dark:text-green-200"
-                  >
-                    {entry.btcBlockHash}
-                  </a>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* ========== IPFS BLOCKCHAIN PROOF ========== */}
