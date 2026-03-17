@@ -9,6 +9,7 @@ import { buildProofMetadata, publishToIPFS, getIPFSUrl } from "@/lib/ipfs";
 import { signPdf } from "@/lib/crypto/pdf-signer";
 import { generateUserCertificate } from "@/lib/crypto/certificates";
 import { sendSigningCompleted, sendSignedDocument } from "@/lib/email";
+import { submitToStamles } from "@/lib/stamles";
 
 /**
  * POST /api/self-sign
@@ -257,7 +258,14 @@ export async function POST(req: NextRequest) {
       console.error("[self-sign] IPFS publish failed (non-critical):", ipfsError);
     }
 
-    // 8. Send completion email
+    // 8. Submit to STAMLES (Polygon blockchain)
+    try {
+      await submitToStamles(signedHash, document.id, "document");
+    } catch (stamlesError) {
+      console.error("[self-sign] STAMLES submit failed (non-critical):", stamlesError);
+    }
+
+    // 9. Send completion email
     try {
       await sendSigningCompleted(
         userEmail,

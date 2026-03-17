@@ -4,6 +4,7 @@ import { sendVerificationCode, sendSigningCompleted } from "@/lib/email";
 import { createTimestamp } from "@/lib/timestamp/engine";
 import { rateLimit } from "@/lib/rate-limit";
 import { buildProofMetadata, publishToIPFS } from "@/lib/ipfs";
+import { submitToStamles } from "@/lib/stamles";
 import crypto from "crypto";
 
 export async function POST(
@@ -144,6 +145,13 @@ export async function POST(
         }
       } catch (ipfsErr) {
         console.error("[sign] IPFS publish failed (non-critical):", ipfsErr);
+      }
+
+      // Submit to STAMLES (Polygon blockchain)
+      try {
+        await submitToStamles(signature.document.fileHash, signature.documentId, "signature");
+      } catch (stamlesErr) {
+        console.error("[sign] STAMLES submit failed (non-critical):", stamlesErr);
       }
 
       // Check if all signatures are complete
