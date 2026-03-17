@@ -588,37 +588,63 @@ export default function EntryDetailPage({
           </CardContent>
         </Card>
 
-        {/* ========== BITCOIN BLOCKCHAIN ========== */}
-        <div className="rounded-2xl border border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30 p-6">
-          <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-            Polygon Blockchain (STAMLES)
-          </h2>
-
-          <div className="flex items-center gap-3">
-            <span className="h-3 w-3 rounded-full bg-purple-500" />
-            <span className="text-lg font-medium text-purple-800 dark:text-purple-200">
-              Merkle Batching ne Polygon
-            </span>
+        {/* ========== 3 SECURITY LAYERS BADGES ========== */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4 text-center">
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10">
+              <svg className="h-5 w-5 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <p className="text-xs font-bold text-purple-400">Polygon</p>
+            <p className="text-[9px] text-muted-foreground">Blockchain</p>
           </div>
-          <p className="mt-2 text-xs text-purple-600 dark:text-purple-400">
-            Hash-i i dokumentit eshte i regjistruar ne STAMLES dhe do te perfshihet ne batch-in e ardhshem
-            ne Polygon blockchain permes Merkle tree. Verifikoni ne{" "}
-            <a
-              href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-purple-700 hover:underline dark:text-purple-300"
-            >
-              PolygonScan
-            </a>.
-          </p>
-
+          <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-center">
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
+              <svg className="h-5 w-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <p className="text-xs font-bold text-blue-400">IPFS</p>
+            <p className="text-[9px] text-muted-foreground">Decentralized Proof</p>
+          </div>
+          <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-4 text-center">
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
+              <svg className="h-5 w-5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <p className="text-xs font-bold text-green-400">STAMLES</p>
+            <p className="text-[9px] text-muted-foreground">Trust System</p>
+          </div>
         </div>
 
-        {/* ========== IPFS BLOCKCHAIN PROOF ========== */}
+        {/* ========== POLYGON BLOCKCHAIN ========== */}
+        <Card className="border-purple-500/20 overflow-hidden">
+          <div className="bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/10 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/50">
+                  <svg className="h-5 w-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-purple-800 dark:text-purple-200">Polygon Blockchain</h3>
+                  <p className="text-[10px] text-purple-600 dark:text-purple-400">Merkle root i ruajtur on-chain</p>
+                </div>
+              </div>
+              <a href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events" target="_blank" rel="noopener noreferrer" className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-700 transition-colors">
+                PolygonScan
+              </a>
+            </div>
+            <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 p-4 space-y-2 text-xs">
+              <div className="flex justify-between"><span className="text-purple-600 dark:text-purple-400">Kontrata</span><code className="font-mono text-[10px] text-foreground">StamlesTimestamp</code></div>
+              <div className="flex justify-between"><span className="text-purple-600 dark:text-purple-400">Network</span><span className="text-foreground">Polygon Amoy Testnet</span></div>
+              <div className="flex justify-between"><span className="text-purple-600 dark:text-purple-400">Address</span><code className="font-mono text-[10px] text-purple-400">0x62ab...EC85</code></div>
+            </div>
+            <p className="mt-3 text-[10px] text-purple-500 leading-relaxed">
+              Hash-i i dokumentit eshte ne STAMLES queue. Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle tree dhe vetem root-i (32 byte) ruhet ne Polygon blockchain. Kjo provon ekzistencen e dokumentit pa ekspozuar permbajtjen.
+            </p>
+          </div>
+        </Card>
+
+        {/* ========== IPFS DECENTRALIZED PROOF ========== */}
         {entry.ipfsCid && (
-          <Card className="border-blue-200 dark:border-blue-800 overflow-hidden">
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/30 p-5">
+          <Card className="border-blue-500/20 overflow-hidden">
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/20 p-5">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/50">
@@ -626,141 +652,96 @@ export default function EntryDetailPage({
                   </div>
                   <div>
                     <h3 className="font-bold text-blue-800 dark:text-blue-200">IPFS Decentralized Proof</h3>
-                    <p className="text-xs text-blue-600 dark:text-blue-400">
-                      Prove kriptografike e ruajtur ne blockchain-in IPFS
-                    </p>
+                    <p className="text-[10px] text-blue-600 dark:text-blue-400">Prove kriptografike e shperndare globalisht</p>
                   </div>
                 </div>
-                <a
-                  href={`https://ipfs.io/ipfs/${entry.ipfsCid}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
-                >
+                <a href={`https://ipfs.io/ipfs/${entry.ipfsCid}`} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors">
                   Shiko ne IPFS
                 </a>
               </div>
-
-              {/* CID */}
               <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 px-4 py-3 mb-3">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] font-medium uppercase tracking-wider text-blue-600 dark:text-blue-400">Content Identifier (CID)</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-blue-600 dark:text-blue-400">CID</span>
                   <CopyButton text={entry.ipfsCid} />
                 </div>
-                <code className="block break-all font-mono text-xs text-blue-800 dark:text-blue-200">
-                  {entry.ipfsCid}
-                </code>
+                <code className="block break-all font-mono text-xs text-blue-800 dark:text-blue-200">{entry.ipfsCid}</code>
               </div>
-
-              {/* Interpreted IPFS Data */}
-              <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 p-4 space-y-3">
-                <h4 className="text-[11px] font-medium uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                  Te dhenat e ruajtura ne IPFS Blockchain
-                </h4>
-
-                <div className="grid gap-2">
-                  <div className="flex items-start gap-3 rounded-lg bg-blue-50/50 dark:bg-slate-700/30 p-3">
-                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 mt-0.5">
-                      <svg className="h-3.5 w-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12h6m-3-3v6"/><circle cx="12" cy="12" r="10"/></svg>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-medium uppercase text-blue-500 dark:text-blue-400">Platforma</p>
-                      <p className="text-sm font-semibold text-foreground">doc.al</p>
-                      <p className="text-[10px] text-muted-foreground">Platforma e Nenshkrimit Elektronik &amp; Timestamp</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-lg bg-blue-50/50 dark:bg-slate-700/30 p-3">
-                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 mt-0.5">
-                      <svg className="h-3.5 w-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-medium uppercase text-blue-500 dark:text-blue-400">Hash i Dokumentit</p>
-                      <code className="text-xs font-mono text-foreground break-all">{entry.fingerprint}</code>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">Gjurma dixhitale SHA-256 e dokumentit te nenshkruar</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-lg bg-blue-50/50 dark:bg-slate-700/30 p-3">
-                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 mt-0.5">
-                      <svg className="h-3.5 w-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-medium uppercase text-blue-500 dark:text-blue-400">Nenshkruesi</p>
-                      <p className="text-sm font-semibold text-foreground">
-                        {entry.signature ? `${entry.signature.signerName}` : "I panjohur"}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">Identiteti i maskuar per mbrojtje te privatesis</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-lg bg-blue-50/50 dark:bg-slate-700/30 p-3">
-                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 mt-0.5">
-                      <svg className="h-3.5 w-3.5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-medium uppercase text-blue-500 dark:text-blue-400">Verifikimi</p>
-                      <div className="flex flex-wrap gap-1.5 mt-1">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/40 dark:text-green-400">
-                          <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                          eIDAS 910/2014
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/40 dark:text-green-400">
-                          <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                          Email OTP
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/40 dark:text-green-400">
-                          <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                          2FA TOTP
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground mt-1">Nenshkrimi u verifikua me 3 metoda te pavarura</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-lg bg-blue-50/50 dark:bg-slate-700/30 p-3">
-                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 mt-0.5">
-                      <svg className="h-3.5 w-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-medium uppercase text-blue-500 dark:text-blue-400">Zinxhiri (Chain)</p>
-                      <div className="space-y-1 mt-1">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-muted-foreground">Numri:</span>
-                          <span className="font-mono font-semibold text-foreground">#{entry.sequenceNumber}</span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-muted-foreground">Sequential Fingerprint:</span>
-                          <code className="block text-[10px] font-mono text-foreground break-all mt-0.5">{entry.sequentialFingerprint}</code>
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground mt-1">Lidhet me entry-t e meparshme duke formuar nje zinxhir te panderpritur</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-lg bg-orange-50/50 dark:bg-orange-900/10 p-3">
-                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/50 mt-0.5">
-                      <svg className="h-3.5 w-3.5 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-medium uppercase text-orange-600 dark:text-orange-400">Polygon Blockchain</p>
-                      <p className="text-sm font-semibold text-foreground">
-                        {entry.otsStatus === "CONFIRMED" ? `Konfirmuar - Block #${entry.btcBlockHeight}` : "Ne pritje te konfirmimit"}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">Hash-i eshte ne STAMLES Merkle batch queue per Polygon blockchain</p>
-                    </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-lg bg-white/40 dark:bg-slate-800/30 p-2.5">
+                  <span className="text-[9px] uppercase text-blue-500">Nenshkruesi</span>
+                  <p className="font-semibold text-foreground">{entry.signature ? entry.signature.signerName : "—"}</p>
+                </div>
+                <div className="rounded-lg bg-white/40 dark:bg-slate-800/30 p-2.5">
+                  <span className="text-[9px] uppercase text-blue-500">Verifikimi</span>
+                  <div className="flex gap-1 mt-0.5">
+                    <span className="rounded bg-green-100 dark:bg-green-900/40 px-1 py-0.5 text-[8px] font-bold text-green-700 dark:text-green-400">eIDAS</span>
+                    <span className="rounded bg-green-100 dark:bg-green-900/40 px-1 py-0.5 text-[8px] font-bold text-green-700 dark:text-green-400">OTP</span>
+                    <span className="rounded bg-green-100 dark:bg-green-900/40 px-1 py-0.5 text-[8px] font-bold text-green-700 dark:text-green-400">2FA</span>
                   </div>
                 </div>
               </div>
-
-              <p className="mt-3 text-[10px] text-blue-500 dark:text-blue-500 leading-relaxed">
-                Keto te dhena jane te ruajtura ne menyre te perhershme ne rrjetin global te blockchain-it IPFS.
-                Askush nuk mund t&apos;i ndryshoje ose fshije ato. Dokumenti origjinal nuk ruhet ne IPFS -
-                vetem prova kriptografike (hash) qe verteton ekzistencen e tij ne momentin e nenshkrimit.
-              </p>
             </div>
           </Card>
         )}
+
+        {/* ========== STAMLES - DECENTRALIZED TRUST SYSTEM ========== */}
+        <Card className="border-green-500/20 overflow-hidden">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/50">
+                  <svg className="h-5 w-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-green-800 dark:text-green-200">STAMLES - Decentralized Trust System</h3>
+                  <p className="text-[10px] text-green-600 dark:text-green-400">Merkle tree batching + Polygon blockchain</p>
+                </div>
+              </div>
+              <a href={`http://37.187.226.220:3001/verify/${entry.fingerprint}`} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 transition-colors">
+                Shiko ne STAMLES
+              </a>
+            </div>
+
+            <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 p-4 space-y-3">
+              <p className="text-xs text-green-700 dark:text-green-300 leading-relaxed">
+                Hash-i i dokumentit eshte i regjistruar ne STAMLES. Cdo 24 ore, te gjitha hash-et bashkohen ne nje
+                <strong> Merkle Tree</strong> dhe vetem <strong>Root-i</strong> (32 byte) ruhet ne <strong>Polygon blockchain</strong>.
+                Nje transaksion i vetem provon mijera dokumenta.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <a href={`http://37.187.226.220:3001/verify/${entry.fingerprint}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg bg-green-100/50 dark:bg-green-900/20 p-3 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-200 dark:bg-green-800/50">
+                    <svg className="h-4 w-4 text-green-700 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-green-700 dark:text-green-300 group-hover:underline">Verifiko ne STAMLES</p>
+                    <p className="text-[9px] text-green-600 dark:text-green-500">Merkle proof + Polygon TX</p>
+                  </div>
+                </a>
+                <a href="http://37.187.226.220:3001/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg bg-green-100/50 dark:bg-green-900/20 p-3 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-200 dark:bg-green-800/50">
+                    <svg className="h-4 w-4 text-green-700 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-green-700 dark:text-green-300 group-hover:underline">STAMLES Explorer</p>
+                    <p className="text-[9px] text-green-600 dark:text-green-500">Blocks, hashes, transactions</p>
+                  </div>
+                </a>
+              </div>
+
+              <div className="mt-2 rounded-lg bg-white/40 dark:bg-slate-800/40 p-3">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400 mb-2">Si funksionon</p>
+                <div className="space-y-1.5 text-[10px] text-green-700 dark:text-green-300">
+                  <div className="flex items-center gap-2"><span className="flex h-4 w-4 items-center justify-center rounded bg-green-200 dark:bg-green-800 text-[8px] font-black">1</span>Hash-i i dokumentit dergohet ne STAMLES</div>
+                  <div className="flex items-center gap-2"><span className="flex h-4 w-4 items-center justify-center rounded bg-green-200 dark:bg-green-800 text-[8px] font-black">2</span>Bashkohet me hash-e te tjera ne Merkle Tree</div>
+                  <div className="flex items-center gap-2"><span className="flex h-4 w-4 items-center justify-center rounded bg-green-200 dark:bg-green-800 text-[8px] font-black">3</span>Vetem Root (32 byte) shkon ne Polygon</div>
+                  <div className="flex items-center gap-2"><span className="flex h-4 w-4 items-center justify-center rounded bg-green-200 dark:bg-green-800 text-[8px] font-black">4</span>Merkle proof provon hash-in tuaj kundrejt root-it on-chain</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         {/* ========== DOCUMENT ========== */}
         {entry.document && (
