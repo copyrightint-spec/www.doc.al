@@ -346,45 +346,32 @@ export default function EntryDetailPage({
               </div>
 
               {/* Blockchain Timestamp */}
-              <div
-                className={cn(
-                  "rounded-xl border p-4",
-                  entry.otsStatus === "CONFIRMED"
-                    ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20"
-                    : "border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/20"
-                )}
-              >
+              <div className="rounded-xl border border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/20 p-4">
                 <div className="mb-2 flex items-center gap-2">
-                  <Box className="h-4 w-4 text-orange-400" />
-                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Blockchain Timestamp (Bitcoin)
+                  <Box className="h-4 w-4 text-purple-400" />
+                  <span className="text-xs font-medium uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                    Polygon Blockchain (STAMLES)
                   </span>
                 </div>
-                {entry.otsStatus === "CONFIRMED" ? (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <p className="text-lg font-medium text-green-700 dark:text-green-300">
-                        Block #{entry.btcBlockHeight}
-                      </p>
-                      <Badge variant="success">Ankoruar ne Bitcoin</Badge>
-                    </div>
-                    <p className="mt-1 text-xs text-green-600 dark:text-green-500/70">
-                      Verifikuar ne blockchain-in e Bitcoin
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-yellow-500 animate-pulse" />
-                      <p className="text-lg font-medium text-yellow-700 dark:text-yellow-300">
-                        Ne pritje...
-                      </p>
-                    </div>
-                    <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-500/70">
-                      Duke pritur konfirmimin ne Bitcoin blockchain
-                    </p>
-                  </>
-                )}
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
+                  <p className="text-lg font-medium text-purple-700 dark:text-purple-300">
+                    STAMLES Merkle Batching
+                  </p>
+                </div>
+                <p className="mt-1 text-xs text-purple-600 dark:text-purple-400">
+                  Hash-i eshte ne STAMLES queue. Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle tree
+                  dhe root-i ruhet ne Polygon blockchain.
+                </p>
+                <a
+                  href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30 px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors"
+                >
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  Shiko ne PolygonScan
+                </a>
               </div>
             </div>
 
@@ -560,8 +547,8 @@ export default function EntryDetailPage({
                   className="mt-1 text-[9px]"
                 >
                   {entry.otsStatus === "CONFIRMED"
-                    ? "BTC Konfirmuar"
-                    : "BTC Pending"}
+                    ? "Polygon Konfirmuar"
+                    : "Polygon Queued"}
                 </Badge>
               </div>
 
@@ -756,11 +743,11 @@ export default function EntryDetailPage({
                       <svg className="h-3.5 w-3.5 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-medium uppercase text-orange-600 dark:text-orange-400">Bitcoin Blockchain</p>
+                      <p className="text-[10px] font-medium uppercase text-orange-600 dark:text-orange-400">Polygon Blockchain</p>
                       <p className="text-sm font-semibold text-foreground">
                         {entry.otsStatus === "CONFIRMED" ? `Konfirmuar - Block #${entry.btcBlockHeight}` : "Ne pritje te konfirmimit"}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">Hash-i eshte derguar ne OpenTimestamps per ankorim ne Bitcoin</p>
+                      <p className="text-[10px] text-muted-foreground">Hash-i eshte ne STAMLES Merkle batch queue per Polygon blockchain</p>
                     </div>
                   </div>
                 </div>
@@ -975,8 +962,8 @@ export default function EntryDetailPage({
                               className="text-[9px]"
                             >
                               {sig.timestampEntry.otsStatus === "CONFIRMED"
-                                ? `BTC Block #${sig.timestampEntry.btcBlockHeight}`
-                                : "BTC Pending"}
+                                ? `Polygon #${sig.timestampEntry.btcBlockHeight}`
+                                : "Polygon Queued"}
                             </Badge>
                             <code className="font-mono text-[9px] text-muted-foreground/60">
                               hash:{" "}
