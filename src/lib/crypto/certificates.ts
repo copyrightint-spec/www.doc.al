@@ -3,7 +3,12 @@ import crypto from "crypto";
 import { prisma } from "@/lib/db";
 import type { CertificateType } from "@/generated/prisma/enums";
 
-const ENCRYPTION_KEY = process.env.CERTIFICATE_ENCRYPTION_KEY || "default-key-change-in-production-32ch";
+function getEncryptionKey(): string {
+  const key = process.env.CERTIFICATE_ENCRYPTION_KEY;
+  if (!key) throw new Error("CERTIFICATE_ENCRYPTION_KEY environment variable is required");
+  return key;
+}
+const ENCRYPTION_KEY = getEncryptionKey();
 
 /**
  * Encrypt private key with AES-256

@@ -195,7 +195,7 @@ export function StepLegalBasis({ selectedIds, onChange, onLegalBasesLoaded }: St
                         </p>
                         <div
                           className="prose prose-sm max-w-none dark:prose-invert text-xs max-h-60 overflow-y-auto"
-                          dangerouslySetInnerHTML={{ __html: lb.suggestedTerms }}
+                          dangerouslySetInnerHTML={{ __html: lb.suggestedTerms.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").replace(/\s*on\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]*)/gi, "") }}
                         />
                       </div>
                     )}

@@ -359,6 +359,8 @@ model TimestampEntry {
   @@index([fingerprint])
   @@index([otsStatus])
   @@index([serverTimestamp])
+  @@index([stamlesStatus])
+  @@index([stamlesBatchId])
 }
 
 model ApiKey {

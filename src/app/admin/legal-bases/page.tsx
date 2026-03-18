@@ -284,7 +284,7 @@ export default function AdminLegalBasesPage() {
                     </p>
                     <div
                       className="prose prose-sm max-w-none dark:prose-invert text-sm"
-                      dangerouslySetInnerHTML={{ __html: lb.suggestedTerms }}
+                      dangerouslySetInnerHTML={{ __html: lb.suggestedTerms.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").replace(/\s*on\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]*)/gi, "") }}
                     />
                   </div>
                 )}

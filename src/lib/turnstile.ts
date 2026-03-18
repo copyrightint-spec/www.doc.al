@@ -28,8 +28,12 @@ interface TurnstileVerifyResult {
 export async function verifyTurnstileToken(token: string | null | undefined): Promise<boolean> {
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
-  // Skip verification if no secret key configured (dev mode)
+  // In production, require secret key
   if (!secretKey) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("[Turnstile] TURNSTILE_SECRET_KEY not set in production!");
+      return false;
+    }
     console.warn("[Turnstile] TURNSTILE_SECRET_KEY not set — skipping verification (dev mode)");
     return true;
   }
