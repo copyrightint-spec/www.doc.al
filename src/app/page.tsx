@@ -18,8 +18,8 @@ const features: { title: string; description: string; icon: LucideIcon }[] = [
     icon: PenTool,
   },
   {
-    title: "Timestamp Server + Bitcoin",
-    description: "Dy nivele timestamp: serveri yne (time.copyright.al) dhe ankorim ne Bitcoin blockchain via OpenTimestamps.",
+    title: "Timestamp Server + Polygon",
+    description: "Dy nivele timestamp: serveri yne (doc.al chain) dhe ankorim ne Polygon blockchain via STAMLES Merkle batching.",
     icon: Clock,
   },
   {
@@ -47,14 +47,14 @@ const features: { title: string; description: string; icon: LucideIcon }[] = [
 const steps = [
   { number: "01", title: "Ngarkoni", description: "Ngarkoni dokumentin PDF qe deshironi te nenshkruani ose stamponi." },
   { number: "02", title: "Nenshkruani", description: "Verifikimi me 2 hapa (Email + TOTP), nenshkrim dixhital me certifikate." },
-  { number: "03", title: "Verifikoni", description: "Timestamp ne chain publik + Bitcoin blockchain. Kushdo mund te verifikoje." },
+  { number: "03", title: "Verifikoni", description: "Timestamp ne chain publik + Polygon blockchain. Kushdo mund te verifikoje." },
 ];
 
 const individualFeatures = [
   "Dokumente te pakufizuara",
   "Timestamps te pakufizuara",
   "Nenshkrime dixhitale me certifikate X.509",
-  "Bitcoin blockchain anchoring",
+  "Polygon blockchain anchoring (STAMLES)",
   "Public Explorer & verifikim",
   "API access",
   "Template Maker",
@@ -86,6 +86,7 @@ export default function LandingPage() {
             <span className="text-3xl font-bold text-slate-900 dark:text-white">doc<span className="text-blue-600">.al</span></span>
           </Link>
           <div className="flex items-center gap-4">
+            <Link href="/si-funksionon" className="hidden text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 sm:block">Si Funksionon</Link>
             <Link href="/explorer" className="hidden text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 sm:block">Explorer</Link>
             <Link href="/verify" className="hidden text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 sm:block">Verify</Link>
             <Link href="/auth/login" className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-300">Hyr</Link>
@@ -99,13 +100,13 @@ export default function LandingPage() {
         <div className="mx-auto max-w-3xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
             <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-            eIDAS Compliant | ETSI EN 319 422 | Bitcoin Anchored
+            eIDAS Compliant | ETSI EN 319 422 | Polygon Anchored
           </div>
           <h1 className="text-5xl font-bold leading-tight tracking-tight text-slate-900 dark:text-slate-50">
             Nenshkrim Elektronik &<br />Timestamp i Besueshem
           </h1>
           <p className="mt-6 text-lg text-slate-500 dark:text-slate-400">
-            Platforma e plote per nenshkrime dixhitale, timestamp me server dhe Bitcoin blockchain,
+            Platforma e plote per nenshkrime dixhitale, timestamp me server dhe Polygon blockchain,
             verifikim publik, dhe API per integrime. E ndertuar per biznesin shqiptar.
           </p>
           <div className="mt-8 flex items-center justify-center gap-4">
@@ -250,6 +251,7 @@ export default function LandingPage() {
             <div>
               <h4 className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">Produkt</h4>
               <div className="mt-3 space-y-2">
+                <Link href="/si-funksionon" className="block text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Si Funksionon</Link>
                 <Link href="/explorer" className="block text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Explorer</Link>
                 <Link href="/verify" className="block text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Verify</Link>
                 <Link href="/auth/register" className="block text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Regjistrohu</Link>

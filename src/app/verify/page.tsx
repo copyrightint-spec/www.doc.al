@@ -27,9 +27,9 @@ interface VerifyResult {
   sequentialFingerprint?: string;
   type?: string;
   serverTimestamp?: string;
-  btcTxId?: string | null;
-  btcBlockHeight?: number | null;
   otsStatus?: string;
+  polygonTxHash?: string | null;
+  polygonBlockNumber?: number | null;
   message?: string;
   document?: {
     id: string;
@@ -325,39 +325,35 @@ export default function VerifyPage() {
             {method === "offline" && (
               <div className="space-y-4 text-sm text-foreground">
                 <h3 className="font-semibold text-foreground">
-                  Offline Verification Instructions
+                  Verifikim i Pavarur (Offline)
                 </h3>
                 <p className="text-muted-foreground">
-                  Per te verifikuar nje timestamp offline duke perdorur
-                  OpenTimestamps:
+                  Verifikoni timestamp direkt ne Polygon blockchain pa nevoje te besoni serverin tone:
                 </p>
                 <ol className="list-decimal space-y-2 pl-6 text-muted-foreground">
                   <li>
-                    Instaloni OpenTimestamps client:{" "}
-                    <code className="rounded-lg bg-muted px-2 py-0.5 text-xs text-foreground">
-                      pip install opentimestamps-client
-                    </code>
+                    Gjeni hash-in SHA-256 te dokumentit tuaj
                   </li>
                   <li>
-                    Shkarkoni skedarin .ots nga faqja e detajeve te timestamp-it
+                    Kontrolloni ne{" "}
+                    <a href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline dark:text-blue-400">
+                      PolygonScan
+                    </a>{" "}
+                    qe Merkle root perfshin hash-in tuaj
                   </li>
                   <li>
-                    Ekzekutoni:{" "}
-                    <code className="rounded-lg bg-muted px-2 py-0.5 text-xs text-foreground">
-                      ots verify document.ots
-                    </code>
+                    Verifikoni Merkle proof nga IPFS metadata per te provuar perfshirjen
                   </li>
                   <li>
-                    Per upgrade te proof-it:{" "}
-                    <code className="rounded-lg bg-muted px-2 py-0.5 text-xs text-foreground">
-                      ots upgrade document.ots
-                    </code>
+                    Kontrolloni STAMLES explorer per detaje te plota:{" "}
+                    <a href="https://scan.stamles.eu" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline dark:text-blue-400">
+                      scan.stamles.eu
+                    </a>
                   </li>
                 </ol>
                 <p className="text-xs text-muted-foreground">
                   Verifikimi offline garanton qe nuk keni nevoje te besoni
-                  serverin tone - mund te verifikoni direkt ne Bitcoin
-                  blockchain.
+                  serverin tone - prova eshte e ruajtur ne Polygon blockchain dhe IPFS.
                 </p>
               </div>
             )}
@@ -431,13 +427,29 @@ export default function VerifyPage() {
                     {result.fingerprint}
                   </dd>
                 </div>
-                {result.otsStatus === "CONFIRMED" && result.btcBlockHeight && (
+                {result.otsStatus === "CONFIRMED" && result.polygonBlockNumber ? (
                   <div>
                     <dt className="text-xs text-muted-foreground">
-                      Bitcoin Block
+                      Polygon Blockchain (STAMLES)
                     </dt>
                     <dd className="font-medium text-green-700 dark:text-green-400">
-                      Block #{result.btcBlockHeight}
+                      <a
+                        href={`https://amoy.polygonscan.com/tx/${result.polygonTxHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline"
+                      >
+                        Block #{result.polygonBlockNumber}
+                      </a>
+                    </dd>
+                  </div>
+                ) : (
+                  <div>
+                    <dt className="text-xs text-muted-foreground">
+                      Polygon Blockchain (STAMLES)
+                    </dt>
+                    <dd className="text-purple-600 dark:text-purple-400">
+                      Ne rradhe per Merkle batching
                     </dd>
                   </div>
                 )}

@@ -8,6 +8,9 @@
 const STAMLES_URL = process.env.STAMLES_API_URL || "http://stamles-app:3001";
 const STAMLES_KEY = process.env.STAMLES_API_KEY || "stamles_docal_2026_secret_key";
 
+/** Public URL for STAMLES explorer (used in links shown to users) */
+export const STAMLES_PUBLIC_URL = process.env.NEXT_PUBLIC_STAMLES_URL || "https://scan.stamles.eu";
+
 interface StamlesSubmitResult {
   id: string;
   hash: string;

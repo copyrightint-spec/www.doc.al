@@ -339,6 +339,11 @@ model TimestampEntry {
   otsProof              Bytes?
   otsStatus             OtsStatus     @default(PENDING)
   ipfsCid               String?
+  // STAMLES / Polygon blockchain fields
+  polygonTxHash         String?
+  polygonBlockNumber    Int?
+  stamlesBatchId        String?
+  stamlesStatus         String?       @default("QUEUED") // QUEUED, BATCHED, CONFIRMED
   createdAt             DateTime      @default(now())
 
   documentId      String?

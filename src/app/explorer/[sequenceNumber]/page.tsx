@@ -697,7 +697,7 @@ export default function EntryDetailPage({
                   <p className="text-[10px] text-green-600 dark:text-green-400">Merkle tree batching + Polygon blockchain</p>
                 </div>
               </div>
-              <a href={`http://37.187.226.220:3001/verify/${entry.fingerprint}`} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 transition-colors">
+              <a href={`https://scan.stamles.eu/verify/${entry.fingerprint}`} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 transition-colors">
                 Shiko ne STAMLES
               </a>
             </div>
@@ -710,7 +710,7 @@ export default function EntryDetailPage({
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <a href={`http://37.187.226.220:3001/verify/${entry.fingerprint}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg bg-green-100/50 dark:bg-green-900/20 p-3 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group">
+                <a href={`https://scan.stamles.eu/verify/${entry.fingerprint}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg bg-green-100/50 dark:bg-green-900/20 p-3 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-200 dark:bg-green-800/50">
                     <svg className="h-4 w-4 text-green-700 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                   </div>
@@ -719,7 +719,7 @@ export default function EntryDetailPage({
                     <p className="text-[9px] text-green-600 dark:text-green-500">Merkle proof + Polygon TX</p>
                   </div>
                 </a>
-                <a href="http://37.187.226.220:3001/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg bg-green-100/50 dark:bg-green-900/20 p-3 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group">
+                <a href="https://scan.stamles.eu/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg bg-green-100/50 dark:bg-green-900/20 p-3 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-200 dark:bg-green-800/50">
                     <svg className="h-4 w-4 text-green-700 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                   </div>

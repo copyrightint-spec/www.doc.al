@@ -47,6 +47,10 @@ interface TimestampEntry {
   btcBlockHash: string | null;
   otsStatus: string;
   ipfsCid: string | null;
+  polygonTxHash: string | null;
+  polygonBlockNumber: number | null;
+  stamlesStatus: string | null;
+  stamlesBatchId: string | null;
 }
 
 interface EntryDetail {
@@ -453,9 +457,13 @@ export default function ExplorerPage() {
                       </code>
                     </TableCell>
                     <TableCell>
-                      {entry.otsStatus === "CONFIRMED" ? (
+                      {entry.stamlesStatus === "CONFIRMED" || entry.otsStatus === "CONFIRMED" ? (
                         <a
-                          href={entry.btcBlockHeight ? `https://amoy.polygonscan.com/block/${entry.btcBlockHeight}` : "#"}
+                          href={entry.polygonTxHash
+                            ? `https://amoy.polygonscan.com/tx/${entry.polygonTxHash}`
+                            : entry.polygonBlockNumber
+                              ? `https://amoy.polygonscan.com/block/${entry.polygonBlockNumber}`
+                              : "#"}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
@@ -465,6 +473,11 @@ export default function ExplorerPage() {
                             Confirmed
                           </Badge>
                         </a>
+                      ) : entry.stamlesStatus === "BATCHED" ? (
+                        <Badge variant="info">
+                          <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                          Batched
+                        </Badge>
                       ) : (
                         <Badge variant="warning">
                           <span className="h-2 w-2 rounded-full bg-purple-500 animate-pulse" />
@@ -596,17 +609,55 @@ export default function ExplorerPage() {
                               {/* Right: Polygon + IPFS + Document + Signature */}
                               <div className="space-y-4">
                                 {/* Polygon Blockchain */}
-                                <div className="rounded-xl border border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30 p-3">
+                                <div className={cn(
+                                  "rounded-xl border p-3",
+                                  (detail as unknown as TimestampEntry).stamlesStatus === "CONFIRMED"
+                                    ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30"
+                                    : "border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30"
+                                )}>
                                   <div className="flex items-center gap-2 mb-1">
-                                    <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
-                                    <span className="text-sm font-medium text-purple-800 dark:text-purple-300">
+                                    <span className={cn(
+                                      "h-2.5 w-2.5 rounded-full",
+                                      (detail as unknown as TimestampEntry).stamlesStatus === "CONFIRMED" ? "bg-green-500" : "bg-purple-500 animate-pulse"
+                                    )} />
+                                    <span className={cn(
+                                      "text-sm font-medium",
+                                      (detail as unknown as TimestampEntry).stamlesStatus === "CONFIRMED"
+                                        ? "text-green-800 dark:text-green-300"
+                                        : "text-purple-800 dark:text-purple-300"
+                                    )}>
                                       Polygon Blockchain (STAMLES)
                                     </span>
+                                    <Badge variant={(detail as unknown as TimestampEntry).stamlesStatus === "CONFIRMED" ? "success" : (detail as unknown as TimestampEntry).stamlesStatus === "BATCHED" ? "info" : "warning"}>
+                                      {(detail as unknown as TimestampEntry).stamlesStatus === "CONFIRMED" ? "Konfirmuar" : (detail as unknown as TimestampEntry).stamlesStatus === "BATCHED" ? "Ne Batch" : "Ne Rradhe"}
+                                    </Badge>
                                   </div>
-                                  <p className="text-[10px] text-purple-600 dark:text-purple-400">
-                                    Hash i dokumentit eshte ne rradhe per Merkle batching ne Polygon.
-                                    Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle tree dhe root-i ruhet on-chain.
-                                  </p>
+                                  {(detail as unknown as TimestampEntry).polygonTxHash ? (
+                                    <div className="mt-1 space-y-1">
+                                      <div className="flex items-center gap-2 text-[10px]">
+                                        <span className="text-muted-foreground">TX:</span>
+                                        <a
+                                          href={`https://amoy.polygonscan.com/tx/${(detail as unknown as TimestampEntry).polygonTxHash}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="font-mono text-green-700 hover:underline dark:text-green-300"
+                                        >
+                                          {(detail as unknown as TimestampEntry).polygonTxHash!.slice(0, 20)}...
+                                        </a>
+                                      </div>
+                                      {(detail as unknown as TimestampEntry).polygonBlockNumber && (
+                                        <div className="flex items-center gap-2 text-[10px]">
+                                          <span className="text-muted-foreground">Block:</span>
+                                          <span className="font-mono text-foreground">#{(detail as unknown as TimestampEntry).polygonBlockNumber!.toLocaleString()}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <p className="text-[10px] text-purple-600 dark:text-purple-400">
+                                      Hash i dokumentit eshte ne rradhe per Merkle batching ne Polygon.
+                                      Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle tree dhe root-i ruhet on-chain.
+                                    </p>
+                                  )}
                                   <a
                                     href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
                                     target="_blank"

@@ -1072,12 +1072,14 @@ export default function SelfSignPage() {
                 )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Polygon:</span>
-                  <span className="text-purple-500 font-medium">STAMLES Queued</span>
+                  <span className="text-purple-500 font-medium">
+                    Ne rradhe per Merkle batching (brenda 24h)
+                  </span>
                 </div>
                 {serverResult.fingerprint && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">STAMLES:</span>
-                    <a href={`http://37.187.226.220:3001/verify/${serverResult.fingerprint}`} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:underline">
+                    <a href={`https://scan.stamles.eu/verify/${serverResult.fingerprint}`} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:underline">
                       Verifiko ne STAMLES
                     </a>
                   </div>
