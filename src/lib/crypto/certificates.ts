@@ -5,17 +5,27 @@ import type { CertificateType } from "@/generated/prisma/enums";
 
 function getEncryptionKey(): string {
   const key = process.env.CERTIFICATE_ENCRYPTION_KEY;
-  if (!key) throw new Error("CERTIFICATE_ENCRYPTION_KEY environment variable is required");
+  if (!key) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("CERTIFICATE_ENCRYPTION_KEY environment variable is required");
+    }
+    return "dev-only-key-not-for-production-32";
+  }
   return key;
 }
-const ENCRYPTION_KEY = getEncryptionKey();
+
+let _encryptionKey: string | null = null;
+function encryptionKey(): string {
+  if (!_encryptionKey) _encryptionKey = getEncryptionKey();
+  return _encryptionKey;
+}
 
 /**
  * Encrypt private key with AES-256
  */
 function encryptPrivateKey(privateKeyPem: string): string {
   const iv = crypto.randomBytes(16);
-  const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
+  const key = crypto.scryptSync(encryptionKey(), "salt", 32);
   const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
   let encrypted = cipher.update(privateKeyPem, "utf8", "hex");
   encrypted += cipher.final("hex");
@@ -28,7 +38,7 @@ function encryptPrivateKey(privateKeyPem: string): string {
 export function decryptPrivateKey(encryptedData: string): string {
   const [ivHex, encrypted] = encryptedData.split(":");
   const iv = Buffer.from(ivHex, "hex");
-  const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
+  const key = crypto.scryptSync(encryptionKey(), "salt", 32);
   const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
   let decrypted = decipher.update(encrypted, "hex", "utf8");
   decrypted += decipher.final("utf8");
