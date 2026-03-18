@@ -233,12 +233,12 @@ export default function SiFunksionon() {
         <SecurityLayer
           number={2}
           title="Polygon Blockchain (STAMLES)"
-          description="Cdo 24 ore, te gjitha hash-et e dites bashkohen ne nje Merkle tree. Vetem root-i (nje hash i vetem) ruhet ne Polygon blockchain - duke ulur koston ne ~$2/vit per dokumente te pakufizuara."
+          description="Cdo 24 ore, te gjitha hash-et e dites bashkohen ne nje Merkle tree. Vetem root-i (nje hash i vetem) ruhet ne Polygon blockchain - duke garantuar efikasitet maksimal."
           icon={Database}
           color="purple"
           details={[
             "Merkle tree batching: mijera dokumente → 1 transaksion",
-            "Polygon PoS: konfirmim 2-5 sekonda, kosto minimale",
+            "Polygon PoS: konfirmim 2-5 sekonda",
             "Merkle proof provon perfshirjen e dokumentit tuaj ne batch",
             "I verifikueshem ne PolygonScan nga kushdo",
           ]}
@@ -285,7 +285,7 @@ export default function SiFunksionon() {
               Si funksionon Merkle Tree
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-              Ne vend qe te ruajme cdo dokument individualisht ne blockchain (shtrenjte),
+              Ne vend qe te ruajme cdo dokument individualisht ne blockchain,
               bashkojme te gjitha hash-et ne nje peme Merkle. Vetem root-i shkon ne Polygon.
             </p>
           </div>
@@ -310,7 +310,7 @@ export default function SiFunksionon() {
               </h4>
               <p className="mt-2 text-xs text-slate-500">
                 Vetem Merkle root ruhet ne Polygon. Nje transaksion per mijera
-                dokumente. Kosto: ~$0.005 per batch.
+                dokumente, efikasitet maksimal.
               </p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5 text-center dark:border-slate-700 dark:bg-slate-800">
