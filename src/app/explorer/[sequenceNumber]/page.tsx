@@ -23,6 +23,7 @@ import { cn } from "@/lib/cn";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import ChainVisualization from "@/components/ChainVisualization";
 import { PageSpinner } from "@/components/ui/spinner";
 
 interface SignatureTimeline {
@@ -395,196 +396,22 @@ export default function EntryDetailPage({
           </CardContent>
         </Card>
 
-        {/* ========== HASHES ========== */}
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Vlerat Hash
-            </h2>
-
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Fingerprint (SHA-256)
-                  </span>
-                  <CopyButton text={entry.fingerprint} />
-                </div>
-                <div className="mt-1 rounded-xl bg-muted px-4 py-3">
-                  <code className="break-all font-mono text-sm text-foreground">
-                    {entry.fingerprint}
-                  </code>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Sequential Fingerprint (SHA-256)
-                  </span>
-                  <CopyButton text={entry.sequentialFingerprint} />
-                </div>
-                <div className="mt-1 rounded-xl bg-muted px-4 py-3">
-                  <code className="break-all font-mono text-sm text-foreground">
-                    {entry.sequentialFingerprint}
-                  </code>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-dashed border-border px-4 py-3">
-                <p className="text-xs text-muted-foreground">
-                  <strong>Formula:</strong> SequentialFingerprint = SHA-256(
-                  prevSequentialFingerprint + fingerprint + serverTimestamp )
-                </p>
-                {entry.previousEntry && (
-                  <p className="mt-1 font-mono text-[10px] text-muted-foreground/60">
-                    prev:{" "}
-                    {entry.previousEntry.sequentialFingerprint.slice(0, 24)}...
-                  </p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ========== TIMESTAMP CHAIN VISUALIZATION ========== */}
+        {/* ========== CHAIN VISUALIZATION + HASH FORMULA ========== */}
         <Card>
           <CardContent className="p-6">
             <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Zinxhiri i Integritetit
             </h2>
-            <div className="flex items-center justify-center gap-2 overflow-x-auto py-2">
-              {/* Previous */}
-              {entry.previousEntry ? (
-                <Link
-                  href={`/explorer/${entry.previousEntry.sequenceNumber}`}
-                  className="flex min-w-[100px] flex-col items-center gap-1 rounded-xl border border-border bg-muted px-3 py-2 transition-colors hover:border-slate-400 hover:bg-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-800"
-                >
-                  <span className="text-[10px] text-muted-foreground">
-                    Para
-                  </span>
-                  <span className="font-mono text-xs font-medium text-foreground">
-                    #{entry.previousEntry.sequenceNumber}
-                  </span>
-                  <code className="text-[9px] text-muted-foreground">
-                    {entry.previousEntry.fingerprint.slice(0, 12)}...
-                  </code>
-                </Link>
-              ) : (
-                <div className="flex min-w-[100px] flex-col items-center gap-1 rounded-xl border border-border bg-muted px-3 py-2">
-                  <span className="text-[10px] text-muted-foreground">
-                    Genesis
-                  </span>
-                  <span className="font-mono text-xs font-medium text-muted-foreground">
-                    --
-                  </span>
-                </div>
-              )}
-
-              {/* Arrow */}
-              <div className="flex items-center">
-                <div
-                  className={cn(
-                    "h-0.5 w-6",
-                    entry.otsStatus === "CONFIRMED"
-                      ? "bg-green-600"
-                      : "bg-yellow-600"
-                  )}
-                />
-                <ChevronRight
-                  className={cn(
-                    "-ml-1 h-4 w-4",
-                    entry.otsStatus === "CONFIRMED"
-                      ? "text-green-600"
-                      : "text-yellow-600"
-                  )}
-                />
-              </div>
-
-              {/* Current */}
-              <div
-                className={cn(
-                  "flex min-w-[120px] flex-col items-center gap-1 rounded-xl border-2 px-4 py-3",
-                  entry.otsStatus === "CONFIRMED"
-                    ? "border-green-600 bg-green-50 dark:bg-green-950/30"
-                    : "border-yellow-600 bg-yellow-50 dark:bg-yellow-950/30"
-                )}
-              >
-                <span
-                  className={cn(
-                    "text-[10px] font-medium",
-                    entry.otsStatus === "CONFIRMED"
-                      ? "text-green-600 dark:text-green-400"
-                      : "text-yellow-600 dark:text-yellow-400"
-                  )}
-                >
-                  Aktuale
-                </span>
-                <span
-                  className={cn(
-                    "font-mono text-sm font-bold",
-                    entry.otsStatus === "CONFIRMED"
-                      ? "text-green-700 dark:text-green-300"
-                      : "text-yellow-700 dark:text-yellow-300"
-                  )}
-                >
-                  #{entry.sequenceNumber}
-                </span>
-                <code
-                  className={cn(
-                    "text-[9px]",
-                    entry.otsStatus === "CONFIRMED"
-                      ? "text-green-600/70 dark:text-green-500/70"
-                      : "text-yellow-600/70 dark:text-yellow-500/70"
-                  )}
-                >
-                  {entry.fingerprint.slice(0, 12)}...
-                </code>
-                <Badge
-                  variant={
-                    entry.otsStatus === "CONFIRMED" ? "success" : "warning"
-                  }
-                  className="mt-1 text-[9px]"
-                >
-                  {entry.otsStatus === "CONFIRMED"
-                    ? "Polygon Konfirmuar"
-                    : "Polygon Queued"}
-                </Badge>
-              </div>
-
-              {/* Arrow */}
-              <div className="flex items-center">
-                <div className="h-0.5 w-6 bg-border" />
-                <ChevronRight className="-ml-1 h-4 w-4 text-muted-foreground" />
-              </div>
-
-              {/* Next */}
-              {entry.nextEntry ? (
-                <Link
-                  href={`/explorer/${entry.nextEntry.sequenceNumber}`}
-                  className="flex min-w-[100px] flex-col items-center gap-1 rounded-xl border border-border bg-muted px-3 py-2 transition-colors hover:border-slate-400 hover:bg-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-800"
-                >
-                  <span className="text-[10px] text-muted-foreground">
-                    Pas
-                  </span>
-                  <span className="font-mono text-xs font-medium text-foreground">
-                    #{entry.nextEntry.sequenceNumber}
-                  </span>
-                  <code className="text-[9px] text-muted-foreground">
-                    {entry.nextEntry.fingerprint.slice(0, 12)}...
-                  </code>
-                </Link>
-              ) : (
-                <div className="flex min-w-[100px] flex-col items-center gap-1 rounded-xl border border-dashed border-border bg-muted px-3 py-2">
-                  <span className="text-[10px] text-muted-foreground">
-                    Me i fundit
-                  </span>
-                  <span className="font-mono text-xs font-medium text-muted-foreground">
-                    --
-                  </span>
-                </div>
-              )}
-            </div>
+            <ChainVisualization
+              currentEntry={{
+                sequenceNumber: entry.sequenceNumber,
+                fingerprint: entry.fingerprint,
+                sequentialFingerprint: entry.sequentialFingerprint,
+                serverTimestamp: entry.serverTimestamp,
+              }}
+              previousEntry={entry.previousEntry}
+              nextEntry={entry.nextEntry}
+            />
           </CardContent>
         </Card>
 

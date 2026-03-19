@@ -424,20 +424,26 @@ export default function ExplorerPage() {
                       />
                     </TableCell>
                     <TableCell>
-                      <span className="font-mono font-medium text-blue-600 dark:text-blue-400">
+                      <Link
+                        href={`/explorer/${entry.sequenceNumber}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="font-mono font-medium text-blue-600 hover:underline dark:text-blue-400"
+                      >
                         #{entry.sequenceNumber}
-                      </span>
+                      </Link>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-foreground">
                       {formatDate(entry.serverTimestamp)}
                     </TableCell>
                     <TableCell>
-                      <code
-                        className="font-mono text-xs text-muted-foreground"
+                      <Link
+                        href={`/explorer/${entry.sequenceNumber}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="font-mono text-xs text-blue-600/70 hover:text-blue-600 hover:underline dark:text-blue-400/70 dark:hover:text-blue-400"
                         title={entry.fingerprint}
                       >
                         {truncateHash(entry.fingerprint)}
-                      </code>
+                      </Link>
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -449,12 +455,14 @@ export default function ExplorerPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <code
-                        className="font-mono text-xs text-muted-foreground"
+                      <Link
+                        href={`/explorer/${entry.sequenceNumber}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="font-mono text-xs text-purple-600/70 hover:text-purple-600 hover:underline dark:text-purple-400/70 dark:hover:text-purple-400"
                         title={entry.sequentialFingerprint}
                       >
                         {truncateHash(entry.sequentialFingerprint)}
-                      </code>
+                      </Link>
                     </TableCell>
                     <TableCell>
                       {entry.stamlesStatus === "CONFIRMED" || entry.otsStatus === "CONFIRMED" ? (
@@ -512,7 +520,7 @@ export default function ExplorerPage() {
                   {expandedSeq === entry.sequenceNumber && (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={8}
                         className="border-b border-border bg-muted/30 px-0"
                       >
                         {detailLoading ? (
@@ -842,7 +850,7 @@ export default function ExplorerPage() {
               {entries.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-12 text-center text-muted-foreground"
                   >
                     Nuk ka timestamp entries akoma
