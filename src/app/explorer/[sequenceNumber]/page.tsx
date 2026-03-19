@@ -164,6 +164,10 @@ export default function EntryDetailPage({
   const [loading, setLoading] = useState(true);
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [showIpfsPopup, setShowIpfsPopup] = useState(false);
+  const [ipfsData, setIpfsData] = useState<Record<string, unknown> | null>(null);
+  const [ipfsLoading, setIpfsLoading] = useState(false);
+  const [ipfsError, setIpfsError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -482,9 +486,28 @@ export default function EntryDetailPage({
                     <p className="text-[10px] text-blue-600 dark:text-blue-400">Prove kriptografike e shperndare globalisht</p>
                   </div>
                 </div>
-                <a href={`https://ipfs.io/ipfs/${entry.ipfsCid}`} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors">
+                <button
+                  onClick={async () => {
+                    setShowIpfsPopup(true);
+                    if (!ipfsData) {
+                      setIpfsLoading(true);
+                      setIpfsError(null);
+                      try {
+                        const res = await fetch(`https://ipfs.io/ipfs/${entry.ipfsCid}`);
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        const data = await res.json();
+                        setIpfsData(data);
+                      } catch (err) {
+                        setIpfsError(err instanceof Error ? err.message : "Failed to fetch IPFS data");
+                      } finally {
+                        setIpfsLoading(false);
+                      }
+                    }
+                  }}
+                  className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+                >
                   Shiko ne IPFS
-                </a>
+                </button>
               </div>
               <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 px-4 py-3 mb-3">
                 <div className="flex items-center justify-between mb-1">
@@ -493,6 +516,22 @@ export default function EntryDetailPage({
                 </div>
                 <code className="block break-all font-mono text-xs text-blue-800 dark:text-blue-200">{entry.ipfsCid}</code>
               </div>
+              {ipfsData && (
+                <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 px-4 py-3 mb-3 space-y-1.5">
+                  {(ipfsData as Record<string, unknown>).signedAt ? (
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-blue-600 dark:text-blue-400">Krijuar me:</span>
+                      <span className="text-foreground font-medium">{formatDateShort(String((ipfsData as Record<string, unknown>).signedAt))}</span>
+                    </div>
+                  ) : null}
+                  {(ipfsData as Record<string, unknown>).version ? (
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-blue-600 dark:text-blue-400">Version:</span>
+                      <span className="text-foreground font-medium">{String((ipfsData as Record<string, unknown>).version)}</span>
+                    </div>
+                  ) : null}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="rounded-lg bg-white/40 dark:bg-slate-800/30 p-2.5">
                   <span className="text-[9px] uppercase text-blue-500">Nenshkruesi</span>
@@ -509,6 +548,129 @@ export default function EntryDetailPage({
               </div>
             </div>
           </Card>
+        )}
+
+        {/* ========== IPFS POPUP MODAL ========== */}
+        {showIpfsPopup && entry.ipfsCid && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowIpfsPopup(false)}
+          >
+            <div
+              className="relative mx-4 max-h-[85vh] w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-700 px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600/20">
+                    <svg className="h-4 w-4 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white">IPFS Content</h3>
+                    <p className="text-[10px] text-slate-400 font-mono">{entry.ipfsCid.slice(0, 20)}...{entry.ipfsCid.slice(-8)}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowIpfsPopup(false)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="overflow-y-auto max-h-[60vh] p-6">
+                {ipfsLoading && (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                    <p className="mt-3 text-sm text-slate-400">Duke marre te dhenat nga IPFS...</p>
+                  </div>
+                )}
+                {ipfsError && (
+                  <div className="rounded-xl border border-red-800 bg-red-950/30 p-4 text-center">
+                    <p className="text-sm text-red-400">Gabim: {ipfsError}</p>
+                    <button
+                      onClick={async () => {
+                        setIpfsLoading(true);
+                        setIpfsError(null);
+                        try {
+                          const res = await fetch(`https://ipfs.io/ipfs/${entry.ipfsCid}`);
+                          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                          const data = await res.json();
+                          setIpfsData(data);
+                        } catch (err) {
+                          setIpfsError(err instanceof Error ? err.message : "Failed to fetch");
+                        } finally {
+                          setIpfsLoading(false);
+                        }
+                      }}
+                      className="mt-3 rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+                    >
+                      Provo perseri
+                    </button>
+                  </div>
+                )}
+                {ipfsData && !ipfsLoading && (
+                  <div className="rounded-xl bg-slate-950 border border-slate-800 p-4 overflow-x-auto">
+                    <pre className="text-xs leading-relaxed font-mono whitespace-pre-wrap break-all">
+                      {(() => {
+                        const jsonStr = JSON.stringify(ipfsData, null, 2);
+                        const parts: { type: string; value: string }[] = [];
+                        // Simple JSON syntax highlighting via regex split
+                        const regex = /("(?:\\.|[^"\\])*"\s*:\s*)|("(?:\\.|[^"\\])*")|(\b(?:true|false|null)\b)|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g;
+                        let lastIndex = 0;
+                        let match;
+                        while ((match = regex.exec(jsonStr)) !== null) {
+                          if (match.index > lastIndex) {
+                            parts.push({ type: "punctuation", value: jsonStr.slice(lastIndex, match.index) });
+                          }
+                          if (match[1]) {
+                            parts.push({ type: "key", value: match[1] });
+                          } else if (match[2]) {
+                            parts.push({ type: "string", value: match[2] });
+                          } else if (match[3]) {
+                            parts.push({ type: "boolean", value: match[3] });
+                          } else if (match[4]) {
+                            parts.push({ type: "number", value: match[4] });
+                          }
+                          lastIndex = match.index + match[0].length;
+                        }
+                        if (lastIndex < jsonStr.length) {
+                          parts.push({ type: "punctuation", value: jsonStr.slice(lastIndex) });
+                        }
+                        return parts.map((part, i) => {
+                          const colorClass =
+                            part.type === "key" ? "text-blue-400" :
+                            part.type === "string" ? "text-green-400" :
+                            part.type === "boolean" ? "text-purple-400" :
+                            part.type === "number" ? "text-amber-400" :
+                            "text-slate-400";
+                          return <span key={i} className={colorClass}>{part.value}</span>;
+                        });
+                      })()}
+                    </pre>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between border-t border-slate-700 px-6 py-4">
+                <a
+                  href={`https://ipfs.io/ipfs/${entry.ipfsCid}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  Hap ne IPFS Gateway
+                </a>
+                {ipfsData && (
+                  <CopyButton text={JSON.stringify(ipfsData, null, 2)} label="Kopjo JSON" />
+                )}
+              </div>
+            </div>
+          </div>
         )}
 
         {/* ========== STAMLES - DECENTRALIZED TRUST SYSTEM ========== */}
