@@ -231,40 +231,9 @@ export async function POST(req: NextRequest) {
       signatureId: signature.id,
     });
 
-    // 7. Publish proof to IPFS
-    let ipfsCid: string | null = null;
-    try {
-      // Get previous entry info for IPFS proof
-      const prevEntry = timestampEntry.previousEntryId
-        ? await prisma.timestampEntry.findUnique({
-            where: { id: timestampEntry.previousEntryId },
-            select: { sequenceNumber: true, fingerprint: true },
-          })
-        : null;
-
-      const proofMetadata = buildProofMetadata({
-        documentHash: signedHash,
-        signedAt: now.toISOString(),
-        sequenceNumber: timestampEntry.sequenceNumber,
-        signerName: userName,
-        signerEmail: userEmail,
-        fingerprint: timestampEntry.fingerprint,
-        sequentialFingerprint: timestampEntry.sequentialFingerprint,
-        previousSequenceNumber: prevEntry?.sequenceNumber ?? null,
-        previousFingerprint: prevEntry?.fingerprint ?? null,
-      });
-
-      ipfsCid = await publishToIPFS(proofMetadata);
-
-      if (ipfsCid) {
-        await prisma.timestampEntry.update({
-          where: { id: timestampEntry.id },
-          data: { ipfsCid },
-        });
-      }
-    } catch (ipfsError) {
-      console.error("[self-sign] IPFS publish failed (non-critical):", ipfsError);
-    }
+    // 7. IPFS proof will be published automatically by check-stamles cron
+    // after Polygon blockchain confirmation (ensures complete proof with TX data)
+    const ipfsCid: string | null = null;
 
     // 8. Submit to STAMLES (Polygon blockchain)
     try {
