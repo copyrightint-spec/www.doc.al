@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { sendVerificationCode, sendSigningCompleted } from "@/lib/email";
+import { sendVerificationCode, sendSigningCompleted, sendSignedDocument } from "@/lib/email";
+import { getFileBuffer } from "@/lib/s3";
 import { createTimestamp } from "@/lib/timestamp/engine";
 import { rateLimit } from "@/lib/rate-limit";
 import { buildProofMetadata, publishToIPFS } from "@/lib/ipfs";
@@ -162,7 +163,7 @@ export async function POST(
           });
         }
 
-        // Send completion email to all signers + document owner
+        // Send completion email + signed PDF to all signers
         try {
           const allSignatures = await prisma.signature.findMany({
             where: { documentId: signature.documentId, status: "SIGNED" },
@@ -171,7 +172,16 @@ export async function POST(
           const baseUrl = process.env.NEXTAUTH_URL || "https://doc.al";
           const verifyUrl = `${baseUrl}/verify/${signature.document.fileHash}`;
 
+          // Get the signed PDF for attachment
+          let pdfBuffer: Buffer | null = null;
+          try {
+            pdfBuffer = await getFileBuffer(signature.document.fileUrl);
+          } catch {
+            console.error("[sign] Failed to fetch PDF for email attachment");
+          }
+
           for (const sig of allSignatures) {
+            // Send completion notification
             await sendSigningCompleted(
               sig.signerEmail,
               sig.signerName,
@@ -179,6 +189,23 @@ export async function POST(
               verifyUrl,
               { documentId: signature.documentId }
             );
+
+            // Send signed PDF with hash
+            if (pdfBuffer) {
+              await sendSignedDocument(
+                sig.signerEmail,
+                sig.signerName,
+                signature.document.title,
+                pdfBuffer,
+                `${signature.document.fileName.replace(/\.pdf$/i, "")}_nenshkruar.pdf`,
+                verifyUrl,
+                {
+                  documentId: signature.documentId,
+                  documentHash: signature.document.fileHash,
+                  sequenceNumber: timestampEntry.sequenceNumber,
+                }
+              );
+            }
           }
         } catch (emailErr) {
           console.error("[sign] Completion email failed:", emailErr);
