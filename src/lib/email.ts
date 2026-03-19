@@ -451,7 +451,7 @@ export async function sendSigningCompleted(
     </p>
     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin: 16px 0; text-align: center;">
       <p style="margin: 0; color: #166534; font-weight: 600;">Perfunduar me sukses</p>
-      <p style="margin: 8px 0 0; color: #15803d; font-size: 13px;">Nenshkrimi eshte ankoruar ne blockchain</p>
+      <p style="margin: 8px 0 0; color: #15803d; font-size: 13px;">Nenshkrimi eshte ankoruar ne Polygon blockchain</p>
     </div>
     ${contractInfo}
     <a href="${verifyUrl}" style="display: block; background: ${brandColor}; color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 14px; margin: 20px 0;">
@@ -488,8 +488,25 @@ export async function sendSignedDocument(
   options?: {
     documentId?: string;
     userId?: string;
+    documentHash?: string;
+    sequenceNumber?: number;
   }
 ): Promise<boolean> {
+  const hashInfo = options?.documentHash
+    ? `
+    <div style="background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 12px; padding: 16px; margin: 16px 0;">
+      <p style="margin: 0; color: #5b21b6; font-weight: 600; font-size: 13px;">Hash i Dokumentit (SHA-256)</p>
+      <p style="margin: 8px 0 0; color: #6d28d9; font-size: 11px; font-family: monospace; word-break: break-all; line-height: 1.6;">
+        ${options.documentHash}
+      </p>
+      ${options.sequenceNumber ? `<p style="margin: 8px 0 0; color: #7c3aed; font-size: 11px;">Chain Position: <strong>#${options.sequenceNumber}</strong></p>` : ""}
+      <p style="margin: 8px 0 0; color: #8b5cf6; font-size: 10px;">
+        Ruajeni kete hash per te verifikuar dokumentin ne cdo kohe.
+      </p>
+    </div>
+    `
+    : "";
+
   const content = `
     <h2 style="margin: 0 0 8px; color: #18181b; font-size: 20px;">Dokumenti i Nenshkruar</h2>
     <p style="margin: 0 0 16px; color: #52525b; font-size: 15px; line-height: 1.6;">
@@ -499,15 +516,16 @@ export async function sendSignedDocument(
       <p style="margin: 0; color: #166534; font-weight: 600; font-size: 14px;">PDF i nenshkruar bashkangjitur</p>
       <p style="margin: 8px 0 0; color: #15803d; font-size: 12px;">
         Dokumenti permban nenshkrim dixhital te certifikuar, QR kod per verifikim,
-        dhe eshte i ankoruar ne Bitcoin blockchain dhe IPFS.
+        dhe eshte i ankoruar ne Polygon blockchain dhe IPFS.
       </p>
     </div>
+    ${hashInfo}
     <a href="${verifyUrl}" style="display: block; background: #18181b; color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 14px; margin: 20px 0;">
       Verifiko Dokumentin Online
     </a>
     <p style="margin: 0; color: #71717a; font-size: 11px; line-height: 1.5;">
       Ky dokument eshte i nenshkruar sipas Rregullores eIDAS (BE Nr. 910/2014).
-      Prova kriptografike eshte e ruajtur ne blockchain-in Bitcoin dhe IPFS.
+      Prova kriptografike eshte e ruajtur ne Polygon blockchain dhe IPFS.
       Ruajeni kete email si prove te nenshkrimit.
     </p>
   `;

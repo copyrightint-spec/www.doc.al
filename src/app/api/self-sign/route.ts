@@ -263,7 +263,12 @@ export async function POST(req: NextRequest) {
         finalPdfBuffer,
         signedFileName,
         `${process.env.NEXTAUTH_URL || "https://doc.al"}/verify/${signedHash}`,
-        { documentId: document.id, userId }
+        {
+          documentId: document.id,
+          userId,
+          documentHash: signedHash,
+          sequenceNumber: timestampEntry.sequenceNumber,
+        }
       );
     } catch (emailError) {
       console.error("[self-sign] Email failed (non-critical):", emailError);
