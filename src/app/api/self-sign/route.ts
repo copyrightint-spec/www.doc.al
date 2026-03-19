@@ -234,6 +234,14 @@ export async function POST(req: NextRequest) {
     // 7. Publish proof to IPFS
     let ipfsCid: string | null = null;
     try {
+      // Get previous entry info for IPFS proof
+      const prevEntry = timestampEntry.previousEntryId
+        ? await prisma.timestampEntry.findUnique({
+            where: { id: timestampEntry.previousEntryId },
+            select: { sequenceNumber: true, fingerprint: true },
+          })
+        : null;
+
       const proofMetadata = buildProofMetadata({
         documentHash: signedHash,
         signedAt: now.toISOString(),
@@ -242,8 +250,8 @@ export async function POST(req: NextRequest) {
         signerEmail: userEmail,
         fingerprint: timestampEntry.fingerprint,
         sequentialFingerprint: timestampEntry.sequentialFingerprint,
-        previousEntryId: timestampEntry.previousEntryId,
-        otsSubmitted: true,
+        previousSequenceNumber: prevEntry?.sequenceNumber ?? null,
+        previousFingerprint: prevEntry?.fingerprint ?? null,
       });
 
       ipfsCid = await publishToIPFS(proofMetadata);

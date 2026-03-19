@@ -27,11 +27,13 @@ interface SignatureProofMetadata {
   chain: {
     fingerprint: string;
     sequentialFingerprint: string;
-    previousEntryId: string | null;
+    previousSequenceNumber: number | null;
+    previousFingerprint: string | null;
   };
-  bitcoin: {
+  blockchain: {
+    network: string;
+    system: string;
     status: string;
-    otsSubmitted: boolean;
   };
   verify: string;
 }
@@ -69,14 +71,14 @@ export function buildProofMetadata(opts: {
   signerEmail: string;
   fingerprint: string;
   sequentialFingerprint: string;
-  previousEntryId: string | null;
-  otsSubmitted: boolean;
+  previousSequenceNumber: number | null;
+  previousFingerprint: string | null;
 }): SignatureProofMetadata {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://doc.al";
   return {
     platform: "doc.al",
     type: "DIGITAL_SIGNATURE_PROOF",
-    version: "1.0",
+    version: "2.0",
     documentHash: opts.documentHash,
     signedAt: opts.signedAt,
     sequenceNumber: opts.sequenceNumber,
@@ -92,13 +94,15 @@ export function buildProofMetadata(opts: {
     chain: {
       fingerprint: opts.fingerprint,
       sequentialFingerprint: opts.sequentialFingerprint,
-      previousEntryId: opts.previousEntryId,
+      previousSequenceNumber: opts.previousSequenceNumber,
+      previousFingerprint: opts.previousFingerprint,
     },
-    bitcoin: {
-      status: "PENDING",
-      otsSubmitted: opts.otsSubmitted,
+    blockchain: {
+      network: "Polygon PoS (Amoy Testnet)",
+      system: "STAMLES Merkle Batching",
+      status: "QUEUED",
     },
-    verify: `${baseUrl}/verify/${opts.documentHash}`,
+    verify: `${baseUrl}/verify/${opts.fingerprint}`,
   };
 }
 
