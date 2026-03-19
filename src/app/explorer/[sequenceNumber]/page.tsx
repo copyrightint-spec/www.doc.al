@@ -351,33 +351,65 @@ export default function EntryDetailPage({
               </div>
 
               {/* Blockchain Timestamp */}
-              <div className="rounded-xl border border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/20 p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <Box className="h-4 w-4 text-purple-400" />
-                  <span className="text-xs font-medium uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                    Polygon Blockchain (STAMLES)
-                  </span>
+              {entry.otsStatus === "CONFIRMED" ? (
+                <div className="rounded-xl border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20 p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400">
+                      Polygon Blockchain - Konfirmuar
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+                    <p className="text-lg font-medium text-green-700 dark:text-green-300">
+                      On-Chain
+                    </p>
+                  </div>
+                  {(entry as unknown as { polygonTxHash?: string }).polygonTxHash && (
+                    <a
+                      href={`https://amoy.polygonscan.com/tx/${(entry as unknown as { polygonTxHash: string }).polygonTxHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 block font-mono text-xs text-green-600 dark:text-green-400 hover:underline break-all"
+                    >
+                      TX: {(entry as unknown as { polygonTxHash: string }).polygonTxHash}
+                    </a>
+                  )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
-                  <p className="text-lg font-medium text-purple-700 dark:text-purple-300">
-                    STAMLES Merkle Batching
-                  </p>
+              ) : (
+                <div className="rounded-xl border-2 border-dashed border-purple-300 bg-purple-50 dark:border-purple-700 dark:bg-purple-950/20 p-5">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <Box className="h-6 w-6 text-purple-500 animate-pulse" />
+                      <span className="text-sm font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                        Ne Pritje
+                      </span>
+                    </div>
+                    <p className="text-lg font-bold text-purple-700 dark:text-purple-300 mb-2">
+                      Pritet konfirmimi nga STAMLES
+                    </p>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 leading-relaxed max-w-sm mx-auto">
+                      STAMLES Decentralized Trust System po perpunon hash-in tuaj.
+                      Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle Tree dhe
+                      root-i dergohet ne Polygon blockchain.
+                    </p>
+                    <div className="mt-4 flex items-center justify-center gap-3">
+                      <div className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse" style={{ animationDelay: "0.3s" }} />
+                      <div className="h-1.5 w-1.5 rounded-full bg-purple-300 animate-pulse" style={{ animationDelay: "0.6s" }} />
+                    </div>
+                    <a
+                      href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30 px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors"
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      Shiko Kontrakten ne PolygonScan
+                    </a>
+                  </div>
                 </div>
-                <p className="mt-1 text-xs text-purple-600 dark:text-purple-400">
-                  Hash-i eshte ne STAMLES queue. Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle tree
-                  dhe root-i ruhet ne Polygon blockchain.
-                </p>
-                <a
-                  href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30 px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors"
-                >
-                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                  Shiko ne PolygonScan
-                </a>
-              </div>
+              )}
             </div>
 
             {/* Verification checkmark when both timestamps align */}
@@ -473,6 +505,32 @@ export default function EntryDetailPage({
         </Card>
 
         {/* ========== IPFS DECENTRALIZED PROOF ========== */}
+        {!entry.ipfsCid && (
+          <Card className="border-blue-500/20 overflow-hidden">
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/20 p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/50">
+                  <svg className="h-5 w-5 text-blue-600 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-blue-800 dark:text-blue-200">IPFS Decentralized Proof</h3>
+                  <p className="text-[10px] text-blue-600 dark:text-blue-400">InterPlanetary File System - Distributed Storage Protocol</p>
+                </div>
+              </div>
+              <div className="rounded-xl bg-blue-100/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 p-4 text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Clock className="h-5 w-5 text-blue-500 animate-pulse" />
+                  <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">Ne Pritje</span>
+                </div>
+                <p className="text-xs text-blue-600 dark:text-blue-400 leading-relaxed max-w-md mx-auto">
+                  Prova IPFS do te publikohet automatikisht pas konfirmimit ne Polygon blockchain.
+                  IPFS (InterPlanetary File System) eshte nje protokol i decentralizuar per ruajtjen
+                  e te dhenave qe garanton qe prova e dokumentit tuaj te jete e aksesueshme globalisht dhe e pandryshueshme.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
         {entry.ipfsCid && (
           <Card className="border-blue-500/20 overflow-hidden">
             <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/20 p-5">
