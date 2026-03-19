@@ -23,6 +23,8 @@ interface SignatureProofMetadata {
     eidas: boolean;
     otpVerified: boolean;
     totpVerified: boolean;
+    kycVerified: boolean;
+    kycVerifiedAt: string | null;
   };
   chain: {
     fingerprint: string;
@@ -73,12 +75,14 @@ export function buildProofMetadata(opts: {
   sequentialFingerprint: string;
   previousSequenceNumber: number | null;
   previousFingerprint: string | null;
+  kycVerified?: boolean;
+  kycVerifiedAt?: string | null;
 }): SignatureProofMetadata {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://doc.al";
   return {
     platform: "doc.al",
     type: "DIGITAL_SIGNATURE_PROOF",
-    version: "2.0",
+    version: "2.1",
     documentHash: opts.documentHash,
     signedAt: opts.signedAt,
     sequenceNumber: opts.sequenceNumber,
@@ -90,6 +94,8 @@ export function buildProofMetadata(opts: {
       eidas: true,
       otpVerified: true,
       totpVerified: true,
+      kycVerified: opts.kycVerified ?? false,
+      kycVerifiedAt: opts.kycVerifiedAt ?? null,
     },
     chain: {
       fingerprint: opts.fingerprint,

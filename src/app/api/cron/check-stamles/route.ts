@@ -44,7 +44,13 @@ export async function GET(req: NextRequest) {
         ipfsCid: true,
         previousEntryId: true,
         signature: {
-          select: { signerName: true, signerEmail: true },
+          select: {
+            signerName: true,
+            signerEmail: true,
+            signer: {
+              select: { kycStatus: true, kycVerifiedAt: true },
+            },
+          },
         },
         document: {
           select: { fileHash: true },
@@ -89,6 +95,7 @@ export async function GET(req: NextRequest) {
           // Publish complete proof to IPFS (only if not already published)
           if (!entry.ipfsCid && entry.signature) {
             try {
+              const kycData = entry.signature.signer;
               const proofMetadata = buildProofMetadata({
                 documentHash: entry.document?.fileHash || entry.fingerprint,
                 signedAt: entry.serverTimestamp.toISOString(),
@@ -99,6 +106,8 @@ export async function GET(req: NextRequest) {
                 sequentialFingerprint: entry.sequentialFingerprint,
                 previousSequenceNumber: prevEntry?.sequenceNumber ?? null,
                 previousFingerprint: prevEntry?.fingerprint ?? null,
+                kycVerified: kycData?.kycStatus === "VERIFIED",
+                kycVerifiedAt: kycData?.kycVerifiedAt?.toISOString() ?? null,
               });
 
               // Override blockchain status with confirmed data
