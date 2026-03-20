@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
+
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{10,}$/;
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "docal-mail",
+  port: parseInt(process.env.SMTP_PORT || "587"),
+  secure: false,
+  tls: { rejectUnauthorized: false },
+});
 
 /**
  * POST /api/auth/reset-password
@@ -18,9 +28,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (password.length < 8) {
+    if (!PASSWORD_REGEX.test(password)) {
       return NextResponse.json(
-        { error: "Fjalekalimi duhet te kete te pakten 8 karaktere" },
+        { error: "Fjalekalimi duhet te kete min. 10 karaktere, shkronja te medha/vogla, numra dhe simbole" },
         { status: 400 }
       );
     }
@@ -57,6 +67,25 @@ export async function POST(req: NextRequest) {
         data: { used: true },
       }),
     ]);
+
+    // Send password reset confirmation email
+    try {
+      await transporter.sendMail({
+        from: "doc.al <noreply@doc.al>",
+        to: verificationCode.user.email,
+        subject: "Fjalekalimi u Rivendos - doc.al",
+        html: `
+          <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+            <h2 style="color: #1e293b;">Fjalekalimi u Rivendos</h2>
+            <p style="color: #64748b;">Fjalekalimi i llogarise tuaj ne doc.al u rivendos me sukses.</p>
+            <p style="color: #64748b;">Nese nuk e keni bere kete ndryshim, kontaktoni mbeshtetjen menjehere.</p>
+            <p style="color: #94a3b8; font-size: 12px;">Data: ${new Date().toLocaleString("sq-AL")}</p>
+          </div>
+        `,
+      });
+    } catch (emailErr) {
+      console.error("[ResetPassword] Confirmation email failed:", emailErr);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

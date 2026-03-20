@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { generateTotpSecret, verifyTotp } from "@/lib/totp";
 import QRCode from "qrcode";
+import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   try {
@@ -45,9 +46,20 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      // Generate 10 backup codes
+      const backupCodes = Array.from({ length: 10 }, () =>
+        crypto.randomBytes(4).toString("hex").toUpperCase()
+      );
+      const hashedBackupCodes = backupCodes.map((code) =>
+        crypto.createHash("sha256").update(code).digest("hex")
+      );
+
       await prisma.user.update({
         where: { id: session.user.id },
-        data: { totpEnabled: true },
+        data: {
+          totpEnabled: true,
+          totpBackupCodes: JSON.stringify(hashedBackupCodes),
+        },
       });
 
       await prisma.auditLog.create({
@@ -65,7 +77,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      return NextResponse.json({ message: "TOTP u aktivizua" });
+      return NextResponse.json({ message: "TOTP u aktivizua", backupCodes });
     }
 
     return NextResponse.json({ error: "Veprim i pavlefshem" }, { status: 400 });

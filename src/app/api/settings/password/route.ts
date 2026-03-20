@@ -3,6 +3,14 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { verifyTotp } from "@/lib/totp";
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "docal-mail",
+  port: parseInt(process.env.SMTP_PORT || "587"),
+  secure: false,
+  tls: { rejectUnauthorized: false },
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -73,8 +81,38 @@ export async function POST(req: NextRequest) {
 
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { password: hashedPassword },
+      data: {
+        password: hashedPassword,
+        updatedAt: new Date(), // Force session refresh
+      },
     });
+
+    // Invalidate all existing sessions and verification codes
+    await prisma.session.deleteMany({
+      where: { userId: session.user.id },
+    });
+    await prisma.verificationCode.deleteMany({
+      where: { userId: session.user.id, used: false },
+    });
+
+    // Send password change confirmation email
+    try {
+      await transporter.sendMail({
+        from: "doc.al <noreply@doc.al>",
+        to: session.user.email,
+        subject: "Fjalekalimi u Ndryshua - doc.al",
+        html: `
+          <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+            <h2 style="color: #1e293b;">Fjalekalimi u Ndryshua</h2>
+            <p style="color: #64748b;">Fjalekalimi i llogarise tuaj ne doc.al u ndryshua me sukses.</p>
+            <p style="color: #64748b;">Nese nuk e keni bere kete ndryshim, kontaktoni mbeshtetjen menjehere.</p>
+            <p style="color: #94a3b8; font-size: 12px;">Data: ${new Date().toLocaleString("sq-AL")}</p>
+          </div>
+        `,
+      });
+    } catch (emailErr) {
+      console.error("[PasswordChange] Confirmation email failed:", emailErr);
+    }
 
     return NextResponse.json({
       message: "Fjalekalimi u ndryshua me sukses",

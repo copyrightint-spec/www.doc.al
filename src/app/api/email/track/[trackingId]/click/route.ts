@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ trackingId: string }> }
 ) {
+  const limited = rateLimit(req, "emailTracking");
+  if (limited) return limited;
+
   const { trackingId } = await params;
   const url = req.nextUrl.searchParams.get("url");
 

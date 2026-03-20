@@ -366,6 +366,7 @@ export async function GET(
           title: document.title,
           fileName: document.fileName,
           fileHash: document.fileHash,
+          fileUrl: document.fileUrl,
           fileSize: document.fileSize,
           status: document.status,
           createdAt: document.createdAt.toISOString(),

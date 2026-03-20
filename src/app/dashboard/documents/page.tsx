@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { FileText, Upload, Send, Eye } from "lucide-react";
+import { FileText, Upload, Send, Eye, Lock } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,7 @@ interface Document {
   title: string;
   fileName: string;
   fileHash: string;
+  fileUrl: string;
   fileSize: number;
   status: string;
   createdAt: string;
@@ -165,6 +166,14 @@ export default function DocumentsPage() {
                             </Badge>
                           );
                         })}
+                      </div>
+                    )}
+                    {!doc.fileUrl && (
+                      <div className="mt-2">
+                        <Badge variant="default">
+                          <Lock className="h-3 w-3" />
+                          File fshihet per privatesine
+                        </Badge>
                       </div>
                     )}
                   </div>

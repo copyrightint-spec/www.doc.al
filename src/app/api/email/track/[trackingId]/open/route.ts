@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 
 // 1x1 transparent PNG pixel
 const PIXEL = Buffer.from(
@@ -11,6 +12,9 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ trackingId: string }> }
 ) {
+  const limited = rateLimit(req, "emailTracking");
+  if (limited) return limited;
+
   const { trackingId } = await params;
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
   const userAgent = req.headers.get("user-agent") || "unknown";

@@ -129,6 +129,7 @@ model User {
   kycVerifiedAt                DateTime?
   totpSecret                   String?
   totpEnabled                  Boolean             @default(false)
+  totpBackupCodes              String?             // JSON array of hashed backup codes
   emailVerified                DateTime?
   image                        String?
   phone                        String?

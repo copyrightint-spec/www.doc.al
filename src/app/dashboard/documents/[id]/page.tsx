@@ -27,6 +27,7 @@ import {
   Hash,
   ExternalLink,
   Download,
+  Lock,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +62,7 @@ interface DocumentData {
   title: string;
   fileName: string;
   fileHash: string;
+  fileUrl: string;
   fileSize: number;
   status: string;
   createdAt: string;
@@ -206,12 +208,20 @@ export default function DocumentDetailPage() {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="secondary" size="sm" asChild>
-                <a href={`/api/documents/${document.id}/download`} download>
-                  <Download className="h-3.5 w-3.5" />
-                  Shkarko
-                </a>
-              </Button>
+              {document.fileUrl && (
+                <Button variant="secondary" size="sm" asChild>
+                  <a href={`/api/documents/${document.id}/download`} download>
+                    <Download className="h-3.5 w-3.5" />
+                    Shkarko
+                  </a>
+                </Button>
+              )}
+              {!document.fileUrl && (
+                <Badge variant="default">
+                  <Lock className="h-3 w-3" />
+                  File fshihet per privatesine
+                </Badge>
+              )}
             </div>
           </div>
 

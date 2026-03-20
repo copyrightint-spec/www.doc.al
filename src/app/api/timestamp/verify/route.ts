@@ -16,6 +16,12 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
+      if (file.size > 50 * 1024 * 1024) {
+        return NextResponse.json(
+          { success: false, error: "Madhesia maksimale e skedarit eshte 50MB" },
+          { status: 400 }
+        );
+      }
       const buffer = Buffer.from(await file.arrayBuffer());
       fingerprint = computeSHA256(buffer);
     } else {

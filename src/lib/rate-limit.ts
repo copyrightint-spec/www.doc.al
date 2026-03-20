@@ -50,6 +50,8 @@ export const RATE_LIMITS = {
   timestamp: { windowMs: 60 * 60 * 1000, max: 30 },
   /** API key: configurable per key */
   apiKey: { windowMs: 60 * 60 * 1000, max: 100 },
+  /** Email tracking: 100 per minute per IP */
+  emailTracking: { windowMs: 60 * 1000, max: 100 },
   /** General: 60 per minute per IP */
   general: { windowMs: 60 * 1000, max: 60 },
 } as const;

@@ -170,6 +170,8 @@ export default function SelfSignPage() {
     signedAt?: string;
     ipfsCid?: string;
     ipfsUrl?: string;
+    cryptoSigned?: boolean;
+    certificateSerial?: string;
   } | null>(null);
 
   // Step statuses for done phase
@@ -1068,6 +1070,18 @@ export default function SelfSignPage() {
                     <a href={serverResult.ipfsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[220px]">
                       {serverResult.ipfsCid}
                     </a>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Firma Kriptografike:</span>
+                  <span className={serverResult.cryptoSigned ? "text-green-600 font-medium" : "text-yellow-600 font-medium"}>
+                    {serverResult.cryptoSigned ? "Po (certifikate dixhitale)" : "Jo (vetem vizuale)"}
+                  </span>
+                </div>
+                {serverResult.certificateSerial && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Nr. Certifikates:</span>
+                    <span className="font-mono text-foreground truncate max-w-[220px]">{serverResult.certificateSerial}</span>
                   </div>
                 )}
                 <div className="flex justify-between">

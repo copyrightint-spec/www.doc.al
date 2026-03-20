@@ -24,8 +24,9 @@ function ResetForm() {
     e.preventDefault();
     setError("");
 
-    if (password.length < 8) {
-      setError("Fjalekalimi duhet te kete te pakten 8 karaktere");
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{10,}$/;
+    if (!passwordRegex.test(password)) {
+      setError("Fjalekalimi duhet te kete min. 10 karaktere, shkronja te medha/vogla, numra dhe simbole");
       return;
     }
     if (password !== confirmPassword) {
@@ -119,8 +120,8 @@ function ResetForm() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      minLength={8}
-                      placeholder="Minimum 8 karaktere"
+                      minLength={10}
+                      placeholder="Min. 10 karaktere (A-z, 0-9, !@#)"
                     />
                   </div>
 

@@ -74,6 +74,27 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "userId required" }, { status: 400 });
   }
 
+  // Reset 2FA action - SUPER_ADMIN only
+  if (body.action === "reset-2fa") {
+    if (session.user.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Only SUPER_ADMIN can reset 2FA" }, { status: 403 });
+    }
+    await prisma.user.update({
+      where: { id: userId },
+      data: { totpSecret: null, totpEnabled: false, totpBackupCodes: null },
+    });
+    await prisma.auditLog.create({
+      data: {
+        action: "ADMIN_RESET_2FA",
+        entityType: "User",
+        entityId: userId,
+        userId: session.user.id,
+        metadata: { targetUserId: userId, reason: "Admin reset" },
+      },
+    });
+    return NextResponse.json({ success: true, message: "2FA reset successfully" });
+  }
+
   const updateData: Record<string, unknown> = {};
   if (role) updateData.role = role;
   if (kycStatus) {
@@ -122,8 +143,8 @@ export async function PATCH(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const session = await auth();
-  if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
-    return NextResponse.json({ error: "Unauthorized - Admin only" }, { status: 403 });
+  if (!session?.user || session.user.role !== "SUPER_ADMIN") {
+    return NextResponse.json({ error: "Only SUPER_ADMIN can delete users" }, { status: 403 });
   }
 
   const { searchParams } = req.nextUrl;

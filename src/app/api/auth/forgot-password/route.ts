@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     if (user) {
       // Generate secure token
       const token = crypto.randomBytes(32).toString("hex");
-      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
       // Store reset token as a verification code
       await prisma.verificationCode.create({
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
               <a href="${resetUrl}" style="display: inline-block; background: #1e293b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin: 16px 0;">
                 Ndrysho Fjalekalimin
               </a>
-              <p style="color: #94a3b8; font-size: 12px;">Ky link skadon pas 1 ore.</p>
+              <p style="color: #94a3b8; font-size: 12px;">Ky link skadon pas 24 oreve.</p>
               <p style="color: #94a3b8; font-size: 12px;">Nese nuk e keni kerkuar kete, injoroni kete email.</p>
             </div>
           `,

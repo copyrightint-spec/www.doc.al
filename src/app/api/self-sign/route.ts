@@ -242,7 +242,7 @@ export async function POST(req: NextRequest) {
       console.error("[self-sign] STAMLES submit failed (non-critical):", stamlesError);
     }
 
-    // 9. Send completion email
+    // 9. Send completion email, then delete files only after both emails succeed
     try {
       await sendSigningCompleted(
         userEmail,
@@ -270,30 +270,31 @@ export async function POST(req: NextRequest) {
           sequenceNumber: timestampEntry.sequenceNumber,
         }
       );
-    } catch (emailError) {
-      console.error("[self-sign] Email failed (non-critical):", emailError);
-    }
 
-    // 9b. Delete PDFs from S3 after successful email delivery (privacy)
-    try {
-      await deleteFile(signedKey);
-      await deleteFile(originalKey);
-      // Update document record to indicate file deleted
-      const existingMetadata = (document.metadata as Record<string, unknown>) || {};
-      await prisma.document.update({
-        where: { id: document.id },
-        data: {
-          fileUrl: "",
-          metadata: {
-            ...existingMetadata,
-            fileDeletedAt: new Date().toISOString(),
-            reason: "privacy-after-delivery",
+      // Only delete after BOTH emails sent successfully
+      try {
+        await deleteFile(signedKey);
+        await deleteFile(originalKey);
+        // Update document record to indicate file deleted
+        const existingMetadata = (document.metadata as Record<string, unknown>) || {};
+        await prisma.document.update({
+          where: { id: document.id },
+          data: {
+            fileUrl: "",
+            metadata: {
+              ...existingMetadata,
+              fileDeletedAt: new Date().toISOString(),
+              reason: "privacy-after-delivery",
+            },
           },
-        },
-      });
-      console.log("[self-sign] Files deleted from S3 after email delivery (privacy)");
-    } catch (deleteError) {
-      console.error("[self-sign] File deletion failed:", deleteError);
+        });
+        console.log("[self-sign] Files deleted from S3 after email delivery (privacy)");
+      } catch (deleteError) {
+        console.error("[self-sign] File deletion failed:", deleteError);
+      }
+    } catch (emailError) {
+      // Email failed - DO NOT delete files
+      console.error("[self-sign] Email failed, keeping files:", emailError);
     }
 
     // 9. Audit Logs

@@ -38,7 +38,9 @@ export default function AdminUsersPage() {
   const [generatingCert, setGeneratingCert] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [resetting2FA, setResetting2FA] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string>("");
 
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type });
@@ -63,6 +65,12 @@ export default function AdminUsersPage() {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  useEffect(() => {
+    fetch("/api/auth/session").then((r) => r.json()).then((data) => {
+      if (data?.user?.role) setCurrentUserRole(data.user.role);
+    }).catch(() => {});
+  }, []);
 
   async function updateUser(userId: string, field: string, value: string) {
     const res = await fetch("/api/admin/users", {
@@ -131,6 +139,28 @@ export default function AdminUsersPage() {
       showToast("Gabim gjate procesit", "error");
     } finally {
       setGeneratingCert(null);
+    }
+  }
+
+  async function reset2FA(userId: string) {
+    setResetting2FA(userId);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "reset-2fa" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("2FA u rivendos me sukses", "success");
+        fetchUsers();
+      } else {
+        showToast(data.error || "Gabim gjate rivendosjes se 2FA", "error");
+      }
+    } catch {
+      showToast("Gabim gjate rivendosjes se 2FA", "error");
+    } finally {
+      setResetting2FA(null);
     }
   }
 
@@ -432,6 +462,26 @@ export default function AdminUsersPage() {
                                 title="KYC i refuzuar"
                                 description="Ndryshoni statusin e KYC ne VERIFIED per te gjeneruar certifikate."
                               />
+                            )}
+
+                            {/* Reset 2FA - SUPER_ADMIN only */}
+                            {currentUserRole === "SUPER_ADMIN" && user.totpEnabled && (
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="w-full"
+                                onClick={(e) => { e.stopPropagation(); reset2FA(user.id); }}
+                                disabled={resetting2FA === user.id}
+                              >
+                                {resetting2FA === user.id ? (
+                                  <span className="flex items-center justify-center gap-2">
+                                    <Spinner size="sm" />
+                                    Duke rivendosur 2FA...
+                                  </span>
+                                ) : (
+                                  "Rivendos 2FA"
+                                )}
+                              </Button>
                             )}
 
                             {/* Delete User */}

@@ -101,6 +101,21 @@ export async function POST(
         data: { used: true },
       });
 
+      // Check signing order - reject if previous signers haven't signed
+      const previousUnsigned = await prisma.signature.count({
+        where: {
+          documentId: signature.documentId,
+          order: { lt: signature.order },
+          status: { not: "SIGNED" },
+        },
+      });
+      if (previousUnsigned > 0) {
+        return NextResponse.json(
+          { error: "Nenshkruesit e meparshem nuk kane nenshkruar akoma. Prisni rradhen tuaj." },
+          { status: 400 }
+        );
+      }
+
       // Update signature
       const signedAt = new Date();
       await prisma.signature.update({
