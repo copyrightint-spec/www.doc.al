@@ -5,12 +5,21 @@ import forge from "node-forge";
 
 function extractCertInfo(cert: forge.pki.Certificate) {
   const getAttr = (name: string) => {
-    const attr = cert.subject.getField(name);
-    return attr ? (attr.value as string) : "";
+    const attr = cert.subject.getField(name) || cert.subject.getField({ name });
+    if (attr) return attr.value as string;
+    // Fallback: search attributes array directly
+    const found = cert.subject.attributes.find(
+      (a) => a.name === name || a.shortName === name
+    );
+    return found ? (found.value as string) : "";
   };
   const getIssuerAttr = (name: string) => {
-    const attr = cert.issuer.getField(name);
-    return attr ? (attr.value as string) : "";
+    const attr = cert.issuer.getField(name) || cert.issuer.getField({ name });
+    if (attr) return attr.value as string;
+    const found = cert.issuer.attributes.find(
+      (a) => a.name === name || a.shortName === name
+    );
+    return found ? (found.value as string) : "";
   };
 
   const derBytes = forge.asn1
