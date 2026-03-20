@@ -1,7 +1,13 @@
-"use client";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { AdminLayoutClient } from "./admin-layout-client";
 
-import { AppShell } from "@/components/layout/app-shell";
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <AppShell variant="admin">{children}</AppShell>;
+  if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+    redirect("/dashboard");
+  }
+
+  return <AdminLayoutClient>{children}</AdminLayoutClient>;
 }

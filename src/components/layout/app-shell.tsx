@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
@@ -21,6 +21,7 @@ interface AppShellProps {
 
 export function AppShell({ children, variant = "dashboard" }: AppShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -29,16 +30,22 @@ export function AppShell({ children, variant = "dashboard" }: AppShellProps) {
       .then((r) => r.json())
       .then((data) => {
         if (data?.user) {
+          const role = data.user.role || "USER";
           setUserSession({
-            role: data.user.role || "USER",
+            role,
             name: data.user.name || "",
             email: data.user.email || "",
             image: data.user.image || undefined,
           });
+
+          // Client-side guard: redirect non-admin users away from admin pages
+          if (variant === "admin" && role !== "ADMIN" && role !== "SUPER_ADMIN") {
+            router.replace("/dashboard");
+          }
         }
       })
       .catch(() => {});
-  }, []);
+  }, [variant, router]);
 
   const isAdmin = variant === "admin";
   const navItems: NavItem[] = isAdmin ? adminNav : dashboardNav;

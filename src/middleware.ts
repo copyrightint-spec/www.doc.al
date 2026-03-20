@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { decode } from "@auth/core/jwt";
 
 const publicPaths = [
   "/",
@@ -26,7 +27,33 @@ function isPublicPath(pathname: string): boolean {
   );
 }
 
-export function middleware(req: NextRequest) {
+async function getTokenRole(req: NextRequest): Promise<string | null> {
+  const tokenValue =
+    req.cookies.get("authjs.session-token")?.value ||
+    req.cookies.get("__Secure-authjs.session-token")?.value;
+
+  if (!tokenValue) return null;
+
+  try {
+    const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+    if (!secret) return null;
+
+    const decoded = await decode({
+      token: tokenValue,
+      secret,
+      salt:
+        req.cookies.get("__Secure-authjs.session-token")?.value
+          ? "__Secure-authjs.session-token"
+          : "authjs.session-token",
+    });
+
+    return (decoded?.role as string) || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Allow public paths
@@ -43,6 +70,25 @@ export function middleware(req: NextRequest) {
     const loginUrl = new URL("/auth/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Block non-admin users from /admin routes
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const role = await getTokenRole(req);
+
+    if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
+      const dashboardUrl = new URL("/dashboard", req.url);
+      return NextResponse.redirect(dashboardUrl);
+    }
+  }
+
+  // Block non-admin users from /api/admin routes
+  if (pathname.startsWith("/api/admin")) {
+    const role = await getTokenRole(req);
+
+    if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   return NextResponse.next();

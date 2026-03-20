@@ -69,7 +69,8 @@
       "Bash(nslookup doc.al)",
       "Bash(nslookup 37.187.226.220)",
       "Bash(find 'd:/4. Development/stamles/stamles' -maxdepth 1 -type f \\\\\\(-name *.env* -o -name *.config.* \\\\\\))",
-      "Bash(find src/components src/app -name \"*.tsx\" -type f -exec wc -l {})"
+      "Bash(find src/components src/app -name \"*.tsx\" -type f -exec wc -l {})",
+      "Bash(node -e \"const { decode } = require\\(''@auth/core/jwt''\\); console.log\\(typeof decode\\);\")"
     ]
   }
 }
