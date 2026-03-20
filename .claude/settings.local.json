@@ -73,7 +73,8 @@
       "Bash(node -e \"const { decode } = require\\(''@auth/core/jwt''\\); console.log\\(typeof decode\\);\")",
       "WebFetch(domain:www.npmjs.com)",
       "Bash(uipro init:*)",
-      "Bash(printf '\\\\n')"
+      "Bash(printf '\\\\n')",
+      "Bash(ssh ubuntu@37.187.226.220 \"ls /tmp/docal-build/src/lib/ 2>/dev/null | head -10\")"
     ]
   }
 }
