@@ -18,6 +18,7 @@ import {
   Mail,
   ScrollText,
   Scale,
+  KeyRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -52,6 +53,7 @@ export const adminNav: NavItem[] = [
   { href: "/admin/contracts", label: "Kontrata", icon: FileCheck },
   { href: "/admin/legal-bases", label: "Bazat Ligjore", icon: Scale },
   { href: "/admin/certificates", label: "Certifikata", icon: Shield },
+  { href: "/admin/ca", label: "Autoriteti CA", icon: KeyRound },
   { href: "/admin/timestamps", label: "Timestamps", icon: Clock },
   { href: "/admin/seals", label: "Vulat Dixhitale", icon: Stamp },
   { href: "/admin/contacts", label: "Kontakte", icon: Mail },

@@ -12,6 +12,11 @@ import {
   ChevronDown,
   RefreshCw,
   Search,
+  ExternalLink,
+  Link2,
+  CheckCircle2,
+  XCircle,
+  Loader2,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -116,6 +121,8 @@ export default function AdminCertificatesPage() {
   const [revokeConfirm, setRevokeConfirm] = useState<string | null>(null);
   const [revokeReason, setRevokeReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [chainStatus, setChainStatus] = useState<Record<string, { valid: boolean; error?: string; loading: boolean }>>({});
+  const [ocspStatuses, setOcspStatuses] = useState<Record<string, { status: string; loading: boolean }>>({});
 
   const fetchCertificates = useCallback(async () => {
     setLoading(true);
@@ -195,6 +202,47 @@ export default function AdminCertificatesPage() {
       fetchCertificates();
     }
     setActionLoading(false);
+  }
+
+  async function handleCheckChain(certId: string) {
+    setChainStatus((prev) => ({ ...prev, [certId]: { valid: false, loading: true } }));
+    try {
+      const res = await fetch(`/api/admin/certificates/verify?id=${certId}`);
+      const data = await res.json();
+      if (data.success) {
+        setChainStatus((prev) => ({
+          ...prev,
+          [certId]: { valid: data.data.valid, error: data.data.error, loading: false },
+        }));
+      } else {
+        setChainStatus((prev) => ({
+          ...prev,
+          [certId]: { valid: false, error: data.error, loading: false },
+        }));
+      }
+    } catch {
+      setChainStatus((prev) => ({
+        ...prev,
+        [certId]: { valid: false, error: "Gabim ne lidhje", loading: false },
+      }));
+    }
+  }
+
+  async function handleCheckOCSP(certId: string) {
+    setOcspStatuses((prev) => ({ ...prev, [certId]: { status: "checking", loading: true } }));
+    try {
+      const res = await fetch(`/api/admin/certificates/ocsp-check?id=${certId}`);
+      const data = await res.json();
+      setOcspStatuses((prev) => ({
+        ...prev,
+        [certId]: { status: data.success ? (data.data?.status || "good") : "error", loading: false },
+      }));
+    } catch {
+      setOcspStatuses((prev) => ({
+        ...prev,
+        [certId]: { status: "error", loading: false },
+      }));
+    }
   }
 
   const isSuperAdmin = userRole === "SUPER_ADMIN";
@@ -362,6 +410,122 @@ export default function AdminCertificatesPage() {
                       <div>
                         <span className="text-muted-foreground">Created</span>
                         <p className="font-medium text-foreground">{formatDate(cert.createdAt)}</p>
+                      </div>
+                    </div>
+
+                    {/* Chain Validation, OCSP, AIA/CDP */}
+                    <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {/* Issuer Info */}
+                      <div>
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Leshues (Issuer)</span>
+                        <p className="font-medium text-xs text-foreground mt-0.5">
+                          {cert.issuerDN.includes("Root CA") ? "Root CA" : cert.issuerDN.includes("Issuing") ? "Issuing CA" : cert.issuerDN}
+                        </p>
+                      </div>
+
+                      {/* Chain validation */}
+                      <div>
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Validimi i Zinxhirit</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {chainStatus[cert.id] ? (
+                            chainStatus[cert.id].loading ? (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Loader2 className="h-3 w-3 animate-spin" /> Duke kontrolluar...
+                              </span>
+                            ) : chainStatus[cert.id].valid ? (
+                              <span className="flex items-center gap-1 text-xs text-green-500">
+                                <CheckCircle2 className="h-3 w-3" /> I vlefshem
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-xs text-red-500">
+                                <XCircle className="h-3 w-3" /> {chainStatus[cert.id].error || "I pavlefshem"}
+                              </span>
+                            )
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleCheckChain(cert.id)}
+                              className="h-6 text-[11px] px-2"
+                            >
+                              <Shield className="h-3 w-3 mr-1" /> Kontrollo
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* OCSP Status */}
+                      <div>
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Statusi OCSP</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {ocspStatuses[cert.id] ? (
+                            ocspStatuses[cert.id].loading ? (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Loader2 className="h-3 w-3 animate-spin" /> Duke kontrolluar...
+                              </span>
+                            ) : ocspStatuses[cert.id].status === "good" ? (
+                              <span className="flex items-center gap-1 text-xs text-green-500">
+                                <CheckCircle2 className="h-3 w-3" /> Good
+                              </span>
+                            ) : ocspStatuses[cert.id].status === "revoked" ? (
+                              <span className="flex items-center gap-1 text-xs text-red-500">
+                                <XCircle className="h-3 w-3" /> Revoked
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-xs text-yellow-500">
+                                <ShieldAlert className="h-3 w-3" /> {ocspStatuses[cert.id].status}
+                              </span>
+                            )
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleCheckOCSP(cert.id)}
+                              className="h-6 text-[11px] px-2"
+                            >
+                              <RefreshCw className="h-3 w-3 mr-1" /> Kontrollo
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* AIA / CDP URLs */}
+                    <div className="mb-4 rounded-xl border border-border bg-muted/50 p-3">
+                      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        AIA / CDP URL-te
+                      </p>
+                      <div className="space-y-1.5 text-xs">
+                        <div className="flex items-center gap-2">
+                          <Link2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                          <span className="text-muted-foreground">CA Issuer:</span>
+                          <a
+                            href="/api/ca/issuing.crt"
+                            className="font-mono text-blue-500 hover:underline flex items-center gap-1"
+                          >
+                            /api/ca/issuing.crt <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Link2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                          <span className="text-muted-foreground">OCSP:</span>
+                          <a
+                            href="/api/ocsp"
+                            className="font-mono text-blue-500 hover:underline flex items-center gap-1"
+                          >
+                            /api/ocsp <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Link2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                          <span className="text-muted-foreground">CRL:</span>
+                          <a
+                            href="/api/crl"
+                            className="font-mono text-blue-500 hover:underline flex items-center gap-1"
+                          >
+                            /api/crl <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        </div>
                       </div>
                     </div>
 

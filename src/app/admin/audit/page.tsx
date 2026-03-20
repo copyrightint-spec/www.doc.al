@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, Fragment } from "react";
-import { Activity, CalendarDays, Users, Zap, ChevronDown, Search } from "lucide-react";
+import { Activity, CalendarDays, Users, Zap, ChevronDown, Search, GitBranch } from "lucide-react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -106,7 +107,18 @@ export default function AdminAuditPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
-      <PageHeader title="Audit Log" subtitle="System-wide activity and event history" />
+      <PageHeader
+        title="Audit Log"
+        subtitle="System-wide activity and event history"
+        actions={
+          <Link href="/admin/audit/timeline">
+            <Button variant="secondary">
+              <GitBranch className="mr-2 h-4 w-4" />
+              Kronologjia e Detajuar
+            </Button>
+          </Link>
+        }
+      />
 
       {/* Stats Row */}
       {stats && (
