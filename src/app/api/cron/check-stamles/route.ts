@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
 
         if (!result) continue;
 
-        if (result.verified && result.polygonTxHash) {
+        if ((result.verified || result.status === "CONFIRMED") && result.polygonTxHash) {
           // Get previous entry for chain linking
           const prevEntry = entry.previousEntryId
             ? await prisma.timestampEntry.findUnique({
