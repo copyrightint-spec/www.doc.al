@@ -2,6 +2,7 @@ import forge from "node-forge";
 import crypto from "crypto";
 import { prisma } from "@/lib/db";
 import type { CertificateType } from "@/generated/prisma/enums";
+import { getIssuingCA, signCertificateWithCA } from "./ca";
 
 function getEncryptionKey(): string {
   const key = process.env.CERTIFICATE_ENCRYPTION_KEY;
@@ -46,7 +47,7 @@ export function decryptPrivateKey(encryptedData: string): string {
 }
 
 /**
- * Generate a self-signed X.509 certificate for a user
+ * Generate an X.509 certificate for a user, signed by the doc.al Issuing CA
  */
 export async function generateUserCertificate(
   userId: string,
@@ -86,18 +87,15 @@ export async function generateUserCertificate(
   }
 
   cert.setSubject(attrs);
-  cert.setIssuer([
-    { name: "commonName", value: "doc.al Certificate Authority" },
-    { name: "organizationName", value: "doc.al" },
-    { name: "countryName", value: "AL" },
-  ]);
 
+  // Set end-entity extensions (CA-related extensions added by signCertificateWithCA)
   cert.setExtensions([
-    { name: "basicConstraints", cA: false },
+    { name: "basicConstraints", cA: false, critical: true },
     {
       name: "keyUsage",
       digitalSignature: true,
       nonRepudiation: true,
+      critical: true,
     },
     {
       name: "extKeyUsage",
@@ -108,8 +106,9 @@ export async function generateUserCertificate(
     },
   ]);
 
-  // Self-sign with the user's private key (in production, sign with CA key)
-  cert.sign(keys.privateKey, forge.md.sha256.create());
+  // Sign with the Issuing CA (proper CA chain)
+  const issuingCA = getIssuingCA();
+  signCertificateWithCA(cert, issuingCA);
 
   const publicKeyPem = forge.pki.publicKeyToPem(keys.publicKey);
   const privateKeyPem = forge.pki.privateKeyToPem(keys.privateKey);
