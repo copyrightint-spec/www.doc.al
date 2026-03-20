@@ -47,7 +47,7 @@ function generateSerialNumber(): string {
  * Falls back to localhost in development.
  */
 function getBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://doc.al";
+  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://www.doc.al";
 }
 
 // ---------------------------------------------------------------------------
@@ -72,8 +72,8 @@ function generateRootCA(): CACertificate {
 
   const attrs: forge.pki.CertificateField[] = [
     { name: "commonName", value: "doc.al Root CA" },
-    { name: "organizationName", value: "doc.al" },
-    { name: "localityName", value: "Tirana" },
+    { name: "organizationName", value: "COPYRIGHT sh.p.k" },
+    { name: "localityName", value: "Tirane" },
     { name: "countryName", value: "AL" },
   ];
 
@@ -153,12 +153,12 @@ function generateIssuingCA(rootCA: CACertificate): CACertificate {
 
   cert.validity.notBefore = new Date();
   cert.validity.notAfter = new Date();
-  cert.validity.notAfter.setFullYear(cert.validity.notAfter.getFullYear() + 5);
+  cert.validity.notAfter.setFullYear(cert.validity.notAfter.getFullYear() + 10);
 
   const subjectAttrs: forge.pki.CertificateField[] = [
     { name: "commonName", value: "doc.al Issuing CA" },
-    { name: "organizationName", value: "doc.al" },
-    { name: "localityName", value: "Tirana" },
+    { name: "organizationName", value: "COPYRIGHT sh.p.k" },
+    { name: "localityName", value: "Tirane" },
     { name: "countryName", value: "AL" },
   ];
 
