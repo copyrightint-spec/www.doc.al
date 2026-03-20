@@ -396,6 +396,28 @@ export async function GET(req: NextRequest) {
     if (resolvedDocumentId) {
       auditLogWhere.push({ entityType: "TimestampEntry", metadata: { path: ["documentId"], equals: resolvedDocumentId } });
     }
+    // Look for User-level audit events (OTP/TOTP/2FA) linked to signers of this document
+    if (signaturesSource.length > 0) {
+      const signerUserIds = signaturesSource
+        .map((s) => s.signerId)
+        .filter((id): id is string => !!id);
+      if (signerUserIds.length > 0) {
+        auditLogWhere.push({
+          entityType: "User",
+          entityId: { in: signerUserIds },
+          action: {
+            in: [
+              "SIGNING_OTP_SENT",
+              "SIGNING_OTP_VERIFIED",
+              "SIGNING_OTP_FAILED",
+              "SIGNING_TOTP_VERIFIED",
+              "SIGNING_TOTP_FAILED",
+              "TOTP_ENABLED",
+            ],
+          },
+        });
+      }
+    }
 
     if (auditLogWhere.length > 0) {
       const auditLogs = await prisma.auditLog.findMany({
@@ -416,6 +438,30 @@ export async function GET(req: NextRequest) {
           type = "EIDAS_CONSENT";
           title = "Pelqimi eIDAS u pranua";
           status = "success";
+        } else if (actionUpper === "SIGNING_OTP_SENT") {
+          type = "EMAIL_OTP_SENT";
+          title = "OTP u dergua me email per nenshkrim";
+          status = "success";
+        } else if (actionUpper === "SIGNING_OTP_VERIFIED") {
+          type = "EMAIL_OTP_VERIFIED";
+          title = "OTP email u verifikua me sukses";
+          status = "success";
+        } else if (actionUpper === "SIGNING_OTP_FAILED") {
+          type = "EMAIL_OTP_VERIFIED";
+          title = "OTP email verifikimi deshtoi";
+          status = "error";
+        } else if (actionUpper === "SIGNING_TOTP_VERIFIED") {
+          type = "TOTP_VERIFIED";
+          title = "TOTP 2FA u verifikua me sukses";
+          status = "success";
+        } else if (actionUpper === "SIGNING_TOTP_FAILED") {
+          type = "TOTP_VERIFIED";
+          title = "TOTP 2FA verifikimi deshtoi";
+          status = "error";
+        } else if (actionUpper === "TOTP_ENABLED") {
+          type = "TOTP_SETUP";
+          title = "TOTP 2FA u aktivizua";
+          status = "success";
         } else if (actionUpper.includes("OTP") && actionUpper.includes("VERIFY")) {
           type = "EMAIL_OTP_VERIFIED";
           title = "OTP u verifikua me sukses";
@@ -428,6 +474,18 @@ export async function GET(req: NextRequest) {
           type = "S3_UPLOAD";
           title = "Skedari u ngarkua ne S3";
           status = "success";
+        } else if (actionUpper.includes("EMAIL_SENT")) {
+          type = "EMAIL_SENT";
+          title = "Email u dergua";
+          status = "success";
+        } else if (actionUpper.includes("EMAIL_OPENED")) {
+          type = "EMAIL_OPENED";
+          title = "Email u hap";
+          status = "info";
+        } else if (actionUpper.includes("EMAIL_LINK_CLICKED")) {
+          type = "EMAIL_CLICKED";
+          title = "Link ne email u klikua";
+          status = "info";
         } else if (actionUpper.includes("SIGN")) {
           type = "PDF_SIGNED";
           title = log.action;
@@ -484,13 +542,18 @@ export async function GET(req: NextRequest) {
       const emailLogs = await prisma.emailLog.findMany({
         where: { OR: emailWhere },
         orderBy: { createdAt: "asc" },
+        include: {
+          opens: { orderBy: { openedAt: "asc" }, take: 50 },
+          clicks: { orderBy: { clickedAt: "asc" }, take: 50 },
+        },
         take: 50,
       });
 
       for (const eLog of emailLogs) {
+        // Email sent event
         events.push({
           id: `email-${eLog.id}`,
-          timestamp: eLog.createdAt.toISOString(),
+          timestamp: (eLog.sentAt || eLog.createdAt).toISOString(),
           type: "EMAIL_SENT",
           title: `Email u dergua: ${eLog.subject}`,
           status: eLog.status === "DELIVERED" || eLog.status === "OPENED"
@@ -509,6 +572,66 @@ export async function GET(req: NextRequest) {
             klikime: eLog.clickCount > 0 ? `${eLog.clickCount}x` : "0",
           },
         });
+
+        // Email bounced/failed
+        if (eLog.status === "BOUNCED" && eLog.bouncedAt) {
+          events.push({
+            id: `email-bounced-${eLog.id}`,
+            timestamp: eLog.bouncedAt.toISOString(),
+            type: "EMAIL_BOUNCED",
+            title: `Email u kthye (bounce): ${eLog.subject}`,
+            status: "error",
+            details: {
+              drejt: eLog.to,
+              gabimi: eLog.errorMessage || "-",
+            },
+          });
+        }
+        if (eLog.status === "FAILED" && eLog.failedAt) {
+          events.push({
+            id: `email-failed-${eLog.id}`,
+            timestamp: eLog.failedAt.toISOString(),
+            type: "EMAIL_FAILED",
+            title: `Email deshtoi: ${eLog.subject}`,
+            status: "error",
+            details: {
+              drejt: eLog.to,
+              gabimi: eLog.errorMessage || "-",
+            },
+          });
+        }
+
+        // Individual email open events
+        for (const open of eLog.opens) {
+          events.push({
+            id: `email-open-${open.id}`,
+            timestamp: open.openedAt.toISOString(),
+            type: "EMAIL_OPENED",
+            title: `Email u hap: ${eLog.subject}`,
+            status: "info",
+            details: {
+              drejt: eLog.to,
+              IP: open.ipAddress,
+              pajisja: open.userAgent ? open.userAgent.substring(0, 80) : "-",
+            },
+          });
+        }
+
+        // Individual email click events
+        for (const click of eLog.clicks) {
+          events.push({
+            id: `email-click-${click.id}`,
+            timestamp: click.clickedAt.toISOString(),
+            type: "EMAIL_CLICKED",
+            title: `Link u klikua ne email: ${eLog.subject}`,
+            status: "info",
+            details: {
+              drejt: eLog.to,
+              URL: click.url,
+              IP: click.ipAddress,
+            },
+          });
+        }
       }
     }
 

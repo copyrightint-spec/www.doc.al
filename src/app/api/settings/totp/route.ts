@@ -50,6 +50,21 @@ export async function POST(req: NextRequest) {
         data: { totpEnabled: true },
       });
 
+      await prisma.auditLog.create({
+        data: {
+          action: "TOTP_ENABLED",
+          entityType: "User",
+          entityId: session.user.id,
+          userId: session.user.id,
+          ipAddress: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
+          userAgent: req.headers.get("user-agent"),
+          metadata: {
+            email: session.user.email,
+            timestamp: new Date().toISOString(),
+          },
+        },
+      });
+
       return NextResponse.json({ message: "TOTP u aktivizua" });
     }
 

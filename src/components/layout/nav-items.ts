@@ -16,6 +16,7 @@ import {
   Shield,
   Clock,
   Mail,
+  Send,
   ScrollText,
   Scale,
   KeyRound,
@@ -57,5 +58,6 @@ export const adminNav: NavItem[] = [
   { href: "/admin/timestamps", label: "Timestamps", icon: Clock },
   { href: "/admin/seals", label: "Vulat Dixhitale", icon: Stamp },
   { href: "/admin/contacts", label: "Kontakte", icon: Mail },
+  { href: "/admin/emails", label: "Emailet", icon: Send },
   { href: "/admin/audit", label: "Audit Log", icon: ScrollText },
 ];

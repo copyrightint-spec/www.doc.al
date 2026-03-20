@@ -18,6 +18,10 @@ import {
   Hexagon,
   Globe,
   MailCheck,
+  MailOpen,
+  MousePointerClick,
+  MailX,
+  ShieldAlert,
   CheckCircle2,
   XCircle,
   AlertTriangle,
@@ -69,6 +73,11 @@ const EVENT_ICONS: Record<string, typeof FileUp> = {
   POLYGON_CONFIRMED: Hexagon,
   IPFS_PUBLISHED: Globe,
   EMAIL_SENT: Mail,
+  EMAIL_OPENED: MailOpen,
+  EMAIL_CLICKED: MousePointerClick,
+  EMAIL_BOUNCED: MailX,
+  EMAIL_FAILED: MailX,
+  TOTP_SETUP: ShieldAlert,
 };
 
 const STATUS_COLORS: Record<string, string> = {
