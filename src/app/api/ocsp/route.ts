@@ -31,10 +31,15 @@ async function lookupCertificateStatus(
   const nextUpdate = new Date(now);
   nextUpdate.setHours(nextUpdate.getHours() + 24); // valid for 24 hours
 
-  const issuingCA = getIssuingCA();
-  const issuerDN = issuingCA.certificate.subject.attributes
-    .map((a) => `${a.shortName || a.name}=${a.value}`)
-    .join(", ");
+  let issuerDN = "doc.al Issuing CA";
+  try {
+    const issuingCA = getIssuingCA();
+    issuerDN = issuingCA.certificate.subject.attributes
+      .map((a) => `${a.shortName || a.name}=${a.value}`)
+      .join(", ");
+  } catch {
+    // If CA is not available, use default issuer DN
+  }
 
   const cert = await prisma.certificate.findUnique({
     where: { serialNumber },
@@ -81,10 +86,21 @@ export async function GET(req: NextRequest) {
   try {
     const serial = req.nextUrl.searchParams.get("serial");
 
+    // If no serial provided, return OCSP service status (health check)
     if (!serial) {
       return NextResponse.json(
-        { error: "Missing 'serial' query parameter" },
-        { status: 400 }
+        {
+          service: "doc.al OCSP Responder",
+          status: "online",
+          usage: "GET /api/ocsp?serial=<serialNumber> or POST with { serialNumber: string }",
+          timestamp: new Date().toISOString(),
+        },
+        {
+          headers: {
+            "Cache-Control": "public, max-age=60",
+            "Content-Type": "application/json",
+          },
+        }
       );
     }
 
@@ -106,7 +122,16 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON body. Expected: { serialNumber: string }" },
+        { status: 400 }
+      );
+    }
+
     const serialNumber = body?.serialNumber;
 
     if (!serialNumber || typeof serialNumber !== "string") {

@@ -89,6 +89,7 @@ export default function LandingPage() {
             <Link href="/si-funksionon" className="hidden text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 sm:block">Si Funksionon</Link>
             <Link href="/explorer" className="hidden text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 sm:block">Explorer</Link>
             <Link href="/verify" className="hidden text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 sm:block">Verify</Link>
+            <Link href="/certificates" className="hidden text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 sm:block">Certifikata</Link>
             <Link href="/auth/login" className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-300">Hyr</Link>
             <Link href="/auth/register" className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:opacity-90 dark:bg-slate-100 dark:text-slate-900">Fillo Falas</Link>
           </div>
@@ -254,6 +255,7 @@ export default function LandingPage() {
                 <Link href="/si-funksionon" className="block text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Si Funksionon</Link>
                 <Link href="/explorer" className="block text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Explorer</Link>
                 <Link href="/verify" className="block text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Verify</Link>
+                <Link href="/certificates" className="block text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Certifikata</Link>
                 <Link href="/auth/register" className="block text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Regjistrohu</Link>
               </div>
             </div>

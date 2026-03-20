@@ -473,3 +473,13 @@ export function _resetCACache(): void {
   _rootCA = null;
   _issuingCA = null;
 }
+
+/** Clear Root CA cache so it will be regenerated on next access */
+export function clearRootCACache(): void {
+  _rootCA = null;
+}
+
+/** Clear Issuing CA cache so it will be regenerated on next access */
+export function clearIssuingCACache(): void {
+  _issuingCA = null;
+}

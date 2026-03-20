@@ -168,6 +168,33 @@ export default function AdminCAPage() {
   const [loading, setLoading] = useState(true);
   const [ocspStatus, setOcspStatus] = useState<"checking" | "ok" | "error" | null>(null);
   const [crlStatus, setCrlStatus] = useState<"checking" | "ok" | "error" | null>(null);
+  const [regenerating, setRegenerating] = useState<string | null>(null);
+  const [regenResult, setRegenResult] = useState<{ type: string; success: boolean; message: string } | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ type: string; title: string; warning: string } | null>(null);
+
+  async function handleRegenerate(type: string) {
+    setConfirmDialog(null);
+    setRegenerating(type);
+    setRegenResult(null);
+    try {
+      const res = await fetch("/api/admin/ca/regenerate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setRegenResult({ type, success: true, message: json.message });
+        fetchData();
+      } else {
+        setRegenResult({ type, success: false, message: json.error || "Gabim i panjohur" });
+      }
+    } catch {
+      setRegenResult({ type, success: false, message: "Gabim ne komunikim me serverin" });
+    } finally {
+      setRegenerating(null);
+    }
+  }
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -242,6 +269,100 @@ export default function AdminCAPage() {
 
       {/* Issuing CA */}
       <CertificateCard cert={data.issuingCA} title="Issuing CA (Ndermjetese)" icon={Key} />
+
+      {/* Regeneration Actions (SUPER_ADMIN only) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Rigjenerimi i Certifikatave (SUPER_ADMIN)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {regenResult && (
+            <div className={cn(
+              "rounded-xl border px-4 py-3 text-sm",
+              regenResult.success
+                ? "border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950/30 dark:text-green-300"
+                : "border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300"
+            )}>
+              {regenResult.message}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <Button
+              variant="destructive"
+              onClick={() => setConfirmDialog({
+                type: "root",
+                title: "Rigjenero Root CA",
+                warning: "KUJDES: Rigjenerimi i Root CA do te invalidoje te gjitha certifikatat ekzistuese. Kjo veprim eshte i pakthyeshem dhe duhet bere vetem ne raste emergjence. Nese keni ROOT_CA_CERT/ROOT_CA_KEY ne env, ato do te perdoren ne vend te gjenerimit te ri.",
+              })}
+              disabled={regenerating !== null}
+              className="gap-2"
+            >
+              {regenerating === "root" ? <RefreshCw className="h-4 w-4 animate-spin" /> : <AlertTriangle className="h-4 w-4" />}
+              Rigjenero Root CA
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => setConfirmDialog({
+                type: "issuing",
+                title: "Rigjenero Issuing CA",
+                warning: "KUJDES: Rigjenerimi i Issuing CA do te kerkoje rigjenerimin e te gjitha certifikatave te perdoruesve. Certifikatat ekzistuese nuk do te jene me te vlefshme.",
+              })}
+              disabled={regenerating !== null}
+              className="gap-2"
+            >
+              {regenerating === "issuing" ? <RefreshCw className="h-4 w-4 animate-spin" /> : <AlertTriangle className="h-4 w-4" />}
+              Rigjenero Issuing CA
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => setConfirmDialog({
+                type: "user-certificates",
+                title: "Rigjenero Certifikatat e Perdoruesve",
+                warning: "Kjo do te revokoje te gjitha certifikatat aktive te perdoruesve dhe do te gjeneroje te reja me Issuing CA aktuale. Perdoruesit do te duhet te shkarkojne certifikatat e reja.",
+              })}
+              disabled={regenerating !== null}
+              className="gap-2"
+            >
+              {regenerating === "user-certificates" ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Rigjenero Certifikatat e Perdoruesve
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Confirmation Dialog */}
+      {confirmDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30">
+                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground">{confirmDialog.title}</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6">{confirmDialog.warning}</p>
+            <div className="flex items-center justify-end gap-3">
+              <Button variant="secondary" onClick={() => setConfirmDialog(null)}>
+                Anulo
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleRegenerate(confirmDialog.type)}
+                disabled={regenerating !== null}
+              >
+                {regenerating ? (
+                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
+                Po, Vazhdo
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Download & Services */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
