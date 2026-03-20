@@ -40,6 +40,7 @@ function extractCertInfo(cert: forge.pki.Certificate) {
     fingerprintSHA256: fingerprint,
     keySize,
     issuerCN: getIssuerAttr("commonName"),
+    issuerOrganization: getIssuerAttr("organizationName"),
     isCA: bcExt?.cA ?? false,
     pathLenConstraint: bcExt?.pathLenConstraint ?? null,
   };

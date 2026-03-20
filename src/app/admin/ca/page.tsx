@@ -34,6 +34,8 @@ interface CACertInfo {
   fingerprintSHA256: string;
   keySize: number;
   issuerCN: string;
+  issuerOrganization: string;
+  issuerCountry: string;
   isCA: boolean;
   pathLenConstraint: number | null;
 }
@@ -111,9 +113,9 @@ function CertificateCard({ cert, title, icon: Icon }: { cert: CACertInfo; title:
           </div>
           <div>
             <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              Leshuar nga
+              Nenshkruar nga
             </span>
-            <p className="mt-0.5 font-medium text-foreground">{cert.issuerCN}</p>
+            <p className="mt-0.5 font-medium text-foreground">{cert.issuerCN}{cert.issuerOrganization ? ` — ${cert.issuerOrganization}` : ""}</p>
           </div>
           <div>
             <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">

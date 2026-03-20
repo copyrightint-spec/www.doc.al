@@ -38,6 +38,8 @@ function extractCertInfo(cert: forge.pki.Certificate) {
     fingerprintSHA256: fingerprint,
     keySize,
     issuerCN: getIssuerAttr("commonName"),
+    issuerOrganization: getIssuerAttr("organizationName"),
+    issuerCountry: getIssuerAttr("countryName"),
     isCA: bcExt?.cA ?? false,
     pathLenConstraint: bcExt?.pathLenConstraint ?? null,
   };

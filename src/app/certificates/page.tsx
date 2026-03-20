@@ -29,6 +29,7 @@ interface CACertInfo {
   fingerprintSHA256: string;
   keySize: number;
   issuerCN: string;
+  issuerOrganization: string;
   isCA: boolean;
   pathLenConstraint: number | null;
 }
@@ -275,6 +276,10 @@ export default function CertificatesPage() {
                     <span className="font-medium text-slate-900 dark:text-white">{data.rootCA.organization}</span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-slate-500">Nenshkruar nga</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{data.rootCA.issuerCN} — {data.rootCA.issuerOrganization || data.rootCA.organization}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-slate-500">Vlefshme nga</span>
                     <span className="font-medium text-slate-900 dark:text-white">{formatDate(data.rootCA.validFrom)}</span>
                   </div>
@@ -321,7 +326,7 @@ export default function CertificatesPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Nenshkruar nga</span>
-                    <span className="font-medium text-slate-900 dark:text-white">{data.issuingCA.issuerCN}</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{data.issuingCA.issuerCN} — {data.issuingCA.issuerOrganization || data.issuingCA.organization}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Vlefshme nga</span>
