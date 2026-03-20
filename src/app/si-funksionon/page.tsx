@@ -200,7 +200,7 @@ export default function SiFunksionon() {
 
       {/* Hero */}
       <section className="mx-auto max-w-4xl px-6 py-16 text-center">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-4 py-1.5 text-xs font-medium text-purple-700 dark:border-purple-800 dark:bg-purple-950/40 dark:text-purple-300">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-xs font-medium text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
           <Shield className="h-3.5 w-3.5" />
           4 Shtresa Sigurie
         </div>
@@ -209,8 +209,8 @@ export default function SiFunksionon() {
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-500 dark:text-slate-400">
           Cdo dokument qe nenshkruhet ne doc.al mbrohet me 4 shtresa te pavarura sigurie.
-          Edhe nese serveri yne zhduket, prova e dokumentit tuaj mbetet e verifikueshme
-          ne Polygon blockchain dhe IPFS.
+          Dokumentet nuk ruhen kurre ne serverin tone - vetem hash-et kriptografike.
+          Edhe nese serveri yne zhduket, prova mbetet e verifikueshme ne Polygon blockchain dhe IPFS.
         </p>
       </section>
 
@@ -285,7 +285,7 @@ export default function SiFunksionon() {
               Si funksionon Merkle Tree
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-              Ne vend qe te ruajme cdo dokument individualisht ne blockchain,
+              Ne vend qe te ruajme cdo hash individualisht ne blockchain,
               bashkojme te gjitha hash-et ne nje peme Merkle. Vetem root-i shkon ne Polygon.
             </p>
           </div>

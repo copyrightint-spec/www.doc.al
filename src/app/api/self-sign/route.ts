@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { computeSHA256, createTimestamp } from "@/lib/timestamp/engine";
 import { rateLimit } from "@/lib/rate-limit";
-import { uploadFile } from "@/lib/s3";
+import { uploadFile, deleteFile } from "@/lib/s3";
 import { buildProofMetadata, publishToIPFS, getIPFSUrl } from "@/lib/ipfs";
 import { signPdf } from "@/lib/crypto/pdf-signer";
 import { generateUserCertificate } from "@/lib/crypto/certificates";
@@ -272,6 +272,28 @@ export async function POST(req: NextRequest) {
       );
     } catch (emailError) {
       console.error("[self-sign] Email failed (non-critical):", emailError);
+    }
+
+    // 9b. Delete PDFs from S3 after successful email delivery (privacy)
+    try {
+      await deleteFile(signedKey);
+      await deleteFile(originalKey);
+      // Update document record to indicate file deleted
+      const existingMetadata = (document.metadata as Record<string, unknown>) || {};
+      await prisma.document.update({
+        where: { id: document.id },
+        data: {
+          fileUrl: "",
+          metadata: {
+            ...existingMetadata,
+            fileDeletedAt: new Date().toISOString(),
+            reason: "privacy-after-delivery",
+          },
+        },
+      });
+      console.log("[self-sign] Files deleted from S3 after email delivery (privacy)");
+    } catch (deleteError) {
+      console.error("[self-sign] File deletion failed:", deleteError);
     }
 
     // 9. Audit Logs

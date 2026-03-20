@@ -74,7 +74,7 @@ const stats = [
 const securityLayers = [
   { icon: Shield, title: "eIDAS Compliant", description: "Plotesojme rregulloren Europiane per nenshkrime elektronike dhe identifikim dixhital." },
   { icon: Hexagon, title: "Powered by Polygon", description: "Cdo nenshkrim ankorihet ne Polygon PoS blockchain permes STAMLES Merkle batching." },
-  { icon: Globe, title: "IPFS Distributed", description: "Dokumentet ruhen ne rrjetin IPFS te decentralizuar per qendrueshmeri maksimale." },
+  { icon: Globe, title: "IPFS Distributed", description: "Hash-et e dokumenteve ruhen ne IPFS. Dokumentet origjinale nuk ruhen kurre ne serverin tone - dergohen me email dhe fshihen menjehere." },
   { icon: Database, title: "doc.al Chain", description: "Zinxhiri yne publik regjistron cdo timestamp me transparence te plote." },
 ];
 
@@ -226,7 +226,7 @@ export default function LandingPage() {
       <section className="relative min-h-screen overflow-hidden pt-20">
         {/* Animated gradient background */}
         <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950" />
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-cyan-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950" />
           {/* Grid pattern */}
           <div
             className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
@@ -244,7 +244,7 @@ export default function LandingPage() {
           <motion.div
             animate={{ x: [0, -40, 30, 0], y: [0, 20, -30, 0], scale: [1, 0.95, 1.1, 1] }}
             transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-            className="absolute -left-32 top-1/3 h-[400px] w-[400px] rounded-full bg-purple-500/5 blur-3xl dark:bg-purple-500/10"
+            className="absolute -left-32 top-1/3 h-[400px] w-[400px] rounded-full bg-cyan-500/5 blur-3xl dark:bg-cyan-500/10"
           />
         </div>
 
@@ -437,14 +437,14 @@ export default function LandingPage() {
       <section className="relative py-32">
         <div className="mx-auto max-w-6xl px-6">
           <AnimatedSection className="text-center">
-            <motion.span variants={fadeUp} custom={0} className="mb-4 inline-block text-sm font-medium uppercase tracking-widest text-purple-600">
+            <motion.span variants={fadeUp} custom={0} className="mb-4 inline-block text-sm font-medium uppercase tracking-widest text-blue-600">
               Siguria
             </motion.span>
             <motion.h2 variants={fadeUp} custom={1} className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50 md:text-4xl">
               Sigurise ne cdo nivel
             </motion.h2>
             <motion.p variants={fadeUp} custom={2} className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-              Kater shtresa sigurie qe mbrojne cdo dokument dhe nenshkrim tuajin.
+              Kater shtresa sigurie qe mbrojne cdo nenshkrim tuajin. Dokumentet nuk ruhen kurre - vetem hash-et kriptografike.
             </motion.p>
           </AnimatedSection>
 
@@ -458,9 +458,9 @@ export default function LandingPage() {
               <motion.div
                 animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0, 0.2] }}
                 transition={{ duration: 3, repeat: Infinity }}
-                className="absolute inset-0 rounded-full bg-purple-500/20"
+                className="absolute inset-0 rounded-full bg-blue-500/20"
               />
-              <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-blue-600 shadow-lg shadow-purple-500/20">
+              <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-700 to-cyan-500 shadow-lg shadow-blue-500/20">
                 <Lock className="h-8 w-8 text-white" strokeWidth={1.5} />
               </div>
             </motion.div>
@@ -473,15 +473,37 @@ export default function LandingPage() {
                 variants={fadeUp}
                 custom={i}
                 whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className="group rounded-2xl border border-slate-200/60 bg-white/60 p-6 text-center backdrop-blur-sm transition-shadow hover:shadow-lg hover:shadow-purple-100/50 dark:border-slate-700/60 dark:bg-slate-800/60 dark:hover:shadow-purple-900/20"
+                className="group rounded-2xl border border-slate-200/60 bg-white/60 p-6 text-center backdrop-blur-sm transition-shadow hover:shadow-lg hover:shadow-blue-100/50 dark:border-slate-700/60 dark:bg-slate-800/60 dark:hover:shadow-blue-900/20"
               >
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/30 dark:to-blue-900/30">
-                  <layer.icon className="h-5 w-5 text-purple-600 transition-transform duration-300 group-hover:scale-110 dark:text-purple-400" strokeWidth={1.5} />
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30">
+                  <layer.icon className="h-5 w-5 text-blue-600 transition-transform duration-300 group-hover:scale-110 dark:text-blue-400" strokeWidth={1.5} />
                 </div>
                 <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-slate-50">{layer.title}</h3>
                 <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{layer.description}</p>
               </motion.div>
             ))}
+          </AnimatedSection>
+        </div>
+      </section>
+
+      {/* ─── Privacy Notice ─── */}
+      <section className="relative border-t border-slate-100 py-20 dark:border-slate-800">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-blue-50/40 to-white dark:from-blue-950/20 dark:to-slate-950" />
+        <div className="mx-auto max-w-4xl px-6">
+          <AnimatedSection className="text-center">
+            <motion.div variants={fadeUp} custom={0} className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/40 dark:to-cyan-900/40">
+              <Shield className="h-7 w-7 text-blue-600 dark:text-blue-400" strokeWidth={1.5} />
+            </motion.div>
+            <motion.h2 variants={fadeUp} custom={1} className="mt-6 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 md:text-3xl">
+              Privatesia juaj eshte prioriteti yne
+            </motion.h2>
+            <motion.p variants={fadeUp} custom={2} className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
+              Dokumentet tuaja nuk ruhen kurre ne serverin tone. Pas nenshkrimit, PDF-ja dergohet me email dhe fshihet menjehere nga serveri. Ne ruajme vetem hash-in kriptografik (SHA-256) si prove e ekzistences &mdash; pa mundesi te rikthehet dokumenti origjinal nga hash-i.
+            </motion.p>
+            <motion.div variants={fadeUp} custom={3} className="mt-8 inline-flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50/60 px-6 py-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
+              <Lock className="h-4 w-4" strokeWidth={2} />
+              Zero-knowledge: serveri nuk ka asnje kopje te dokumentit tuaj
+            </motion.div>
           </AnimatedSection>
         </div>
       </section>

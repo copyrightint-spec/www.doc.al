@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendVerificationCode, sendSigningCompleted, sendSignedDocument } from "@/lib/email";
-import { getFileBuffer } from "@/lib/s3";
+import { getFileBuffer, deleteFile } from "@/lib/s3";
 import { createTimestamp } from "@/lib/timestamp/engine";
 import { rateLimit } from "@/lib/rate-limit";
 import { buildProofMetadata, publishToIPFS } from "@/lib/ipfs";
@@ -208,6 +208,30 @@ export async function POST(
                 }
               );
             }
+          }
+          // Delete PDFs from S3 after successful email delivery (privacy)
+          try {
+            if (signature.document.fileUrl) {
+              await deleteFile(signature.document.fileUrl);
+            }
+            const docMetadata = (signature.document.metadata as Record<string, unknown>) || {};
+            if (docMetadata.originalFileUrl) {
+              await deleteFile(docMetadata.originalFileUrl as string);
+            }
+            await prisma.document.update({
+              where: { id: signature.documentId },
+              data: {
+                fileUrl: "",
+                metadata: {
+                  ...docMetadata,
+                  fileDeletedAt: new Date().toISOString(),
+                  reason: "privacy-after-delivery",
+                },
+              },
+            });
+            console.log("[sign] Files deleted from S3 after email delivery (privacy)");
+          } catch (deleteErr) {
+            console.error("[sign] File deletion failed:", deleteErr);
           }
         } catch (emailErr) {
           console.error("[sign] Completion email failed:", emailErr);
