@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { FileText, Upload, Send } from "lucide-react";
+import { FileText, Upload, Send, Eye } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -170,6 +170,12 @@ export default function DocumentsPage() {
                   </div>
 
                   <div className="ml-4 flex gap-2">
+                    <Button variant="secondary" size="sm" asChild>
+                      <Link href={`/dashboard/documents/${doc.id}`}>
+                        <Eye className="h-3.5 w-3.5" />
+                        Shiko
+                      </Link>
+                    </Button>
                     {doc.status === "DRAFT" && (
                       <Button variant="secondary" size="sm" asChild>
                         <Link href={`/dashboard/documents/${doc.id}/send`}>

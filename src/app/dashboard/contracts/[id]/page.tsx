@@ -10,11 +10,25 @@ import {
   X,
   Clock,
   Mail,
+  MailOpen,
+  MousePointerClick,
   Eye,
   PenTool,
   Bell,
   Info,
   Download,
+  Upload,
+  Shield,
+  ShieldCheck,
+  KeyRound,
+  Hash,
+  Send,
+  Hexagon,
+  Globe,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  ExternalLink,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -107,6 +121,61 @@ function getSignerNodeState(
   return "pending";
 }
 
+interface TimelineEvent {
+  type: string;
+  title: string;
+  description: string;
+  timestamp: string;
+  status: "success" | "warning" | "error" | "info";
+  details?: Record<string, string | number | null>;
+}
+
+const TIMELINE_ICONS: Record<string, typeof FileText> = {
+  DOCUMENT_UPLOADED: Upload,
+  CERTIFICATE_GENERATED: Shield,
+  SIGNATURE_PLACED: PenTool,
+  SIGNATURE_REJECTED: XCircle,
+  EIDAS_ACCEPTED: ShieldCheck,
+  EMAIL_OTP_SENT: Mail,
+  EMAIL_OTP_VERIFIED: CheckCircle,
+  TOTP_VERIFIED: KeyRound,
+  PDF_SIGNED: Hash,
+  TIMESTAMP_CREATED: Clock,
+  STAMLES_SENT: Send,
+  POLYGON_CONFIRMED: Hexagon,
+  IPFS_PUBLISHED: Globe,
+  EMAIL_SENT: Mail,
+  EMAIL_OPENED: MailOpen,
+  EMAIL_CLICKED: MousePointerClick,
+  EMAIL_BOUNCED: AlertTriangle,
+  EMAIL_FAILED: XCircle,
+  DOCUMENT_VIEWED: Eye,
+  REMINDER_SENT: Bell,
+};
+
+const TIMELINE_STATUS_COLORS = {
+  success: {
+    ring: "border-green-500 bg-green-500",
+    line: "bg-green-400",
+    icon: "text-white",
+  },
+  warning: {
+    ring: "border-yellow-400 bg-yellow-400",
+    line: "bg-yellow-300",
+    icon: "text-white",
+  },
+  error: {
+    ring: "border-red-500 bg-red-500",
+    line: "bg-red-400",
+    icon: "text-white",
+  },
+  info: {
+    ring: "border-blue-500 bg-blue-500",
+    line: "bg-blue-300",
+    icon: "text-white",
+  },
+};
+
 interface StampData {
   certificationHash: string;
   verificationUrl: string;
@@ -126,6 +195,8 @@ export default function ContractDetailPage() {
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
   const [stamp, setStamp] = useState<StampData | null>(null);
   const [stampLoading, setStampLoading] = useState(false);
+  const [docTimeline, setDocTimeline] = useState<TimelineEvent[]>([]);
+  const [timelineLoading, setTimelineLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -144,6 +215,25 @@ export default function ContractDetailPage() {
     }
     if (id) load();
   }, [id]);
+
+  // Ngarko timeline-in e dokumentit
+  useEffect(() => {
+    async function loadTimeline() {
+      if (!contract) return;
+      setTimelineLoading(true);
+      try {
+        const res = await fetch(`/api/documents/${contract.document.id}/timeline`);
+        const data = await res.json();
+        if (data.success) {
+          setDocTimeline(data.data.timeline);
+        }
+      } catch {
+        // silent - timeline is optional enhancement
+      }
+      setTimelineLoading(false);
+    }
+    loadTimeline();
+  }, [contract]);
 
   // Ngarko vulen DOC.AL kur kontrata eshte COMPLETED
   useEffect(() => {
@@ -505,6 +595,127 @@ export default function ContractDetailPage() {
           </div>
         </Card>
       )}
+
+      {/* Timeline e Dokumentit */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Timeline e Dokumentit</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Te gjitha ngjarjet e dokumentit ne rradhe kronologjike
+          </p>
+        </CardHeader>
+        <CardContent>
+          {timelineLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Spinner />
+            </div>
+          ) : docTimeline.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Nuk ka ngjarje akoma
+            </p>
+          ) : (
+            <div className="relative">
+              {docTimeline.map((event, index) => {
+                const isLast = index === docTimeline.length - 1;
+                const colors = TIMELINE_STATUS_COLORS[event.status];
+                const IconComponent = TIMELINE_ICONS[event.type] || Info;
+
+                return (
+                  <div key={`${event.type}-${index}`} className="relative flex gap-4">
+                    {/* Timeline column */}
+                    <div className="flex flex-col items-center">
+                      <div
+                        className={cn(
+                          "relative z-10 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2",
+                          colors.ring
+                        )}
+                      >
+                        <IconComponent className={cn("h-4 w-4", colors.icon)} strokeWidth={2} />
+                      </div>
+                      {!isLast && (
+                        <div className={cn("w-0.5 min-h-[24px] flex-1", colors.line)} />
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className={cn("flex-1", isLast ? "pb-0" : "pb-6")}>
+                      <div className="rounded-xl border border-border bg-muted/50 p-4">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-foreground">{event.title}</p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {event.description}
+                            </p>
+                          </div>
+                          <span className="flex-shrink-0 text-[11px] text-muted-foreground">
+                            {relativeTime(event.timestamp)}
+                          </span>
+                        </div>
+
+                        {/* Event details */}
+                        {event.details && Object.keys(event.details).length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {event.details.txHash && (
+                              <a
+                                href={`https://polygonscan.com/tx/${event.details.txHash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 rounded-lg bg-purple-100 px-2.5 py-1 text-[11px] font-medium text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+                              >
+                                <Hexagon className="h-3 w-3" />
+                                TX: {String(event.details.txHash).substring(0, 10)}...
+                                <ExternalLink className="h-2.5 w-2.5" />
+                              </a>
+                            )}
+                            {event.details.cid && (
+                              <a
+                                href={`https://ipfs.io/ipfs/${event.details.cid}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 rounded-lg bg-teal-100 px-2.5 py-1 text-[11px] font-medium text-teal-700 hover:bg-teal-200 dark:bg-teal-900/30 dark:text-teal-300 dark:hover:bg-teal-900/50"
+                              >
+                                <Globe className="h-3 w-3" />
+                                CID: {String(event.details.cid).substring(0, 12)}...
+                                <ExternalLink className="h-2.5 w-2.5" />
+                              </a>
+                            )}
+                            {event.details.blockNumber && (
+                              <span className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                Block #{String(event.details.blockNumber)}
+                              </span>
+                            )}
+                            {event.details.sequenceNumber && (
+                              <span className="inline-flex items-center gap-1 rounded-lg bg-orange-100 px-2.5 py-1 text-[11px] font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                                <Clock className="h-3 w-3" />
+                                Chain #{String(event.details.sequenceNumber)}
+                              </span>
+                            )}
+                            {event.details.hash && (
+                              <span className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-[10px] text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                {String(event.details.hash).substring(0, 16)}...
+                              </span>
+                            )}
+                            {event.details.serialNumber && (
+                              <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-100 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                <Shield className="h-3 w-3" />
+                                SN: {String(event.details.serialNumber).substring(0, 12)}...
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <p className="mt-2 text-[10px] text-muted-foreground/60">
+                          {formatDateTime(event.timestamp)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Certifikimi DOC.AL - vetem per kontrata te perfunduara */}
       {contract.status === "COMPLETED" && (
