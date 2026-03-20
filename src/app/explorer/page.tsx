@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableHeader,
@@ -166,6 +167,7 @@ export default function ExplorerPage() {
   const [expandedSeq, setExpandedSeq] = useState<number | null>(null);
   const [detail, setDetail] = useState<EntryDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -206,6 +208,7 @@ export default function ExplorerPage() {
       setNewEntryIds(newIds);
       setEntries(data.data.entries);
       setPagination(data.data.pagination);
+      setInitialLoading(false);
 
       if (newIds.size > 0) {
         setTimeout(() => setNewEntryIds(new Set()), 3000);
@@ -855,7 +858,23 @@ export default function ExplorerPage() {
                   )}
                 </React.Fragment>
               ))}
-              {entries.length === 0 && (
+              {entries.length === 0 && initialLoading && (
+                <>
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <TableRow key={`skel-${i}`}>
+                      <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-14 rounded-full" /></TableCell>
+                    </TableRow>
+                  ))}
+                </>
+              )}
+              {entries.length === 0 && !initialLoading && (
                 <TableRow>
                   <TableCell
                     colSpan={8}

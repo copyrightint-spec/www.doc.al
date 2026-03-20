@@ -17,6 +17,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CACertInfo {
   commonName: string;
@@ -206,6 +207,21 @@ export default function CertificatesPage() {
         </div>
 
         {/* Stats */}
+        {loading && !data && (
+          <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-xl" />
+                  <div>
+                    <Skeleton className="h-7 w-12 mb-1" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {data && (
           <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
@@ -252,6 +268,32 @@ export default function CertificatesPage() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* CA Certificates - Skeleton */}
+        {loading && !data && (
+          <div className="mb-8 grid gap-4 lg:grid-cols-2">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+                <div className="flex items-center gap-3 mb-4">
+                  <Skeleton className="h-10 w-10 rounded-xl" />
+                  <div>
+                    <Skeleton className="h-5 w-24 mb-1" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <div key={j} className="flex justify-between">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  ))}
+                </div>
+                <Skeleton className="mt-4 h-10 w-40 rounded-xl" />
+              </div>
+            ))}
           </div>
         )}
 
@@ -410,11 +452,19 @@ export default function CertificatesPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {loading && !data ? (
-                  <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
-                      Duke ngarkuar...
-                    </td>
-                  </tr>
+                  <>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <tr key={`skel-${i}`}>
+                        <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
+                        <td className="px-4 py-3"><Skeleton className="h-4 w-32" /></td>
+                        <td className="px-4 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                        <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
+                        <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
+                        <td className="px-4 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                        <td className="px-4 py-3"><Skeleton className="h-4 w-16" /></td>
+                      </tr>
+                    ))}
+                  </>
                 ) : data && data.certificates.length > 0 ? (
                   data.certificates.map((cert) => {
                     const statusCfg = STATUS_CONFIG[cert.status];

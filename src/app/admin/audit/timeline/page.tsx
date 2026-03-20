@@ -36,6 +36,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageSpinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateTimeFull } from "@/lib/utils/date";
 import { cn } from "@/lib/cn";
 
@@ -203,7 +204,49 @@ export default function AdminAuditTimelinePage() {
       </Card>
 
       {/* Loading */}
-      {loading && <PageSpinner />}
+      {loading && (
+        <div className="space-y-6">
+          {/* Entity header skeleton */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="space-y-1">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-56" />
+                </div>
+                <Skeleton className="ml-auto h-5 w-20 rounded-full" />
+              </div>
+            </CardContent>
+          </Card>
+          {/* Timeline events skeleton */}
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex gap-4 items-start">
+              <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+              <div className="flex-1">
+                <Card>
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                      <div className="space-y-1">
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Error */}
       {error && (

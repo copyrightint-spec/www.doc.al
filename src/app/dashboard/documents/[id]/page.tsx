@@ -33,6 +33,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageSpinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DOCUMENT_STATUS, SIGNATURE_STATUS } from "@/lib/constants/status";
 import { formatDateTime, relativeTime } from "@/lib/utils/date";
 import { cn } from "@/lib/cn";
@@ -155,7 +156,75 @@ export default function DocumentDetailPage() {
   }, [id]);
 
   if (loading) {
-    return <PageSpinner />;
+    return (
+      <div className="mx-auto max-w-5xl space-y-6 p-6 lg:p-8">
+        {/* Back button skeleton */}
+        <Skeleton className="h-5 w-28" />
+
+        {/* Document info header skeleton */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                </div>
+                <Skeleton className="h-4 w-32" />
+                <div className="flex gap-4">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-3 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+            </div>
+            <Skeleton className="mt-4 h-8 w-full rounded-xl" />
+          </CardContent>
+        </Card>
+
+        {/* Signatures skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-28" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between rounded-xl border border-border bg-muted/50 p-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                </div>
+                <Skeleton className="h-5 w-20 rounded-full" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Timeline skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-3 w-64 mt-1" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex gap-4 items-start">
+                <Skeleton className="h-9 w-9 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-64" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (error || !document) {

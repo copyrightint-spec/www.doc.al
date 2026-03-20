@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ChainVisualization from "@/components/ChainVisualization";
 import { PageSpinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SignatureTimeline {
   signerName: string;
@@ -198,8 +199,58 @@ export default function EntryDetailPage({
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <PageSpinner />
+      <div className="min-h-screen bg-background">
+        {/* Skeleton Header */}
+        <header className="border-b border-border bg-card px-6 py-4">
+          <div className="mx-auto max-w-5xl flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Skeleton className="h-11 w-11 rounded-xl" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+            <Skeleton className="h-8 w-32 rounded-xl" />
+          </div>
+        </header>
+        <div className="mx-auto max-w-5xl px-6 py-6 space-y-6">
+          {/* Entry header skeleton */}
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-12 w-12 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+          {/* Security layers skeleton */}
+          <div className="grid gap-4 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-3/4" />
+              </div>
+            ))}
+          </div>
+          {/* Hash sections skeleton */}
+          <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+            <Skeleton className="h-3 w-32" />
+            <Skeleton className="h-10 w-full rounded-xl" />
+            <Skeleton className="h-3 w-40" />
+            <Skeleton className="h-10 w-full rounded-xl" />
+          </div>
+          {/* Chain visualization skeleton */}
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <Skeleton className="h-4 w-48 mb-4" />
+            <div className="flex items-center justify-center gap-4">
+              <Skeleton className="h-16 w-24 rounded-xl" />
+              <Skeleton className="h-1 w-12" />
+              <Skeleton className="h-20 w-28 rounded-xl" />
+              <Skeleton className="h-1 w-12" />
+              <Skeleton className="h-16 w-24 rounded-xl" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

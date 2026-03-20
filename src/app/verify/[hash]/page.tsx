@@ -13,6 +13,7 @@ import { cn } from "@/lib/cn";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageSpinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SignerInfo {
   name: string;
@@ -83,7 +84,41 @@ export default function VerifyPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <PageSpinner />
+        {/* Header */}
+        <header className="border-b border-border bg-card">
+          <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-2.5">
+              <Skeleton className="h-11 w-11 rounded-xl" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+            <Skeleton className="h-4 w-24" />
+          </div>
+        </header>
+        <main className="mx-auto max-w-2xl px-6 py-8 space-y-6">
+          <Skeleton className="h-7 w-56 mx-auto" />
+          {/* Status card skeleton */}
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="flex items-center gap-4 p-6">
+              <Skeleton className="h-14 w-14 rounded-full shrink-0" />
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+            </div>
+            <div className="divide-y divide-border">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between px-6 py-4">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-40" />
+                </div>
+              ))}
+              <div className="px-6 py-4 space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-10 w-full rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
