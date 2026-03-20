@@ -69,6 +69,12 @@ enum OtsStatus {
   CONFIRMED
 }
 
+enum StamlesStatus {
+  QUEUED
+  BATCHED
+  CONFIRMED
+}
+
 enum VerificationCodeType {
   EMAIL
   TOTP
@@ -333,17 +339,17 @@ model TimestampEntry {
   sequentialFingerprint String
   type                  TimestampType @default(SINGLE_FILE)
   serverTimestamp       DateTime      @default(now())
-  btcTxId               String?
-  btcBlockHeight        Int?
-  btcBlockHash          String?
-  otsProof              Bytes?
+  btcTxId               String?   // @deprecated - Legacy BTC field, replaced by polygonTxHash
+  btcBlockHeight        Int?      // @deprecated - Legacy BTC field, replaced by polygonBlockNumber
+  btcBlockHash          String?   // @deprecated - Legacy BTC field, replaced by Polygon blockchain
+  otsProof              Bytes?    // @deprecated - Legacy OTS proof, replaced by STAMLES/Polygon proof
   otsStatus             OtsStatus     @default(PENDING)
   ipfsCid               String?
   // STAMLES / Polygon blockchain fields
   polygonTxHash         String?
   polygonBlockNumber    Int?
   stamlesBatchId        String?
-  stamlesStatus         String?       @default("QUEUED") // QUEUED, BATCHED, CONFIRMED
+  stamlesStatus         StamlesStatus? @default(QUEUED)
   createdAt             DateTime      @default(now())
 
   documentId      String?

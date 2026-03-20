@@ -157,7 +157,8 @@ export async function DELETE(req: NextRequest) {
       // Delete related records
       await tx.verificationCode.deleteMany({ where: { userId } });
       await tx.apiKey.deleteMany({ where: { userId } });
-      await tx.auditLog.deleteMany({ where: { userId } });
+      // Audit logs are append-only - set userId to null instead of deleting
+      await tx.auditLog.updateMany({ where: { userId }, data: { userId: null } });
       await tx.signature.deleteMany({ where: { signerId: userId } });
       await tx.certificate.deleteMany({ where: { userId } });
       await tx.signingTemplate.deleteMany({ where: { userId } });

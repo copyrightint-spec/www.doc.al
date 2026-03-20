@@ -11,6 +11,8 @@ export async function GET(req: NextRequest) {
 
     const searchParams = req.nextUrl.searchParams;
     const status = searchParams.get("status");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
 
     const where: Record<string, unknown> = {
       OR: [
@@ -20,16 +22,25 @@ export async function GET(req: NextRequest) {
     };
     if (status) where.status = status;
 
-    const signatures = await prisma.signature.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      include: {
-        document: { select: { id: true, title: true, fileName: true, status: true } },
-        certificate: { select: { id: true, serialNumber: true, subjectDN: true } },
-      },
-    });
+    const [signatures, total] = await Promise.all([
+      prisma.signature.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          document: { select: { id: true, title: true, fileName: true, status: true } },
+          certificate: { select: { id: true, serialNumber: true, subjectDN: true } },
+        },
+      }),
+      prisma.signature.count({ where }),
+    ]);
 
-    return NextResponse.json({ success: true, data: signatures });
+    return NextResponse.json({
+      success: true,
+      data: signatures,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
   } catch {
     return NextResponse.json({ error: "Ndodhi nje gabim" }, { status: 500 });
   }

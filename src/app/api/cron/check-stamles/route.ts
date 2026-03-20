@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
           select: { fileHash: true },
         },
       },
-      take: 100,
+      take: 500,
       orderBy: { createdAt: "asc" },
     });
 
