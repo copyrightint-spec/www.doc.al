@@ -102,20 +102,22 @@ export async function POST(
       });
 
       // Update signature
+      const signedAt = new Date();
       await prisma.signature.update({
         where: { id: signature.id },
         data: {
           status: "SIGNED",
-          signedAt: new Date(),
+          signedAt,
           signatureImageUrl: signatureImage ? `data:image/png;base64,${signatureImage}` : null,
           signerId: user.id,
         },
       });
 
       // Create timestamp entry for this signature
+      // Use fixed signedAt timestamp for reproducible hash
       const signatureHash = crypto
         .createHash("sha256")
-        .update(`${signature.document.fileHash}:${signature.signerEmail}:${new Date().toISOString()}`)
+        .update(`${signature.document.fileHash}:${signature.signerEmail}:${signedAt.toISOString()}`)
         .digest("hex");
 
       const timestampEntry = await createTimestamp(signatureHash, "SIGNATURE", {

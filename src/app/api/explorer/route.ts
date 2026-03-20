@@ -156,7 +156,12 @@ export async function GET(req: NextRequest) {
     }
 
     if (search && /^[a-f0-9]+$/i.test(search)) {
-      where.fingerprint = { contains: search.toLowerCase() };
+      // Use exact match for full hashes, startsWith for partial
+      if (search.length === 64) {
+        where.fingerprint = search.toLowerCase();
+      } else {
+        where.fingerprint = { startsWith: search.toLowerCase() };
+      }
     }
 
     const [entries, total] = await Promise.all([

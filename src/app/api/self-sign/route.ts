@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Vetem skedare PDF lejohen" }, { status: 400 });
     }
 
-    if (signedFile.size > 50 * 1024 * 1024) {
+    if (originalFile.size > 50 * 1024 * 1024 || signedFile.size > 50 * 1024 * 1024) {
       return NextResponse.json({ error: "Madhesia maksimale eshte 50MB" }, { status: 400 });
     }
 

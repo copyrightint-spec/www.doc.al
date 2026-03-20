@@ -55,31 +55,38 @@ export async function createTimestamp(
   const serverTimestamp = new Date();
   const timestampISO = serverTimestamp.toISOString();
 
-  // Get the last entry in the chain
-  const lastEntry = await prisma.timestampEntry.findFirst({
-    orderBy: { sequenceNumber: "desc" },
-    select: {
-      id: true,
-      sequentialFingerprint: true,
-    },
-  });
+  // Use serializable transaction to prevent race conditions.
+  // Two concurrent requests cannot get the same lastEntry.
+  const entry = await prisma.$transaction(async (tx) => {
+    // Get the last entry in the chain (locked within transaction)
+    const lastEntry = await tx.timestampEntry.findFirst({
+      orderBy: { sequenceNumber: "desc" },
+      select: {
+        id: true,
+        sequentialFingerprint: true,
+      },
+    });
 
-  const sequentialFingerprint = computeSequentialFingerprint(
-    lastEntry?.sequentialFingerprint ?? null,
-    fingerprint,
-    timestampISO
-  );
-
-  const entry = await prisma.timestampEntry.create({
-    data: {
+    const sequentialFingerprint = computeSequentialFingerprint(
+      lastEntry?.sequentialFingerprint ?? null,
       fingerprint,
-      sequentialFingerprint,
-      type,
-      serverTimestamp,
-      previousEntryId: lastEntry?.id ?? undefined,
-      documentId: options?.documentId,
-      signatureId: options?.signatureId,
-    },
+      timestampISO
+    );
+
+    return tx.timestampEntry.create({
+      data: {
+        fingerprint,
+        sequentialFingerprint,
+        type,
+        serverTimestamp,
+        previousEntryId: lastEntry?.id ?? undefined,
+        documentId: options?.documentId,
+        signatureId: options?.signatureId,
+      },
+    });
+  }, {
+    isolationLevel: "Serializable",
+    timeout: 10000,
   });
 
   // Auto-submit to OpenTimestamps (fire and forget)
@@ -94,7 +101,7 @@ export async function createTimestamp(
     sequentialFingerprint: entry.sequentialFingerprint,
     type: entry.type,
     serverTimestamp: entry.serverTimestamp,
-    previousEntryId: lastEntry?.id ?? null,
+    previousEntryId: entry.previousEntryId,
   };
 }
 
