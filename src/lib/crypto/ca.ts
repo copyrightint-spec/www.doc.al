@@ -165,8 +165,6 @@ function generateIssuingCA(rootCA: CACertificate): CACertificate {
   cert.setSubject(subjectAttrs);
   cert.setIssuer(rootCA.certificate.subject.attributes);
 
-  const baseUrl = getBaseUrl();
-
   cert.setExtensions([
     {
       name: "basicConstraints",
@@ -189,38 +187,6 @@ function generateIssuingCA(rootCA: CACertificate): CACertificate {
       keyIdentifier: true,
       authorityCertIssuer: true,
       serialNumber: true,
-    },
-    {
-      name: "authorityInfoAccess",
-      accessDescriptions: [
-        {
-          accessMethod: "1.3.6.1.5.5.7.48.2", // caIssuers
-          accessLocation: {
-            type: 6, // URI
-            value: `${baseUrl}/api/ca/root.crt`,
-          },
-        },
-        {
-          accessMethod: "1.3.6.1.5.5.7.48.1", // OCSP
-          accessLocation: {
-            type: 6, // URI
-            value: `${baseUrl}/api/ocsp`,
-          },
-        },
-      ],
-    },
-    {
-      name: "cRLDistributionPoints",
-      distributionPoints: [
-        {
-          fullName: [
-            {
-              type: 6, // URI
-              value: `${baseUrl}/api/crl`,
-            },
-          ],
-        },
-      ],
     },
   ]);
 
@@ -279,8 +245,6 @@ export function signCertificateWithCA(
   cert: forge.pki.Certificate,
   issuingCA: CACertificate
 ): forge.pki.Certificate {
-  const baseUrl = getBaseUrl();
-
   // Set issuer from the Issuing CA certificate
   cert.setIssuer(issuingCA.certificate.subject.attributes);
 
@@ -295,41 +259,11 @@ export function signCertificateWithCA(
     serialNumber: true,
   });
 
-  // Add Authority Information Access (AIA)
-  existingExtensions.push({
-    name: "authorityInfoAccess",
-    accessDescriptions: [
-      {
-        accessMethod: "1.3.6.1.5.5.7.48.2", // caIssuers
-        accessLocation: {
-          type: 6, // URI
-          value: `${baseUrl}/api/ca/issuing.crt`,
-        },
-      },
-      {
-        accessMethod: "1.3.6.1.5.5.7.48.1", // OCSP
-        accessLocation: {
-          type: 6, // URI
-          value: `${baseUrl}/api/ocsp`,
-        },
-      },
-    ],
-  });
-
-  // Add CRL Distribution Points (CDP)
-  existingExtensions.push({
-    name: "cRLDistributionPoints",
-    distributionPoints: [
-      {
-        fullName: [
-          {
-            type: 6, // URI
-            value: `${baseUrl}/api/crl`,
-          },
-        ],
-      },
-    ],
-  });
+  // Note: AIA and CDP extensions require ASN.1 encoding not fully
+  // supported by node-forge. These URLs are documented in the CA page:
+  // - CA Issuer: /api/ca/issuing.crt
+  // - OCSP: /api/ocsp
+  // - CRL: /api/crl
 
   cert.setExtensions(existingExtensions);
 
