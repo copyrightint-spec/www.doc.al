@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import QRCode from "qrcode";
+import bwipjs from "bwip-js";
 import { computeSHA256 } from "@/lib/timestamp/engine";
 import { signWithCertificate } from "./certificates";
 
@@ -73,11 +74,26 @@ export async function signPdf(
     // QR generation failed - continue without it
   }
 
+  // Generate DataMatrix with document hash
+  let dmImage;
+  try {
+    const dmPng = bwipjs.toBuffer({
+      bcid: "datamatrix",
+      text: preHash,
+      scale: 3,
+    }) as unknown as Promise<Buffer>;
+    const dmBuffer = await dmPng;
+    dmImage = await pdfDoc.embedPng(dmBuffer);
+  } catch {
+    // DataMatrix generation failed - continue without it
+  }
+
   // Stamp dimensions
   const stampX = 30;
   const stampY = 10;
   const stampW = pageW - 60;
   const qrSize = 55;
+  const dmSize = 35;
   const stampH = qrSize + 10;
 
   // Draw stamp background
@@ -99,6 +115,16 @@ export async function signPdf(
       y: stampY + 5,
       width: qrSize,
       height: qrSize,
+    });
+  }
+
+  // Draw DataMatrix (right side of stamp)
+  if (dmImage) {
+    lastPage.drawImage(dmImage, {
+      x: stampX + stampW - dmSize - 5,
+      y: stampY + (stampH - dmSize) / 2,
+      width: dmSize,
+      height: dmSize,
     });
   }
 
@@ -134,7 +160,7 @@ export async function signPdf(
   });
 
   // Line 3: Regulation
-  lastPage.drawText("eIDAS 910/2014 | Bitcoin Blockchain | IPFS Decentralized Proof", {
+  lastPage.drawText("eIDAS 910/2014 | Polygon Blockchain (STAMLES) | IPFS Proof", {
     x: textX,
     y: stampY + stampH - 37,
     size: 6,
@@ -143,7 +169,7 @@ export async function signPdf(
   });
 
   // Line 4: Verify URL + hash
-  lastPage.drawText(`Verifikoni: doc.al/verify | Hash: ${preHash.slice(0, 24)}...`, {
+  lastPage.drawText(`Verifikoni: www.doc.al/verify | Hash: ${preHash.slice(0, 24)}...`, {
     x: textX,
     y: stampY + stampH - 48,
     size: 5.5,
@@ -151,16 +177,15 @@ export async function signPdf(
     color: rgb(0.5, 0.5, 0.5),
   });
 
-  // Line 5: Reason
-  if (options.reason) {
-    lastPage.drawText(options.reason, {
-      x: textX,
-      y: stampY + stampH - 57,
-      size: 5,
-      font,
-      color: rgb(0.55, 0.55, 0.55),
-    });
-  }
+  // Line 5: Certificate + reason
+  const certLine = options.reason || "Nenshkrim dixhital permes doc.al";
+  lastPage.drawText(`${certLine} | COPYRIGHT sh.p.k`, {
+    x: textX,
+    y: stampY + stampH - 57,
+    size: 5,
+    font,
+    color: rgb(0.55, 0.55, 0.55),
+  });
 
   // Save modified PDF
   const modifiedPdfBytes = await pdfDoc.save();
