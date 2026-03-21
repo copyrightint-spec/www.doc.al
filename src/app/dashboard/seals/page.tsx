@@ -138,7 +138,6 @@ export default function SealsPage() {
       setPlanError(data.error || "Ndodhi nje gabim gjate krijimit te vules");
       setShowCreate(false);
     }
-    }
     setCreating(false);
   };
 
