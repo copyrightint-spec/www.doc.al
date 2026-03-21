@@ -96,6 +96,7 @@ export default function SealsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [hasOrganization, setHasOrganization] = useState<boolean | null>(null);
+  const [planError, setPlanError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "", description: "", type: "COMPANY_SEAL", template: "official",
     primaryColor: "#0f172a", borderText: "", centerText: "VULE ZYRTARE",
@@ -134,7 +135,8 @@ export default function SealsPage() {
       fetchSeals();
     } else {
       const data = await res.json().catch(() => ({}));
-      alert(data.error || "Ndodhi nje gabim gjate krijimit te vules");
+      setPlanError(data.error || "Ndodhi nje gabim gjate krijimit te vules");
+      setShowCreate(false);
     }
     }
     setCreating(false);
@@ -197,6 +199,26 @@ export default function SealsPage() {
           <Plus className="mr-2 h-4 w-4" /> Krijo Vule te Re
         </Button>
       </div>
+
+      {/* Plan Error */}
+      {planError && (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100 dark:bg-red-900/30">
+              <AlertCircle className="h-7 w-7 text-red-600 dark:text-red-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">Nuk keni te drejte perdorimi</h3>
+            <p className="max-w-md text-sm text-muted-foreground">{planError}</p>
+            <p className="text-xs text-muted-foreground">Kontaktoni suportin teknik per me shume.</p>
+            <a
+              href="/contact/organization"
+              className="mt-1 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            >
+              Kontaktoni Suportin
+            </a>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
