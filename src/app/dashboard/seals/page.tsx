@@ -132,6 +132,10 @@ export default function SealsPage() {
       setShowCreate(false);
       setForm({ name: "", description: "", type: "COMPANY_SEAL", template: "official", primaryColor: "#0f172a", borderText: "", centerText: "VULE ZYRTARE", generateCertificate: true, validityYears: 2 });
       fetchSeals();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || "Ndodhi nje gabim gjate krijimit te vules");
+    }
     }
     setCreating(false);
   };
