@@ -171,8 +171,14 @@ export default function SealsPage() {
             </div>
             <h3 className="text-lg font-semibold text-foreground">Vetem per Organizata</h3>
             <p className="max-w-md text-sm text-muted-foreground">
-              Vulat dixhitale jane vetem per organizata. Kontaktoni administratorin per te bere upgrade.
+              Vulat dixhitale jane vetem per organizata. Per te krijuar nje organizate, plotesoni formen e kontaktit.
             </p>
+            <a
+              href="/contact/organization"
+              className="mt-2 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            >
+              Krijo nje Organizate
+            </a>
           </CardContent>
         </Card>
       </div>
