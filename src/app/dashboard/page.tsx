@@ -144,9 +144,9 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {[
-          { href: "/dashboard/contracts/self-sign", icon: PenTool, label: "Nenshkruaj PDF", desc: "Ngarko dhe nenshkruaj vete", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
-          { href: "/dashboard/contracts", icon: Mail, label: "Dergo per Nenshkrim", desc: "Kerko nenshkrime nga te tjeret", color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-900/20" },
-          { href: "/dashboard/templates", icon: LayoutTemplate, label: "Krijo nga Template", desc: "Shabllonet e gatshme", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
+          { href: "/dashboard/contracts/self-sign", icon: PenTool, label: "Nenshkruaj Dokument", desc: "Ngarko dhe nenshkruaj vete", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
+          { href: "/dashboard/contracts/new", icon: Mail, label: "Krijo Marreveshje", desc: "Marreveshje me pale te shumta", color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-900/20" },
+          { href: "/dashboard/templates", icon: LayoutTemplate, label: "Perdor Shabllon", desc: "Shabllonet e gatshme", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
         ].map((action) => (
           <Link key={action.href} href={action.href}>
             <Card className="group flex items-center gap-4 p-5 transition-all hover:shadow-md">

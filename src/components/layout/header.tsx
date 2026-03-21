@@ -108,10 +108,10 @@ export function Header({
                   </div>
 
                   {/* Settings links in dropdown */}
-                  {settingsItems?.map((item) => (
+                  {settingsItems?.filter((item) => item.href).map((item) => (
                     <Link
                       key={item.href}
-                      href={item.href}
+                      href={item.href!}
                       className={cn(
                         "flex items-center gap-2 px-4 py-2 text-sm transition-colors",
                         isAdmin

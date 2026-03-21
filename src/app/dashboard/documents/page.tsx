@@ -2,18 +2,18 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { FileText, Upload, Send, Eye, Lock } from "lucide-react";
+import { FileText, Upload, Eye, Lock } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert } from "@/components/ui/alert";
 import { DOCUMENT_STATUS, SIGNATURE_STATUS } from "@/lib/constants/status";
 import { formatDate } from "@/lib/utils/date";
+import { cn } from "@/lib/cn";
 
 interface Signature {
   id: string;
@@ -40,6 +40,13 @@ function formatBytes(bytes: number) {
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
   return (bytes / 1048576).toFixed(1) + " MB";
 }
+
+const FILTER_TABS = [
+  { value: "", label: "Te gjitha" },
+  { value: "COMPLETED", label: "Perfunduara" },
+  { value: "PENDING_SIGNATURE", label: "Ne Pritje" },
+  { value: "DRAFT", label: "Draft" },
+];
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -92,7 +99,7 @@ export default function DocumentsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
       <PageHeader
-        title="Dokumentat"
+        title="Dokumentat e Mia"
         subtitle={`${total} dokumente gjithsej`}
         actions={
           <label>
@@ -111,7 +118,7 @@ export default function DocumentsPage() {
         <Alert variant="destructive" title={uploadError} />
       )}
 
-      {/* Filters */}
+      {/* Filter Tabs + Search */}
       <div className="flex flex-wrap gap-3">
         <Input
           type="text"
@@ -120,18 +127,21 @@ export default function DocumentsPage() {
           placeholder="Kerko dokumenta..."
           className="min-w-[200px] flex-1"
         />
-        <select
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground"
-        >
-          <option value="">Te gjitha statuset</option>
-          <option value="DRAFT">Draft</option>
-          <option value="PENDING_SIGNATURE">Ne pritje</option>
-          <option value="PARTIALLY_SIGNED">Pjeserisht</option>
-          <option value="COMPLETED">Perfunduar</option>
-          <option value="ARCHIVED">Arkivuar</option>
-        </select>
+        <div className="flex gap-1.5">
+          {FILTER_TABS.map((tab) => (
+            <Button
+              key={tab.value}
+              variant={statusFilter === tab.value ? "primary" : "ghost"}
+              size="sm"
+              onClick={() => { setStatusFilter(tab.value); setPage(1); }}
+              className={cn(
+                statusFilter !== tab.value && "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {loading ? (
@@ -207,14 +217,6 @@ export default function DocumentsPage() {
                         Shiko
                       </Link>
                     </Button>
-                    {doc.status === "DRAFT" && (
-                      <Button variant="secondary" size="sm" asChild>
-                        <Link href={`/dashboard/documents/${doc.id}/send`}>
-                          <Send className="h-3.5 w-3.5" />
-                          Dergo per nenshkrim
-                        </Link>
-                      </Button>
-                    )}
                   </div>
                 </div>
 

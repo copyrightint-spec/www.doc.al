@@ -155,28 +155,14 @@ function TemplateEditorPage() {
   const initDesigner = useCallback(async () => {
     if (!designerRef.current) return;
 
-    const [{ Designer }, schemas, { BLANK_PDF }] = await Promise.all([
+    const [{ Designer }, schemas] = await Promise.all([
       import("@pdfme/ui"),
       import("@pdfme/schemas"),
-      import("@pdfme/common"),
     ]);
     const { createBlankPdfWithFooter, createBlankPdfWithBranding } = await import("@/lib/pdfme-footer");
+    const { buildDesignerPlugins } = await import("@/lib/pdfme-plugins");
 
-    const plugins = {
-      text: schemas.text,
-      image: schemas.image,
-      checkbox: schemas.checkbox,
-      date: schemas.date,
-      dateTime: schemas.dateTime,
-      select: schemas.select,
-      line: schemas.line,
-      rectangle: schemas.rectangle,
-      ellipse: schemas.ellipse,
-      svg: schemas.svg,
-      qrcode: schemas.barcodes.qrcode,
-      gs1datamatrix: schemas.barcodes.gs1datamatrix,
-      table: schemas.table,
-    };
+    const plugins = buildDesignerPlugins(schemas);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let basePdf: any;
@@ -493,10 +479,14 @@ function TemplateEditorPage() {
   function mapPdfmeTypeToOurs(pdfmeType: string): string {
     const map: Record<string, string> = {
       text: "text",
-      image: "signature",
+      multiVariableText: "text",
+      image: "image",
+      signature: "signature",
       checkbox: "checkbox",
+      radioGroup: "checkbox",
       date: "date",
       dateTime: "date",
+      time: "date",
       select: "dropdown",
       line: "text",
       rectangle: "text",

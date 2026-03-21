@@ -52,11 +52,24 @@ export function AppShell({ children, variant = "dashboard" }: AppShellProps) {
 
   // Determine current page title
   const allItems = [...navItems, ...(isAdmin ? [] : settingsNav)];
-  const currentPage = allItems.find((item) => {
+  // Check flat items first
+  let currentPage = allItems.find((item) => {
+    if (!item.href) return false;
     const rootHref = navItems[0]?.href || "/dashboard";
     if (item.href === rootHref) return pathname === item.href;
     return pathname === item.href || pathname.startsWith(item.href + "/");
   });
+  // Check children of expandable groups
+  if (!currentPage) {
+    for (const item of allItems) {
+      if (item.children) {
+        const child = item.children.find(
+          (c) => pathname === c.href || pathname.startsWith(c.href + "/")
+        );
+        if (child) { currentPage = item; break; }
+      }
+    }
+  }
 
   const title = currentPage?.label || (isAdmin ? "Admin" : "Dashboard");
 

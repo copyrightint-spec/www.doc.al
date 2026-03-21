@@ -7,10 +7,9 @@ import TextAlign from "@tiptap/extension-text-align";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Table, TableRow, TableCell, TableHeader } from "@tiptap/extension-table";
 import Image from "@tiptap/extension-image";
-import { TextStyle } from "@tiptap/extension-text-style";
-import { Color } from "@tiptap/extension-color";
+import { TextStyleKit } from "@tiptap/extension-text-style";
 import Highlight from "@tiptap/extension-highlight";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Bold,
   Italic,
@@ -37,6 +36,8 @@ import {
   Trash2,
   Plus,
   Image as ImageIcon,
+  Palette,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -136,6 +137,318 @@ function ToolbarDivider() {
   return <div className="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />;
 }
 
+// ─── Font Size Selector ───
+
+const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 64, 72];
+
+function FontSizeSelector({ editor }: { editor: Editor }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Get current font size from text style or default
+  const currentAttrs = editor.getAttributes("textStyle");
+  const currentSize = currentAttrs?.fontSize
+    ? parseInt(currentAttrs.fontSize, 10)
+    : null;
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        title="Madhesia e fontit"
+        className={cn(
+          "flex h-8 items-center gap-0.5 rounded-lg px-2 text-xs transition-colors",
+          "hover:bg-slate-100 dark:hover:bg-slate-800",
+          "border border-slate-200 dark:border-slate-700"
+        )}
+      >
+        <span className="min-w-[1.5rem] text-center font-medium">
+          {currentSize || 16}
+        </span>
+        <ChevronDown className="h-3 w-3 opacity-50" />
+      </button>
+      {isOpen && (
+        <div className="absolute left-0 top-full z-50 mt-1 max-h-48 w-16 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+          {FONT_SIZES.map((size) => (
+            <button
+              key={size}
+              type="button"
+              className={cn(
+                "block w-full px-3 py-1 text-left text-xs transition-colors",
+                "hover:bg-slate-100 dark:hover:bg-slate-800",
+                currentSize === size && "bg-slate-200 font-semibold dark:bg-slate-700"
+              )}
+              onClick={() => {
+                editor.chain().focus().setFontSize(`${size}px`).run();
+                setIsOpen(false);
+              }}
+            >
+              {size}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Text Color Picker ───
+
+const TEXT_COLORS = [
+  "#000000", "#374151", "#6B7280", "#DC2626", "#EA580C",
+  "#D97706", "#16A34A", "#0891B2", "#2563EB", "#7C3AED",
+  "#DB2777", "#FFFFFF",
+];
+
+function TextColorPicker({ editor }: { editor: Editor }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const currentColor = editor.getAttributes("textStyle")?.color || "#000000";
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        title="Ngjyra e tekstit"
+        className={cn(
+          "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
+          "hover:bg-slate-100 dark:hover:bg-slate-800"
+        )}
+      >
+        <Palette className="h-4 w-4" />
+        <span
+          className="absolute bottom-1 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full"
+          style={{ backgroundColor: currentColor }}
+        />
+      </button>
+      {isOpen && (
+        <div className="absolute left-0 top-full z-50 mt-1 grid w-[156px] grid-cols-6 gap-1 rounded-lg border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+          {TEXT_COLORS.map((color) => (
+            <button
+              key={color}
+              type="button"
+              title={color}
+              className={cn(
+                "h-5 w-5 rounded border transition-transform hover:scale-110",
+                currentColor === color
+                  ? "border-slate-900 ring-1 ring-slate-400 dark:border-white"
+                  : "border-slate-200 dark:border-slate-600"
+              )}
+              style={{ backgroundColor: color }}
+              onClick={() => {
+                editor.chain().focus().setColor(color).run();
+                setIsOpen(false);
+              }}
+            />
+          ))}
+          <button
+            type="button"
+            title="Hiq ngjyren"
+            className="flex h-5 w-5 items-center justify-center rounded border border-slate-200 text-[9px] hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800"
+            onClick={() => {
+              editor.chain().focus().unsetColor().run();
+              setIsOpen(false);
+            }}
+          >
+            <Minus className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Font Family Selector ───
+
+const FONT_FAMILIES = [
+  { label: "Default", value: "" },
+  { label: "Arial", value: "Arial, sans-serif" },
+  { label: "Times New Roman", value: "Times New Roman, serif" },
+  { label: "Georgia", value: "Georgia, serif" },
+  { label: "Verdana", value: "Verdana, sans-serif" },
+  { label: "Courier New", value: "Courier New, monospace" },
+  { label: "Trebuchet MS", value: "Trebuchet MS, sans-serif" },
+  { label: "Garamond", value: "Garamond, serif" },
+];
+
+function FontFamilySelector({ editor }: { editor: Editor }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const currentFamily = editor.getAttributes("textStyle")?.fontFamily || "";
+  const currentLabel =
+    FONT_FAMILIES.find((f) => f.value === currentFamily)?.label || "Default";
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        title="Fonti"
+        className={cn(
+          "flex h-8 items-center gap-0.5 rounded-lg px-2 text-xs transition-colors",
+          "hover:bg-slate-100 dark:hover:bg-slate-800",
+          "border border-slate-200 dark:border-slate-700"
+        )}
+      >
+        <span className="max-w-[5rem] truncate font-medium">{currentLabel}</span>
+        <ChevronDown className="h-3 w-3 opacity-50" />
+      </button>
+      {isOpen && (
+        <div className="absolute left-0 top-full z-50 mt-1 max-h-48 w-44 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+          {FONT_FAMILIES.map((font) => (
+            <button
+              key={font.label}
+              type="button"
+              className={cn(
+                "block w-full px-3 py-1.5 text-left text-xs transition-colors",
+                "hover:bg-slate-100 dark:hover:bg-slate-800",
+                currentFamily === font.value &&
+                  "bg-slate-200 font-semibold dark:bg-slate-700"
+              )}
+              style={{ fontFamily: font.value || "inherit" }}
+              onClick={() => {
+                if (font.value) {
+                  editor.chain().focus().setFontFamily(font.value).run();
+                } else {
+                  editor.chain().focus().unsetFontFamily().run();
+                }
+                setIsOpen(false);
+              }}
+            >
+              {font.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Line Spacing Selector ───
+
+const LINE_HEIGHTS = [
+  { label: "1.0", value: "1" },
+  { label: "1.15", value: "1.15" },
+  { label: "1.5", value: "1.5" },
+  { label: "2.0", value: "2" },
+  { label: "2.5", value: "2.5" },
+  { label: "3.0", value: "3" },
+];
+
+function LineSpacingSelector({ editor }: { editor: Editor }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const currentLH = editor.getAttributes("textStyle")?.lineHeight || "";
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        title="Hapesira e rreshtave"
+        className={cn(
+          "flex h-8 items-center gap-0.5 rounded-lg px-1.5 text-xs transition-colors",
+          "hover:bg-slate-100 dark:hover:bg-slate-800"
+        )}
+      >
+        <svg
+          className="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <line x1="21" y1="6" x2="3" y2="6" />
+          <line x1="21" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="18" x2="3" y2="18" />
+          <polyline points="7 3 4.5 6 2 3" />
+          <polyline points="7 21 4.5 18 2 21" />
+        </svg>
+        <ChevronDown className="h-3 w-3 opacity-50" />
+      </button>
+      {isOpen && (
+        <div className="absolute left-0 top-full z-50 mt-1 w-20 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+          {LINE_HEIGHTS.map((lh) => (
+            <button
+              key={lh.value}
+              type="button"
+              className={cn(
+                "block w-full px-3 py-1 text-left text-xs transition-colors",
+                "hover:bg-slate-100 dark:hover:bg-slate-800",
+                currentLH === lh.value &&
+                  "bg-slate-200 font-semibold dark:bg-slate-700"
+              )}
+              onClick={() => {
+                editor.chain().focus().setLineHeight(lh.value).run();
+                setIsOpen(false);
+              }}
+            >
+              {lh.label}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="block w-full px-3 py-1 text-left text-xs text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+            onClick={() => {
+              editor.chain().focus().unsetLineHeight().run();
+              setIsOpen(false);
+            }}
+          >
+            Default
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Toolbar ───
 
 function EditorToolbar({ editor }: { editor: Editor }) {
@@ -184,6 +497,12 @@ function EditorToolbar({ editor }: { editor: Editor }) {
 
       <ToolbarDivider />
 
+      {/* Font Family & Size */}
+      <FontFamilySelector editor={editor} />
+      <FontSizeSelector editor={editor} />
+
+      <ToolbarDivider />
+
       {/* Format */}
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -221,6 +540,9 @@ function EditorToolbar({ editor }: { editor: Editor }) {
         <Highlighter className="h-4 w-4" />
       </ToolbarButton>
 
+      {/* Text Color */}
+      <TextColorPicker editor={editor} />
+
       <ToolbarDivider />
 
       {/* Alignment */}
@@ -252,6 +574,9 @@ function EditorToolbar({ editor }: { editor: Editor }) {
       >
         <AlignJustify className="h-4 w-4" />
       </ToolbarButton>
+
+      {/* Line Spacing */}
+      <LineSpacingSelector editor={editor} />
 
       <ToolbarDivider />
 
@@ -385,8 +710,12 @@ export function DocumentEditor({
           class: "doc-image",
         },
       }),
-      TextStyle,
-      Color,
+      TextStyleKit.configure({
+        fontSize: {},
+        fontFamily: {},
+        lineHeight: {},
+        backgroundColor: {},
+      }),
       Highlight.configure({
         multicolor: false,
       }),

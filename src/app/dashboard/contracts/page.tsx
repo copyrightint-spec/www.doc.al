@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   PenLine,
-  Send,
   FileText,
   Clock,
   CheckCircle2,
@@ -101,15 +100,7 @@ function isSelfSigned(contract: Contract) {
 
 const QUICK_ACTIONS = [
   {
-    title: "Krijo Kontrate",
-    description: "Nderto nje kontrate te re me pale, baze ligjore dhe terma te personalizuara",
-    href: "/dashboard/contracts/new",
-    icon: Scale,
-    gradient: "from-emerald-500 to-teal-600",
-    iconBg: "bg-emerald-400/20",
-  },
-  {
-    title: "Nenshkruaj PDF",
+    title: "Nenshkruaj Dokument",
     description: "Ngarko nje PDF dhe nenshkruaje vete me firmen tende dixhitale",
     href: "/dashboard/contracts/self-sign",
     icon: PenLine,
@@ -117,15 +108,15 @@ const QUICK_ACTIONS = [
     iconBg: "bg-blue-400/20",
   },
   {
-    title: "Dergo per Nenshkrim",
-    description: "Dergo nje dokument te tjereve per ta nenshkruar dixhitalisht",
-    href: "/dashboard/documents",
-    icon: Send,
-    gradient: "from-sky-500 to-blue-500",
-    iconBg: "bg-sky-400/20",
+    title: "Krijo Marreveshje",
+    description: "Nderto nje marreveshje te re me pale te shumta per nenshkrim",
+    href: "/dashboard/contracts/new",
+    icon: Scale,
+    gradient: "from-emerald-500 to-teal-600",
+    iconBg: "bg-emerald-400/20",
   },
   {
-    title: "Krijo nga Template",
+    title: "Perdor Shabllon",
     description: "Zgjidh nje template gatshme, plotesoje dhe nenshkruaje menjehere",
     href: "/dashboard/templates",
     icon: FileText,
@@ -168,13 +159,13 @@ export default function ContractsPage() {
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
       {/* Header */}
       <PageHeader
-        title="eSign"
-        subtitle="Nenshkruaj, dergo per nenshkrim, ose krijo dokumente nga template"
+        title="Nenshkrimet e Mia"
+        subtitle="Marreveshjet dhe nenshkrimet individuale"
         className="mb-8"
       />
 
       {/* Quick Actions */}
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {QUICK_ACTIONS.map((action) => {
           const Icon = action.icon;
           return (

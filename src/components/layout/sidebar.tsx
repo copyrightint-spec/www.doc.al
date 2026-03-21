@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { X, ChevronDown, Settings, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { type NavItem } from "./nav-items";
+import { type NavItem, type NavChild } from "./nav-items";
 
 interface SidebarProps {
   navItems: NavItem[];
@@ -27,8 +27,24 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const [settingsOpen, setSettingsOpen] = useState(
-    settingsItems?.some((item) => pathname.startsWith(item.href)) ?? false
+    settingsItems?.some((item) => item.href && pathname.startsWith(item.href)) ?? false
   );
+
+  // Track which expandable nav groups are open
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    navItems.forEach((item) => {
+      if (item.children) {
+        const isChildActive = item.children.some((child) => pathname.startsWith(child.href));
+        if (isChildActive) initial[item.label] = true;
+      }
+    });
+    return initial;
+  });
+
+  const toggleGroup = (label: string) => {
+    setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
 
   const isAdmin = variant === "admin";
 
@@ -80,11 +96,70 @@ export function Sidebar({
         <nav className="flex flex-1 flex-col justify-between overflow-y-auto">
           <div className="space-y-1 p-4">
             {navItems.map((item) => {
-              const active = isActive(item.href, isRootItem(item.href));
+              // Items with children render as expandable group
+              if (item.children) {
+                const isGroupActive = item.children.some((child) => isActive(child.href));
+                const isOpen = openGroups[item.label] ?? false;
+                return (
+                  <div key={item.label}>
+                    <button
+                      onClick={() => toggleGroup(item.label)}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
+                        isGroupActive
+                          ? isAdmin
+                            ? "font-medium text-white"
+                            : "font-medium text-foreground"
+                          : isAdmin
+                            ? "text-slate-400 hover:bg-slate-800/50 hover:text-slate-100"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.5} />
+                      {item.label}
+                      <ChevronDown
+                        className={cn(
+                          "ml-auto h-4 w-4 transition-transform",
+                          isOpen ? "rotate-180" : ""
+                        )}
+                      />
+                    </button>
+                    {isOpen && (
+                      <div className="ml-4 mt-1 space-y-0.5 border-l border-border pl-3">
+                        {item.children.map((child) => {
+                          const childActive = isActive(child.href);
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              onClick={onClose}
+                              className={cn(
+                                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                                childActive
+                                  ? isAdmin
+                                    ? "font-medium text-white"
+                                    : "font-medium text-foreground"
+                                  : isAdmin
+                                    ? "text-slate-400 hover:text-slate-100"
+                                    : "text-muted-foreground hover:text-foreground"
+                              )}
+                            >
+                              {child.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              // Regular flat nav item
+              const active = isActive(item.href!, isRootItem(item.href!));
               return (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={item.href!}
                   onClick={onClose}
                   className={cn(
                     "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
@@ -110,7 +185,7 @@ export function Sidebar({
                   onClick={() => setSettingsOpen(!settingsOpen)}
                   className={cn(
                     "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
-                    settingsItems.some((item) => isActive(item.href))
+                    settingsItems.some((item) => item.href && isActive(item.href))
                       ? "text-foreground font-medium"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
@@ -128,11 +203,11 @@ export function Sidebar({
                 {settingsOpen && (
                   <div className="ml-4 mt-1 space-y-0.5 border-l border-border pl-3">
                     {settingsItems.map((item) => {
-                      const active = isActive(item.href);
+                      const active = item.href ? isActive(item.href) : false;
                       return (
                         <Link
-                          key={item.href}
-                          href={item.href}
+                          key={item.href || item.label}
+                          href={item.href || "#"}
                           onClick={onClose}
                           className={cn(
                             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",

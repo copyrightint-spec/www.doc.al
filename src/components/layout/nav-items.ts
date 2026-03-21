@@ -20,22 +20,37 @@ import {
   ScrollText,
   Scale,
   KeyRound,
+  Search,
   type LucideIcon,
 } from "lucide-react";
 
-export interface NavItem {
+export interface NavChild {
   href: string;
+  label: string;
+}
+
+export interface NavItem {
+  href?: string;
   label: string;
   icon: LucideIcon;
   adminOnly?: boolean;
+  children?: NavChild[];
 }
 
 export const dashboardNav: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/dashboard/contracts", label: "Dokumentat", icon: FileSignature },
+  {
+    label: "eSign",
+    icon: PenTool,
+    children: [
+      { href: "/dashboard/contracts/self-sign", label: "Nenshkruaj Dokument" },
+      { href: "/dashboard/contracts/new", label: "Krijo Marreveshje" },
+    ],
+  },
+  { href: "/dashboard/documents", label: "Dokumentat", icon: FileText },
   { href: "/dashboard/templates", label: "Shabllonet", icon: LayoutTemplate },
   { href: "/dashboard/seals", label: "Vulat Dixhitale", icon: Stamp },
-  { href: "/explorer", label: "Explorer", icon: Zap },
+  { href: "/explorer", label: "Explorer", icon: Search },
 ];
 
 export const settingsNav: NavItem[] = [
