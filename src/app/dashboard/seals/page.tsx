@@ -151,6 +151,15 @@ export default function SealsPage() {
     fetchSeals();
   };
 
+  if (loading && hasOrganization === null) {
+    return (
+      <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
+        <PageHeader title="Vulat Dixhitale" subtitle="Menaxhoni vulat dixhitale te kompanise per dokumente dhe fatura" />
+        <PageSpinner />
+      </div>
+    );
+  }
+
   if (hasOrganization === false) {
     return (
       <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
