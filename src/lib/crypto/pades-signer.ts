@@ -57,7 +57,8 @@ function createPKCS7Signature(
       },
       {
         type: forge.pki.oids.signingTime,
-        value: new Date().toISOString(),
+        // @ts-expect-error forge types expect string but Date works at runtime
+        value: new Date(),
       },
       {
         type: forge.pki.oids.messageDigest,
@@ -102,9 +103,32 @@ export async function embedPAdESSignature(
   }
 
   const privateKeyPem = decryptPrivateKey(cert.encryptedPrivateKey);
-  const certificatePem = forge.pki.certificateToPem(
-    forge.pki.certificateFromPem(cert.publicKey)
-  ).trim();
+
+  // Reconstruct certificate from stored data
+  // DB stores publicKey PEM (not certificate PEM), so we rebuild the cert
+  const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+  const publicKey = forge.pki.publicKeyFromPem(cert.publicKey);
+
+  // Create a temporary certificate for PKCS#7 signing
+  const tempCert = forge.pki.createCertificate();
+  tempCert.publicKey = publicKey;
+  tempCert.serialNumber = cert.serialNumber;
+  tempCert.validity.notBefore = cert.validFrom;
+  tempCert.validity.notAfter = cert.validTo;
+
+  // Parse subject/issuer DN
+  const parseDN = (dn: string) => {
+    return dn.split(", ").map((part) => {
+      const [key, ...rest] = part.split("=");
+      return { shortName: key.trim(), value: rest.join("=").trim() };
+    }).filter((a) => a.shortName && a.value) as forge.pki.CertificateField[];
+  };
+
+  tempCert.setSubject(parseDN(cert.subjectDN));
+  tempCert.setIssuer(parseDN(cert.issuerDN));
+  tempCert.sign(privateKey, forge.md.sha256.create());
+
+  const certificatePem = forge.pki.certificateToPem(tempCert);
 
   // Get CA chain
   let caCerts: string[] = [];
@@ -162,7 +186,7 @@ export async function embedPAdESSignature(
   const pkcs7 = createPKCS7Signature(
     pdfBuffer,
     privateKeyPem,
-    cert.publicKey,
+    certificatePem,
     caCerts
   );
 
