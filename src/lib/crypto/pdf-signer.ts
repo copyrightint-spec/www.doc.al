@@ -187,12 +187,27 @@ export async function signPdf(
     color: rgb(0.55, 0.55, 0.55),
   });
 
-  // Save modified PDF
-  const modifiedPdfBytes = await pdfDoc.save();
-  const modifiedPdfBuffer = Buffer.from(modifiedPdfBytes);
+  // Save modified PDF (with visual stamp)
+  const stampedPdfBytes = await pdfDoc.save();
+  let stampedPdfBuffer = Buffer.from(stampedPdfBytes);
+
+  // Embed PAdES digital signature (PKCS#7/CMS) into PDF metadata
+  try {
+    const { embedPAdESSignature } = await import("./pades-signer");
+    stampedPdfBuffer = Buffer.from(await embedPAdESSignature(
+      stampedPdfBuffer,
+      options.certificateId,
+      options.signerName,
+      options.reason || "Nenshkrim dixhital permes doc.al",
+      options.location || "doc.al Platform"
+    ));
+    console.log("[pdf-signer] PAdES signature embedded successfully");
+  } catch (padesError) {
+    console.error("[pdf-signer] PAdES embedding failed, using stamp-only:", padesError);
+  }
 
   // Compute final document hash
-  const documentHash = computeSHA256(modifiedPdfBuffer);
+  const documentHash = computeSHA256(stampedPdfBuffer);
 
   // Sign the document hash with the certificate (cryptographic RSA-SHA256)
   const { signature, certificateInfo } = await signWithCertificate(
@@ -201,7 +216,7 @@ export async function signPdf(
   );
 
   return {
-    signedPdfBuffer: modifiedPdfBuffer,
+    signedPdfBuffer: stampedPdfBuffer,
     documentHash,
     signatureBase64: signature,
     certificateInfo,
