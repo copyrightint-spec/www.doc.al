@@ -64,7 +64,6 @@ export function AppShell({ children, variant = "dashboard" }: AppShellProps) {
     <div className={cn("flex min-h-screen", isAdmin ? "bg-slate-950" : "bg-background")}>
       <Sidebar
         navItems={navItems}
-        settingsItems={isAdmin ? undefined : settingsNav}
         variant={isAdmin ? "admin" : "default"}
         sidebarOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

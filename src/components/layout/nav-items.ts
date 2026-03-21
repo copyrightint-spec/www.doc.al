@@ -33,7 +33,7 @@ export interface NavItem {
 export const dashboardNav: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/dashboard/contracts", label: "Dokumentat", icon: FileSignature },
-  { href: "/templates", label: "Shabllonet", icon: LayoutTemplate },
+  { href: "/dashboard/templates", label: "Shabllonet", icon: LayoutTemplate },
   { href: "/dashboard/seals", label: "Vulat Dixhitale", icon: Stamp },
   { href: "/explorer", label: "Explorer", icon: Zap },
 ];

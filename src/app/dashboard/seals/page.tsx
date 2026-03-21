@@ -95,6 +95,7 @@ export default function SealsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [hasOrganization, setHasOrganization] = useState<boolean | null>(null);
   const [form, setForm] = useState({
     name: "", description: "", type: "COMPANY_SEAL", template: "official",
     primaryColor: "#0f172a", borderText: "", centerText: "VULE ZYRTARE",
@@ -104,8 +105,14 @@ export default function SealsPage() {
   const fetchSeals = useCallback(async () => {
     setLoading(true);
     const res = await fetch("/api/dashboard/seals");
+    if (res.status === 403) {
+      setHasOrganization(false);
+      setLoading(false);
+      return;
+    }
     const data = await res.json();
     if (data.success) {
+      setHasOrganization(true);
       setSeals(data.data.seals);
       setStats(data.data.stats);
     }
@@ -143,6 +150,25 @@ export default function SealsPage() {
     }
     fetchSeals();
   };
+
+  if (hasOrganization === false) {
+    return (
+      <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
+        <PageHeader title="Vulat Dixhitale" subtitle="Menaxhoni vulat dixhitale te kompanise per dokumente dhe fatura" />
+        <Card>
+          <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100 dark:bg-amber-900/30">
+              <AlertCircle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">Vetem per Organizata</h3>
+            <p className="max-w-md text-sm text-muted-foreground">
+              Vulat dixhitale jane vetem per organizata. Kontaktoni administratorin per te bere upgrade.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">

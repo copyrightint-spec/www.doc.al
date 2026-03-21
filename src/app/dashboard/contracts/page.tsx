@@ -59,6 +59,18 @@ interface Contract {
   requester: { id: string; name: string; email: string };
 }
 
+interface SelfSignedDoc {
+  id: string;
+  title: string;
+  fileName: string;
+  fileSize: number;
+  fileHash: string;
+  status: string;
+  createdAt: string;
+  signatures: Signer[];
+  owner: { id: string; name: string; email: string };
+}
+
 /** Page-level contract status mapping (superset of shared CONTRACT_STATUS) */
 const PAGE_CONTRACT_STATUS: Record<
   string,
@@ -115,7 +127,7 @@ const QUICK_ACTIONS = [
   {
     title: "Krijo nga Template",
     description: "Zgjidh nje template gatshme, plotesoje dhe nenshkruaje menjehere",
-    href: "/templates",
+    href: "/dashboard/templates",
     icon: FileText,
     gradient: "from-slate-600 to-slate-700",
     iconBg: "bg-slate-400/20",
@@ -124,6 +136,7 @@ const QUICK_ACTIONS = [
 
 export default function ContractsPage() {
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [selfSignedDocs, setSelfSignedDocs] = useState<SelfSignedDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -135,16 +148,19 @@ export default function ContractsPage() {
     if (search) params.set("search", search);
     const res = await fetch(`/api/contracts?${params}`);
     const data = await res.json();
-    if (data.success) setContracts(data.data);
+    if (data.success) {
+      setContracts(data.data);
+      setSelfSignedDocs(data.selfSigned || []);
+    }
     setLoading(false);
   }, [statusFilter, search]);
 
   useEffect(() => { fetchContracts(); }, [fetchContracts]);
 
   const stats = {
-    total: contracts.length,
+    total: contracts.length + selfSignedDocs.length,
     pending: contracts.filter((c) => c.status === "PENDING" || c.status === "IN_PROGRESS").length,
-    completed: contracts.filter((c) => c.status === "COMPLETED").length,
+    completed: contracts.filter((c) => c.status === "COMPLETED").length + selfSignedDocs.length,
     expired: contracts.filter((c) => c.status === "EXPIRED" || c.status === "CANCELLED").length,
   };
 
@@ -452,7 +468,7 @@ export default function ContractsPage() {
             );
           })}
 
-          {contracts.length === 0 && !loading && (
+          {contracts.length === 0 && selfSignedDocs.length === 0 && !loading && (
             <EmptyState
               icon={FileText}
               title="Nuk keni kerkesa per nenshkrim akoma"
@@ -475,6 +491,57 @@ export default function ContractsPage() {
             />
           )}
         </div>
+      )}
+
+      {/* Self-Signed Documents Section */}
+      {!loading && selfSignedDocs.length > 0 && (
+        <>
+          <div className="mt-8 mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">Nenshkrime Individuale</h2>
+            <p className="text-xs text-muted-foreground">{selfSignedDocs.length} gjithsej</p>
+          </div>
+          <div className="space-y-3">
+            {selfSignedDocs.map((doc) => {
+              const sig = doc.signatures[0];
+              return (
+                <Card key={doc.id} className="transition-all hover:border-slate-300 dark:hover:border-slate-600">
+                  <div className="flex w-full items-center gap-4 p-5">
+                    {/* Icon */}
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-900/20">
+                      <PenLine className="h-5 w-5 text-emerald-600" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-medium text-foreground truncate">{doc.title}</h3>
+                        <Badge variant="success">Nenshkruar vete</Badge>
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                        <span>Krijuar: {formatDate(doc.createdAt)}</span>
+                        <span>Nga: {doc.owner.name}</span>
+                        <span>{formatBytes(doc.fileSize)}</span>
+                        {sig?.signedAt && <span>Nenshkruar: {formatDate(sig.signedAt)}</span>}
+                      </div>
+                    </div>
+
+                    {/* Check icon */}
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                      <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+
+                    {/* Verify link */}
+                    <Button variant="secondary" size="sm" asChild>
+                      <Link href={`/verify/${doc.fileHash}`}>
+                        Verifiko
+                      </Link>
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

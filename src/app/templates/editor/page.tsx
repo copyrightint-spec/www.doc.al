@@ -526,7 +526,7 @@ function TemplateEditorPage() {
         <div className="border-b border-border bg-card">
           <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-6">
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/templates">
+              <Link href="/dashboard/templates">
                 <ChevronLeft className="h-4 w-4" />
                 Kthehu te Templates
               </Link>
@@ -770,7 +770,7 @@ function TemplateEditorPage() {
             {/* Actions */}
             <div className="flex items-center justify-end gap-3 pt-4">
               <Button variant="secondary" asChild>
-                <Link href="/templates">Anulo</Link>
+                <Link href="/dashboard/templates">Anulo</Link>
               </Button>
               <Button
                 onClick={() => {
@@ -858,7 +858,7 @@ function TemplateEditorPage() {
           )}
 
           <Button variant="secondary" size="sm" asChild>
-            <Link href="/templates">Anulo</Link>
+            <Link href="/dashboard/templates">Anulo</Link>
           </Button>
           <Button
             size="sm"

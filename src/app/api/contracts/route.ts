@@ -69,7 +69,45 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ success: true, data: contracts });
+    // Also fetch self-signed documents (documents with signatures but no SigningRequest)
+    const selfSignedWhere: Record<string, unknown> = {
+      ownerId: session.user.id,
+      status: "COMPLETED",
+      signingRequests: { none: {} },
+      signatures: { some: { signerId: session.user.id, status: "SIGNED" } },
+    };
+
+    if (search) {
+      selfSignedWhere.title = { contains: search, mode: "insensitive" };
+    }
+
+    // If a status filter is set, only include self-signed docs when filter is COMPLETED
+    const includeSelfSigned = !status || status === "COMPLETED";
+
+    const selfSignedDocs = includeSelfSigned
+      ? await prisma.document.findMany({
+          where: selfSignedWhere,
+          include: {
+            signatures: {
+              orderBy: { order: "asc" },
+              select: {
+                id: true,
+                signerName: true,
+                signerEmail: true,
+                status: true,
+                signedAt: true,
+                order: true,
+              },
+            },
+            owner: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        })
+      : [];
+
+    return NextResponse.json({ success: true, data: contracts, selfSigned: selfSignedDocs });
   } catch {
     return NextResponse.json({ error: "Ndodhi nje gabim" }, { status: 500 });
   }
