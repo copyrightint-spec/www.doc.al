@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import PublicNav from "@/components/PublicNav";
 import {
   Shield,
   ShieldCheck,
@@ -165,32 +166,7 @@ export default function CertificatesPage() {
               Certificate Transparency Log
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/explorer"
-              className="hidden text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white sm:block"
-            >
-              Explorer
-            </Link>
-            <Link
-              href="/verify"
-              className="hidden text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white sm:block"
-            >
-              Verify
-            </Link>
-            <Link
-              href="/certificates"
-              className="hidden text-sm font-medium text-blue-600 dark:text-blue-400 sm:block"
-            >
-              Certifikata
-            </Link>
-            <Link
-              href="/auth/login"
-              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-300"
-            >
-              Hyr
-            </Link>
-          </div>
+          <PublicNav />
         </div>
       </header>
 
