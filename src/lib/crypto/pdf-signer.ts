@@ -193,14 +193,20 @@ export async function signPdf(
 
   // Embed PAdES digital signature (PKCS#7/CMS) into PDF structure
   try {
-    const { embedPAdESSignature } = await import("./pades-signer");
-    stampedPdfBuffer = Buffer.from(await embedPAdESSignature(
-      stampedPdfBuffer,
-      options.certificateId,
-      options.signerName,
-      options.reason || "Nenshkrim dixhital permes doc.al",
-      options.location || "doc.al Platform"
-    ));
+    const { signPdfWithPAdES } = await import("./pades-signer");
+    // Get certificate data for PAdES signing
+    const cert = await (await import("@/lib/db")).prisma.certificate.findUnique({
+      where: { id: options.certificateId },
+      select: { publicKey: true, encryptedPrivateKey: true, certificatePem: true },
+    });
+    if (cert) {
+      stampedPdfBuffer = Buffer.from(await signPdfWithPAdES(
+        stampedPdfBuffer,
+        cert,
+        options.signerName,
+        options.reason || "Nenshkrim dixhital permes doc.al"
+      ));
+    }
     console.log("[pdf-signer] PAdES signature embedded successfully");
   } catch (padesError) {
     console.error("[pdf-signer] PAdES embedding failed, using stamp-only:", padesError);
