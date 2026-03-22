@@ -16,7 +16,7 @@ export async function GET() {
   });
 
   if (!user?.organizationId) {
-    return NextResponse.json({ error: "Nuk jeni pjese e nje organizate" }, { status: 403 });
+    return NextResponse.json({ error: "Vulat dixhitale jane vetem per organizata. Kontaktoni adminin.", code: "NO_ORG" }, { status: 403 });
   }
 
   const seals = await prisma.companySeal.findMany({
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (!user?.organizationId) {
-    return NextResponse.json({ error: "Nuk jeni pjese e nje organizate" }, { status: 403 });
+    return NextResponse.json({ error: "Vulat dixhitale jane vetem per organizata. Kontaktoni adminin.", code: "NO_ORG" }, { status: 403 });
   }
 
   // Check seal template limit
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
   const maxTemplates = activeQuota?.maxSealTemplates ?? customQuotas?.maxSealTemplates ?? planDef?.quotas.maxSealTemplates ?? 0;
 
   if (maxTemplates <= 0) {
-    return NextResponse.json({ error: "Plani juaj nuk perfshin vula dixhitale. Kontaktoni administratorin." }, { status: 403 });
+    return NextResponse.json({ error: "Nuk keni te drejte perdorimi te vulave dixhitale. Kontaktoni suportin teknik per me shume.", code: "PLAN_LIMIT" }, { status: 403 });
   }
 
   if (currentSealCount >= maxTemplates) {

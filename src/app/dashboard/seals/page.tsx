@@ -18,6 +18,9 @@ import {
   ExternalLink,
   Bitcoin,
   Clock,
+  Eye,
+  X,
+  Code2,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +31,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageSpinner } from "@/components/ui/spinner";
 import { formatDateTime } from "@/lib/utils/date";
 import { cn } from "@/lib/cn";
+import Link from "next/link";
 
 interface CompanySeal {
   id: string;
@@ -88,6 +92,224 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
+function SealPreviewModal({
+  seal,
+  onClose,
+}: {
+  seal: CompanySeal;
+  onClose: () => void;
+}) {
+  const borderText = seal.borderText || "KOMPANIA SH.P.K.";
+  const centerText = seal.centerText || "VULE ZYRTARE";
+  const primary = seal.primaryColor || "#0f172a";
+
+  // Positions for border text characters around the circle
+  const topChars = borderText.split("");
+  const radius = 110;
+  const centerX = 140;
+  const centerY = 140;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="relative w-full max-w-lg rounded-2xl border border-border bg-background p-6 shadow-2xl">
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <h3 className="mb-1 text-lg font-semibold text-foreground">
+          Paraqitja e Vules
+        </h3>
+        <p className="mb-6 text-xs text-muted-foreground">
+          Keshtu do te duket vula kur te aplikohet ne nje dokument PDF
+        </p>
+
+        {/* Visual seal preview */}
+        <div className="flex justify-center">
+          <div className="relative flex items-center justify-center rounded-xl border border-border bg-white p-8 dark:bg-slate-950">
+            <svg
+              width="280"
+              height="280"
+              viewBox="0 0 280 280"
+              className="drop-shadow-lg"
+            >
+              {/* Outer circle */}
+              <circle
+                cx={centerX}
+                cy={centerY}
+                r="130"
+                fill="none"
+                stroke={primary}
+                strokeWidth="3"
+                opacity="0.8"
+              />
+              {/* Second circle */}
+              <circle
+                cx={centerX}
+                cy={centerY}
+                r="122"
+                fill="none"
+                stroke={primary}
+                strokeWidth="1"
+                opacity="0.4"
+              />
+              {/* Inner circle */}
+              <circle
+                cx={centerX}
+                cy={centerY}
+                r="75"
+                fill="none"
+                stroke={primary}
+                strokeWidth="1.5"
+                opacity="0.5"
+              />
+              {/* Filled inner background */}
+              <circle
+                cx={centerX}
+                cy={centerY}
+                r="74"
+                fill={primary}
+                opacity="0.05"
+              />
+
+              {/* Border text along top arc */}
+              <defs>
+                <path
+                  id="topArc"
+                  d={`M ${centerX - radius},${centerY} A ${radius},${radius} 0 1,1 ${centerX + radius},${centerY}`}
+                />
+                <path
+                  id="bottomArc"
+                  d={`M ${centerX + radius},${centerY} A ${radius},${radius} 0 1,1 ${centerX - radius},${centerY}`}
+                />
+              </defs>
+              <text
+                fill={primary}
+                fontSize="11"
+                fontWeight="600"
+                letterSpacing="3"
+              >
+                <textPath
+                  href="#topArc"
+                  startOffset="50%"
+                  textAnchor="middle"
+                >
+                  {borderText.toUpperCase()}
+                </textPath>
+              </text>
+
+              {/* Bottom arc text - stars or decorative */}
+              <text
+                fill={primary}
+                fontSize="10"
+                fontWeight="400"
+                letterSpacing="6"
+              >
+                <textPath
+                  href="#bottomArc"
+                  startOffset="50%"
+                  textAnchor="middle"
+                >
+                  {"* * * * *"}
+                </textPath>
+              </text>
+
+              {/* Center text */}
+              <text
+                x={centerX}
+                y={centerY - 8}
+                textAnchor="middle"
+                fill={primary}
+                fontSize="14"
+                fontWeight="700"
+              >
+                {centerText.toUpperCase()}
+              </text>
+
+              {/* Seal type */}
+              <text
+                x={centerX}
+                y={centerY + 12}
+                textAnchor="middle"
+                fill={primary}
+                fontSize="8"
+                opacity="0.6"
+              >
+                {SEAL_TYPES[seal.type] || seal.type}
+              </text>
+
+              {/* eIDAS level */}
+              <text
+                x={centerX}
+                y={centerY + 28}
+                textAnchor="middle"
+                fill={primary}
+                fontSize="7"
+                opacity="0.5"
+              >
+                eIDAS {seal.eidasLevel}
+              </text>
+            </svg>
+          </div>
+        </div>
+
+        {/* Seal info */}
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="rounded-xl border border-border bg-muted/50 p-3">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground">
+              Emri
+            </span>
+            <p className="mt-0.5 text-sm font-medium text-foreground">
+              {seal.name}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-muted/50 p-3">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground">
+              Statusi
+            </span>
+            <p className="mt-0.5 text-sm font-medium text-foreground">
+              <Badge variant={STATUS_BADGE[seal.status]?.variant || "default"}>
+                {STATUS_BADGE[seal.status]?.label || seal.status}
+              </Badge>
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-muted/50 p-3">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground">
+              Ngjyra
+            </span>
+            <div className="mt-1 flex items-center gap-2">
+              <div
+                className="h-4 w-4 rounded-full border border-border"
+                style={{ backgroundColor: primary }}
+              />
+              <code className="text-xs text-muted-foreground">{primary}</code>
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-muted/50 p-3">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground">
+              eIDAS
+            </span>
+            <p className="mt-0.5 text-sm font-medium text-foreground">
+              {seal.eidasLevel}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={onClose}
+            className="rounded-xl bg-muted px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/80"
+          >
+            Mbyll
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SealsPage() {
   const [seals, setSeals] = useState<CompanySeal[]>([]);
   const [stats, setStats] = useState<Stats>({ totalSeals: 0, activeSeals: 0, totalApplications: 0 });
@@ -97,6 +319,7 @@ export default function SealsPage() {
   const [creating, setCreating] = useState(false);
   const [hasOrganization, setHasOrganization] = useState<boolean | null>(null);
   const [planError, setPlanError] = useState<string | null>(null);
+  const [previewSeal, setPreviewSeal] = useState<CompanySeal | null>(null);
   const [form, setForm] = useState({
     name: "", description: "", type: "COMPANY_SEAL", template: "official",
     primaryColor: "#0f172a", borderText: "", centerText: "VULE ZYRTARE",
@@ -107,7 +330,13 @@ export default function SealsPage() {
     setLoading(true);
     const res = await fetch("/api/dashboard/seals");
     if (res.status === 403) {
-      setHasOrganization(false);
+      const errData = await res.json().catch(() => ({}));
+      if (errData.code === "PLAN_LIMIT") {
+        setPlanError(errData.error || "Nuk keni te drejte perdorimi te vulave dixhitale.");
+        setHasOrganization(true);
+      } else {
+        setHasOrganization(false);
+      }
       setLoading(false);
       return;
     }
@@ -194,9 +423,18 @@ export default function SealsPage() {
     <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <PageHeader title="Vulat Dixhitale" subtitle="Menaxhoni vulat dixhitale te kompanise per dokumente dhe fatura" />
-        <Button onClick={() => setShowCreate(!showCreate)}>
-          <Plus className="mr-2 h-4 w-4" /> Krijo Vule te Re
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/seals/api-docs"
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted/80"
+          >
+            <Code2 className="h-4 w-4" />
+            API & Integrime
+          </Link>
+          <Button onClick={() => setShowCreate(!showCreate)}>
+            <Plus className="mr-2 h-4 w-4" /> Krijo Vule te Re
+          </Button>
+        </div>
       </div>
 
       {/* Plan Error */}
@@ -322,6 +560,13 @@ export default function SealsPage() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setPreviewSeal(seal); }}
+                      className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      title="Shiko Paraqitjen"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
                     {seal.status === "ACTIVE" && (
                       <button onClick={(e) => { e.stopPropagation(); handleAction(seal.id, "deactivate"); }} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground" title="Caktivizo">
                         <Pause className="h-4 w-4" />
@@ -432,6 +677,14 @@ export default function SealsPage() {
             );
           })}
         </div>
+      )}
+
+      {/* Seal Preview Modal */}
+      {previewSeal && (
+        <SealPreviewModal
+          seal={previewSeal}
+          onClose={() => setPreviewSeal(null)}
+        />
       )}
     </div>
   );

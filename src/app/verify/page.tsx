@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import PublicNav from "@/components/PublicNav";
 import {
   Upload,
   FileCheck,
@@ -190,13 +191,7 @@ export default function VerifyPage() {
               Verify Time Stamp
             </h1>
           </div>
-          <Link
-            href="/explorer"
-            className="flex items-center gap-1 text-sm text-blue-600 hover:underline dark:text-blue-400"
-          >
-            Explorer
-            <ArrowRight className="h-3 w-3" />
-          </Link>
+          <PublicNav />
         </div>
       </header>
 
