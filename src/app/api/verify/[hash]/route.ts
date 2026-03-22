@@ -32,26 +32,27 @@ export async function GET(
       );
     }
 
-    // Strategy 1: Search by certificationHash in metadata (legacy stamp flow)
-    const allCompleted = await prisma.document.findMany({
-      where: { status: "COMPLETED" },
+    // Strategy 1: Search by fileHash (most common - self-sign flow)
+    let document = await prisma.document.findFirst({
+      where: { fileHash: hash, status: "COMPLETED" },
       include: {
         signatures: { orderBy: { order: "asc" } },
-        timestampEntries: {
-          orderBy: { serverTimestamp: "desc" },
-        },
+        timestampEntries: { orderBy: { serverTimestamp: "desc" } },
       },
     });
 
-    let document = allCompleted.find((d) => {
-      const meta = d.metadata as Record<string, unknown> | null;
-      const stamp = meta?.docAlStamp as Record<string, unknown> | undefined;
-      return stamp?.certificationHash === hash;
-    });
-
-    // Strategy 2: Search by fileHash (self-sign flow)
+    // Strategy 2: Search by certificationHash in metadata (legacy stamp flow)
     if (!document) {
-      document = allCompleted.find((d) => d.fileHash === hash);
+      document = await prisma.document.findFirst({
+        where: {
+          status: "COMPLETED",
+          metadata: { path: ["docAlStamp", "certificationHash"], equals: hash },
+        },
+        include: {
+          signatures: { orderBy: { order: "asc" } },
+          timestampEntries: { orderBy: { serverTimestamp: "desc" } },
+        },
+      });
     }
 
     // Strategy 3: Search by timestamp fingerprint
@@ -69,6 +70,23 @@ export async function GET(
       });
       if (tsEntry?.document) {
         document = tsEntry.document;
+      }
+    }
+
+    // Strategy 4: Search by originalFileHash in metadata (QR code hash)
+    if (!document) {
+      const docByOrigHash = await prisma.document.findFirst({
+        where: {
+          status: "COMPLETED",
+          metadata: { path: ["originalFileHash"], equals: hash },
+        },
+        include: {
+          signatures: { orderBy: { order: "asc" } },
+          timestampEntries: { orderBy: { serverTimestamp: "desc" } },
+        },
+      });
+      if (docByOrigHash) {
+        document = docByOrigHash;
       }
     }
 
