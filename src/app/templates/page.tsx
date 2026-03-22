@@ -97,7 +97,7 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 
 const FIELD_TYPES = [
   { value: "signature", label: "Nenshkrim", icon: PenTool, color: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
-  { value: "stamp", label: "Vule", icon: Stamp, color: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" },
+  { value: "stamp", label: "Vule", icon: Stamp, color: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300" },
   { value: "text", label: "Tekst", icon: AlignLeft, color: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
   { value: "date", label: "Date", icon: Calendar, color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300" },
   { value: "checkbox", label: "Checkbox", icon: CheckCircle, color: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" },
@@ -114,7 +114,7 @@ const HEADER_COLORS = [
   "from-violet-500 to-violet-600",
   "from-pink-500 to-pink-600",
   "from-cyan-500 to-cyan-600",
-  "from-indigo-500 to-indigo-600",
+  "from-sky-500 to-sky-600",
 ];
 
 function getHeaderColor(index: number) {

@@ -291,6 +291,7 @@ model Certificate {
   subjectDN           String
   issuerDN            String
   publicKey           String          @db.Text
+  certificatePem      String?         @db.Text
   encryptedPrivateKey String          @db.Text
   validFrom           DateTime
   validTo             DateTime

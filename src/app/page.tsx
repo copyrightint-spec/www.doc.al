@@ -74,7 +74,7 @@ const stats = [
 const securityLayers = [
   { icon: Shield, title: "eIDAS Compliant", description: "Plotesojme rregulloren Europiane per nenshkrime elektronike dhe identifikim dixhital." },
   { icon: Hexagon, title: "Powered by Polygon", description: "Cdo nenshkrim ankorihet ne Polygon PoS blockchain permes STAMLES Merkle batching." },
-  { icon: Globe, title: "IPFS Distributed", description: "Hash-et e dokumenteve ruhen ne IPFS. Dokumentet origjinale nuk ruhen kurre ne serverin tone - dergohen me email dhe fshihen menjehere." },
+  { icon: Globe, title: "IPFS Distributed", description: "Provat kriptografike ruhen ne IPFS. Dokumentet NUK ruhen ne serverin tone - vetem hash-i SHA-256. Pas nenshkrimit, PDF dergohet me email dhe fshihet menjehere nga serveri." },
   { icon: Database, title: "doc.al Chain", description: "Zinxhiri yne publik regjistron cdo timestamp me transparence te plote." },
 ];
 
@@ -279,7 +279,7 @@ export default function LandingPage() {
               eIDAS Compliant
             </FloatingBadge>
             <FloatingBadge delay={0.15}>
-              <span className="h-2 w-2 animate-pulse rounded-full bg-purple-500" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
               Polygon Anchored
             </FloatingBadge>
             <FloatingBadge delay={0.3}>

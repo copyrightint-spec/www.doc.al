@@ -125,7 +125,7 @@ export default function AdminAuditPage() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard label="Total Logs" value={stats.total.toLocaleString()} icon={Activity} iconColor="text-muted-foreground" iconBg="bg-muted" />
           <StatCard label="Today" value={stats.todayCount.toLocaleString()} icon={CalendarDays} iconColor="text-blue-400" iconBg="bg-blue-900/30" />
-          <StatCard label="Unique Actions" value={stats.uniqueActions} icon={Zap} iconColor="text-purple-400" iconBg="bg-purple-900/30" />
+          <StatCard label="Unique Actions" value={stats.uniqueActions} icon={Zap} iconColor="text-blue-400" iconBg="bg-blue-900/30" />
           <StatCard label="Unique Users" value={stats.uniqueUsers} icon={Users} iconColor="text-green-400" iconBg="bg-green-900/30" />
         </div>
       )}

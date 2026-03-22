@@ -108,7 +108,7 @@ export default function AdminPlansPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard label="Free" value={planStats.FREE.toString()} icon={Users} iconColor="text-muted-foreground" iconBg="bg-muted" />
         <StatCard label="Professional" value={planStats.PRO.toString()} icon={Zap} iconColor="text-blue-500" iconBg="bg-blue-900/30" />
-        <StatCard label="Enterprise" value={planStats.ENTERPRISE.toString()} icon={Shield} iconColor="text-purple-500" iconBg="bg-purple-900/30" />
+        <StatCard label="Enterprise" value={planStats.ENTERPRISE.toString()} icon={Shield} iconColor="text-blue-500" iconBg="bg-blue-900/30" />
       </div>
 
       <div className="flex gap-3">

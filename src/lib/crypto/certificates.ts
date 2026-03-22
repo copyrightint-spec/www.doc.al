@@ -128,6 +128,7 @@ export async function generateUserCertificate(
       subjectDN,
       issuerDN,
       publicKey: publicKeyPem,
+      certificatePem,
       encryptedPrivateKey: encryptPrivateKey(privateKeyPem),
       validFrom: cert.validity.notBefore,
       validTo: cert.validity.notAfter,

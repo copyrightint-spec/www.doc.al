@@ -469,7 +469,7 @@ export default function ExplorerPage() {
                       <Link
                         href={`/explorer/${entry.sequenceNumber}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="font-mono text-xs text-purple-600/70 hover:text-purple-600 hover:underline dark:text-purple-400/70 dark:hover:text-purple-400"
+                        className="font-mono text-xs text-blue-600/70 hover:text-blue-600 hover:underline dark:text-blue-400/70 dark:hover:text-blue-400"
                         title={entry.sequentialFingerprint}
                       >
                         {truncateHash(entry.sequentialFingerprint)}
@@ -499,7 +499,7 @@ export default function ExplorerPage() {
                         </Badge>
                       ) : (
                         <Badge variant="warning">
-                          <span className="h-2 w-2 rounded-full bg-purple-500 animate-pulse" />
+                          <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
                           Queued
                         </Badge>
                       )}
@@ -548,7 +548,7 @@ export default function ExplorerPage() {
                                   detail.type === "SINGLE_FILE"
                                     ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
                                     : detail.type === "SIGNATURE"
-                                      ? "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300"
+                                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
                                       : "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300"
                                 )}
                               >
@@ -632,18 +632,18 @@ export default function ExplorerPage() {
                                   "rounded-xl border p-3",
                                   (detail as unknown as TimestampEntry).stamlesStatus === "CONFIRMED"
                                     ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30"
-                                    : "border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30"
+                                    : "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30"
                                 )}>
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className={cn(
                                       "h-2.5 w-2.5 rounded-full",
-                                      (detail as unknown as TimestampEntry).stamlesStatus === "CONFIRMED" ? "bg-green-500" : "bg-purple-500 animate-pulse"
+                                      (detail as unknown as TimestampEntry).stamlesStatus === "CONFIRMED" ? "bg-green-500" : "bg-blue-500 animate-pulse"
                                     )} />
                                     <span className={cn(
                                       "text-sm font-medium",
                                       (detail as unknown as TimestampEntry).stamlesStatus === "CONFIRMED"
                                         ? "text-green-800 dark:text-green-300"
-                                        : "text-purple-800 dark:text-purple-300"
+                                        : "text-blue-800 dark:text-blue-300"
                                     )}>
                                       Polygon Blockchain (STAMLES)
                                     </span>
@@ -672,7 +672,7 @@ export default function ExplorerPage() {
                                       )}
                                     </div>
                                   ) : (
-                                    <p className="text-[10px] text-purple-600 dark:text-purple-400">
+                                    <p className="text-[10px] text-blue-600 dark:text-blue-400">
                                       Hash i dokumentit eshte ne rradhe per Merkle batching ne Polygon.
                                       Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle tree dhe root-i ruhet on-chain.
                                     </p>
@@ -681,7 +681,7 @@ export default function ExplorerPage() {
                                     href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="mt-2 inline-flex items-center gap-1 text-[10px] text-purple-600 hover:text-purple-500 hover:underline dark:text-purple-400"
+                                    className="mt-2 inline-flex items-center gap-1 text-[10px] text-blue-600 hover:text-blue-500 hover:underline dark:text-blue-400"
                                   >
                                     Shiko kontrakten ne PolygonScan
                                   </a>

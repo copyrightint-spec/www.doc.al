@@ -884,11 +884,11 @@ export default function FromTemplatePage({
                   disabled={uploading}
                   className="flex w-full items-center gap-3 rounded-xl border border-border bg-muted px-4 py-3.5 text-left transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
                     {uploading ? (
-                      <Loader2 className="h-5 w-5 animate-spin text-purple-500" />
+                      <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
                     ) : (
-                      <Send className="h-5 w-5 text-purple-500" />
+                      <Send className="h-5 w-5 text-blue-500" />
                     )}
                   </div>
                   <div>

@@ -25,14 +25,14 @@ function MerkleTreeDiagram() {
     <div className="mx-auto max-w-2xl py-8">
       {/* Merkle Root */}
       <div className="flex justify-center">
-        <div className="rounded-2xl border-2 border-purple-500 bg-purple-50 px-6 py-3 text-center dark:border-purple-400 dark:bg-purple-950/40">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+        <div className="rounded-2xl border-2 border-blue-500 bg-blue-50 px-6 py-3 text-center dark:border-blue-400 dark:bg-blue-950/40">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             Merkle Root
           </p>
-          <p className="mt-1 font-mono text-xs text-purple-800 dark:text-purple-200">
+          <p className="mt-1 font-mono text-xs text-blue-800 dark:text-blue-200">
             H(AB + CD)
           </p>
-          <p className="mt-1 text-[10px] text-purple-500">
+          <p className="mt-1 text-[10px] text-blue-500">
             Ruhet ne Polygon blockchain
           </p>
         </div>
@@ -41,8 +41,8 @@ function MerkleTreeDiagram() {
       {/* Lines down */}
       <div className="flex justify-center">
         <div className="flex w-64 justify-between">
-          <div className="ml-16 h-8 w-px bg-purple-300 dark:bg-purple-700" />
-          <div className="mr-16 h-8 w-px bg-purple-300 dark:bg-purple-700" />
+          <div className="ml-16 h-8 w-px bg-blue-300 dark:bg-blue-700" />
+          <div className="mr-16 h-8 w-px bg-blue-300 dark:bg-blue-700" />
         </div>
       </div>
 
@@ -122,12 +122,12 @@ function SecurityLayer({
       dot: "bg-green-500",
     },
     purple: {
-      border: "border-purple-200 dark:border-purple-800",
-      bg: "bg-purple-50 dark:bg-purple-950/30",
-      icon: "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300",
-      number: "text-purple-600 dark:text-purple-400",
-      title: "text-purple-800 dark:text-purple-200",
-      dot: "bg-purple-500",
+      border: "border-sky-200 dark:border-sky-800",
+      bg: "bg-sky-50 dark:bg-sky-950/30",
+      icon: "bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300",
+      number: "text-sky-600 dark:text-sky-400",
+      title: "text-sky-800 dark:text-sky-200",
+      dot: "bg-sky-500",
     },
     blue: {
       border: "border-blue-200 dark:border-blue-800",
@@ -299,7 +299,7 @@ export default function SiFunksionon() {
               </p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5 text-center dark:border-slate-700 dark:bg-slate-800">
-              <Database className="mx-auto h-8 w-8 text-purple-500" />
+              <Database className="mx-auto h-8 w-8 text-blue-500" />
               <h4 className="mt-3 font-semibold text-slate-900 dark:text-slate-50">
                 1 Transaksion
               </h4>

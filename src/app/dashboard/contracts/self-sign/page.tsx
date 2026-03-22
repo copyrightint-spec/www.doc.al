@@ -1086,7 +1086,7 @@ export default function SelfSignPage() {
                 )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Polygon:</span>
-                  <span className="text-purple-500 font-medium">
+                  <span className="text-blue-500 font-medium">
                     Ne rradhe per Merkle batching (brenda 24h)
                   </span>
                 </div>

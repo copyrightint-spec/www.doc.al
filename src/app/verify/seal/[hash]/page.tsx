@@ -215,9 +215,9 @@ export default function SealVerificationPage() {
                     <div className="rounded-xl border border-border bg-muted/50 p-4">
                       <div className="flex items-center gap-2">
                         {result.timestamps.polygon?.status === "CONFIRMED" ? (
-                          <Hexagon className="h-4 w-4 text-purple-500" />
+                          <Hexagon className="h-4 w-4 text-blue-500" />
                         ) : (
-                          <Clock className="h-4 w-4 text-purple-400 animate-pulse" />
+                          <Clock className="h-4 w-4 text-blue-400 animate-pulse" />
                         )}
                         <span className="font-medium text-foreground">Polygon Blockchain (STAMLES)</span>
                         <Badge variant={result.timestamps.polygon?.status === "CONFIRMED" ? "success" : "warning"}>
@@ -239,7 +239,7 @@ export default function SealVerificationPage() {
                                 href={`https://amoy.polygonscan.com/tx/${result.timestamps.polygon.txHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="font-mono text-purple-600 hover:underline dark:text-purple-400 break-all"
+                                className="font-mono text-blue-600 hover:underline dark:text-blue-400 break-all"
                               >
                                 {result.timestamps.polygon.txHash.slice(0, 16)}...
                               </a>

@@ -100,7 +100,7 @@ export function Header({
                     <span className={cn(
                       "mt-1 inline-block rounded-full border px-2 py-0.5 text-[10px] font-medium",
                       isAdminUser
-                        ? "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-900/30 dark:text-purple-400"
+                        ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
                         : "border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
                     )}>
                       {user.role}

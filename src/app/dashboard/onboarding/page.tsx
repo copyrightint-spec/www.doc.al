@@ -299,7 +299,7 @@ function StepCertificate() {
       {/* Illustration */}
       <div className="flex items-center justify-center">
         <div className="relative">
-          <div className="w-52 h-64 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-800/30 p-6 flex flex-col items-center justify-center">
+          <div className="w-52 h-64 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200/50 dark:border-blue-800/30 p-6 flex flex-col items-center justify-center">
             <div className="w-16 h-16 rounded-2xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center mb-4">
               <Shield className="w-8 h-8 text-blue-600 dark:text-blue-400" strokeWidth={1.5} />
             </div>
@@ -404,7 +404,7 @@ function StepBlockchain() {
 
         <div className="mt-6 flex flex-col gap-3">
           <Card className="flex items-center gap-3 p-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
               <Clock className="w-5 h-5" strokeWidth={1.5} />
             </div>
             <div>
@@ -427,15 +427,15 @@ function StepBlockchain() {
       {/* Illustration */}
       <div className="flex items-center justify-center">
         <div className="relative w-56 h-56">
-          <div className="absolute top-4 left-8 w-20 h-12 rounded-full border-4 border-purple-300 dark:border-purple-700" />
-          <div className="absolute top-12 left-20 w-20 h-12 rounded-full border-4 border-purple-400 dark:border-purple-600" />
-          <div className="absolute top-20 left-8 w-20 h-12 rounded-full border-4 border-purple-500 dark:border-purple-500" />
+          <div className="absolute top-4 left-8 w-20 h-12 rounded-full border-4 border-blue-300 dark:border-blue-700" />
+          <div className="absolute top-12 left-20 w-20 h-12 rounded-full border-4 border-blue-400 dark:border-blue-600" />
+          <div className="absolute top-20 left-8 w-20 h-12 rounded-full border-4 border-blue-500 dark:border-blue-500" />
           <div className="absolute top-28 left-20 w-20 h-12 rounded-full border-4 border-orange-400 dark:border-orange-600" />
           <div className="absolute bottom-2 right-4 w-14 h-14 rounded-full bg-orange-100 dark:bg-orange-950/50 border-2 border-orange-300 dark:border-orange-700 flex items-center justify-center">
             <span className="text-xl font-bold text-orange-600 dark:text-orange-400">B</span>
           </div>
-          <div className="absolute top-0 right-2 w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950/50 flex items-center justify-center">
-            <Lock className="w-5 h-5 text-purple-600 dark:text-purple-400" strokeWidth={1.5} />
+          <div className="absolute top-0 right-2 w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/50 flex items-center justify-center">
+            <Lock className="w-5 h-5 text-blue-600 dark:text-blue-400" strokeWidth={1.5} />
           </div>
         </div>
       </div>
@@ -508,7 +508,7 @@ function StepReady({
           <div className="absolute top-4 right-6 w-3 h-3 rounded-full bg-yellow-400 animate-pulse" />
           <div className="absolute top-10 left-6 w-2 h-2 rounded-full bg-red-400 animate-pulse" style={{ animationDelay: "0.5s" }} />
           <div className="absolute bottom-8 right-10 w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: "1s" }} />
-          <div className="absolute bottom-12 left-10 w-2 h-2 rounded-full bg-purple-400 animate-pulse" style={{ animationDelay: "0.3s" }} />
+          <div className="absolute bottom-12 left-10 w-2 h-2 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: "0.3s" }} />
         </div>
       </div>
     </div>

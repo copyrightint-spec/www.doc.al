@@ -258,7 +258,7 @@ export default function AdminCertificatesPage() {
         <StatCard label="Expiring Soon" value={stats.expiring} icon={ShieldAlert} iconColor="text-yellow-500" iconBg="bg-yellow-900/30" />
         <StatCard label="Revoked" value={stats.revoked} icon={ShieldX} iconColor="text-red-500" iconBg="bg-red-900/30" />
         <StatCard label="Personal" value={stats.personal} icon={User} iconColor="text-blue-500" iconBg="bg-blue-900/30" />
-        <StatCard label="Organization" value={stats.organization} icon={Building2} iconColor="text-purple-500" iconBg="bg-purple-900/30" />
+        <StatCard label="Organization" value={stats.organization} icon={Building2} iconColor="text-blue-500" iconBg="bg-blue-900/30" />
         <StatCard label="TSA" value={stats.tsa} icon={Clock} iconColor="text-amber-500" iconBg="bg-amber-900/30" />
       </div>
 

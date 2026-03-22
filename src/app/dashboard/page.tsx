@@ -145,7 +145,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {[
           { href: "/dashboard/contracts/self-sign", icon: PenTool, label: "Nenshkruaj Dokument", desc: "Ngarko dhe nenshkruaj vete", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
-          { href: "/dashboard/contracts/new", icon: Mail, label: "Krijo Marreveshje", desc: "Marreveshje me pale te shumta", color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-900/20" },
+          { href: "/dashboard/contracts/new", icon: Mail, label: "Krijo Marreveshje", desc: "Marreveshje me pale te shumta", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
           { href: "/dashboard/templates", icon: LayoutTemplate, label: "Perdor Shabllon", desc: "Shabllonet e gatshme", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
         ].map((action) => (
           <Link key={action.href} href={action.href}>

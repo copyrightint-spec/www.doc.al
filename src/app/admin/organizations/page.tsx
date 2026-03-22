@@ -295,7 +295,7 @@ export default function AdminOrganizationsPage() {
         <StatCard label="Totali" value={total} icon={Building2} iconColor="text-muted-foreground" iconBg="bg-muted" />
         <StatCard label="Free" value={planStats.FREE} icon={Layers} iconColor="text-muted-foreground" iconBg="bg-muted" />
         <StatCard label="Professional" value={planStats.PRO} icon={Zap} iconColor="text-blue-400" iconBg="bg-blue-900/30" />
-        <StatCard label="Enterprise" value={planStats.ENTERPRISE} icon={Crown} iconColor="text-purple-400" iconBg="bg-purple-900/30" />
+        <StatCard label="Enterprise" value={planStats.ENTERPRISE} icon={Crown} iconColor="text-blue-400" iconBg="bg-blue-900/30" />
       </div>
 
       {/* Create Form */}

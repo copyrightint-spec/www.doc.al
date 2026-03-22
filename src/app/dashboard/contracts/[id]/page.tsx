@@ -514,7 +514,7 @@ export default function ContractDetailPage() {
                       <div className="mt-3 flex flex-wrap gap-4">
                         {signer.verificationSentAt && (
                           <div className="flex items-center gap-1.5">
-                            <Mail className="h-3.5 w-3.5 text-purple-500" />
+                            <Mail className="h-3.5 w-3.5 text-blue-500" />
                             <span className="text-[11px] text-muted-foreground">
                               Derguar: {relativeTime(signer.verificationSentAt)}
                             </span>
@@ -660,7 +660,7 @@ export default function ContractDetailPage() {
                                 href={`https://polygonscan.com/tx/${event.details.txHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded-lg bg-purple-100 px-2.5 py-1 text-[11px] font-medium text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+                                className="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
                               >
                                 <Hexagon className="h-3 w-3" />
                                 TX: {String(event.details.txHash).substring(0, 10)}...

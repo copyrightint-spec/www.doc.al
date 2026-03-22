@@ -46,6 +46,16 @@ export interface SealVerificationResult {
       sequenceNumber: number;
       fingerprint: string;
     };
+    polygon?: {
+      status: string;
+      txHash: string | null;
+      blockNumber: number | null;
+      explorerUrl: string | null;
+    };
+    ipfs?: {
+      cid: string;
+      url: string;
+    };
     bitcoin?: {
       status: string;
       txId: string | null;
@@ -149,12 +159,20 @@ export async function applyCompanySeal(options: ApplySealOptions): Promise<{
   }
 
   // 5. Create timestamp in chain (server timestamp)
-  // This also auto-submits to OpenTimestamps/Bitcoin (dual timestamp)
+  // This also auto-submits to STAMLES/Polygon + OpenTimestamps/Bitcoin (dual timestamp)
   const timestampResult = await createTimestamp(
     certificationHash,
     "COMPANY_SEAL",
     { documentId: document.id }
   );
+
+  // 5b. Submit to STAMLES for Polygon blockchain anchoring
+  try {
+    const { submitToStamles } = await import("@/lib/stamles");
+    await submitToStamles(certificationHash, document.id, "company_seal");
+  } catch (stamlesError) {
+    console.error("[seal] STAMLES submit failed (non-critical):", stamlesError);
+  }
 
   // 6. Generate verification URL and QR
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.doc.al";
@@ -314,6 +332,33 @@ export async function verifyCompanySeal(
       },
     };
 
+    // Polygon/STAMLES status
+    const te = appliedSeal.timestampEntry as Record<string, unknown>;
+    if (te.stamlesStatus === "CONFIRMED") {
+      result.timestamps.polygon = {
+        status: "CONFIRMED",
+        txHash: te.polygonTxHash as string | null,
+        blockNumber: te.polygonBlockNumber as number | null,
+        explorerUrl: te.polygonTxHash ? `https://amoy.polygonscan.com/tx/${te.polygonTxHash}` : null,
+      };
+    } else {
+      result.timestamps.polygon = {
+        status: (te.stamlesStatus as string) || "QUEUED",
+        txHash: null,
+        blockNumber: null,
+        explorerUrl: null,
+      };
+    }
+
+    // IPFS status
+    if (te.ipfsCid) {
+      result.timestamps.ipfs = {
+        cid: te.ipfsCid as string,
+        url: `https://ipfs.io/ipfs/${te.ipfsCid}`,
+      };
+    }
+
+    // Bitcoin/OpenTimestamps (legacy, kept for dual timestamping)
     if (appliedSeal.timestampEntry.otsStatus === "CONFIRMED") {
       result.timestamps.bitcoin = {
         status: "CONFIRMED",
@@ -447,8 +492,12 @@ export async function addCompanySealToPdf(
   let chainText = `SHA-256: ${hashTrunc}`;
   if (appliedSeal.timestampEntry) {
     chainText += ` | Chain #${appliedSeal.timestampEntry.sequenceNumber}`;
-    if (appliedSeal.timestampEntry.btcBlockHeight) {
-      chainText += ` | BTC Block #${appliedSeal.timestampEntry.btcBlockHeight}`;
+    const teAny = appliedSeal.timestampEntry as Record<string, unknown>;
+    if (teAny.polygonTxHash) {
+      const txShort = (teAny.polygonTxHash as string).slice(0, 10) + "...";
+      chainText += ` | Polygon: ${txShort}`;
+    } else if (teAny.stamlesStatus) {
+      chainText += ` | STAMLES: ${teAny.stamlesStatus}`;
     }
   }
   page.drawText(chainText, {

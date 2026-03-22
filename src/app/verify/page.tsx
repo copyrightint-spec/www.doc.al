@@ -443,7 +443,7 @@ export default function VerifyPage() {
                     <dt className="text-xs text-muted-foreground">
                       Polygon Blockchain (STAMLES)
                     </dt>
-                    <dd className="text-purple-600 dark:text-purple-400">
+                    <dd className="text-blue-600 dark:text-blue-400">
                       Ne rradhe per Merkle batching
                     </dd>
                   </div>

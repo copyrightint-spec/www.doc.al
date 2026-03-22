@@ -428,32 +428,32 @@ export default function EntryDetailPage({
                   )}
                 </div>
               ) : (
-                <div className="rounded-xl border-2 border-dashed border-purple-300 bg-purple-50 dark:border-purple-700 dark:bg-purple-950/20 p-5">
+                <div className="rounded-xl border-2 border-dashed border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-950/20 p-5">
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-2 mb-3">
-                      <Box className="h-6 w-6 text-purple-500 animate-pulse" />
-                      <span className="text-sm font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                      <Box className="h-6 w-6 text-blue-500 animate-pulse" />
+                      <span className="text-sm font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                         Ne Pritje
                       </span>
                     </div>
-                    <p className="text-lg font-bold text-purple-700 dark:text-purple-300 mb-2">
+                    <p className="text-lg font-bold text-blue-700 dark:text-blue-300 mb-2">
                       Pritet konfirmimi nga STAMLES
                     </p>
-                    <p className="text-xs text-purple-600 dark:text-purple-400 leading-relaxed max-w-sm mx-auto">
+                    <p className="text-xs text-blue-600 dark:text-blue-400 leading-relaxed max-w-sm mx-auto">
                       STAMLES Decentralized Trust System po perpunon hash-in tuaj.
                       Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle Tree dhe
                       root-i dergohet ne Polygon blockchain.
                     </p>
                     <div className="mt-4 flex items-center justify-center gap-3">
-                      <div className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
-                      <div className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse" style={{ animationDelay: "0.3s" }} />
-                      <div className="h-1.5 w-1.5 rounded-full bg-purple-300 animate-pulse" style={{ animationDelay: "0.6s" }} />
+                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: "0.3s" }} />
+                      <div className="h-1.5 w-1.5 rounded-full bg-blue-300 animate-pulse" style={{ animationDelay: "0.6s" }} />
                     </div>
                     <a
                       href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30 px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors"
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors"
                     >
                       <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                       Shiko Kontrakten ne PolygonScan
@@ -504,11 +504,11 @@ export default function EntryDetailPage({
 
         {/* ========== 3 SECURITY LAYERS BADGES ========== */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4 text-center">
-            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10">
-              <svg className="h-5 w-5 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-center">
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
+              <svg className="h-5 w-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
-            <p className="text-xs font-bold text-purple-400">Polygon</p>
+            <p className="text-xs font-bold text-blue-400">Polygon</p>
             <p className="text-[9px] text-muted-foreground">Blockchain</p>
           </div>
           <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-center">
@@ -528,28 +528,28 @@ export default function EntryDetailPage({
         </div>
 
         {/* ========== POLYGON BLOCKCHAIN ========== */}
-        <Card className="border-purple-500/20 overflow-hidden">
-          <div className="bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/10 p-5">
+        <Card className="border-blue-500/20 overflow-hidden">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/50">
-                  <svg className="h-5 w-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/50">
+                  <svg className="h-5 w-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-purple-800 dark:text-purple-200">Polygon Blockchain</h3>
-                  <p className="text-[10px] text-purple-600 dark:text-purple-400">Merkle root i ruajtur on-chain</p>
+                  <h3 className="font-bold text-blue-800 dark:text-blue-200">Polygon Blockchain</h3>
+                  <p className="text-[10px] text-blue-600 dark:text-blue-400">Merkle root i ruajtur on-chain</p>
                 </div>
               </div>
-              <a href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events" target="_blank" rel="noopener noreferrer" className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-700 transition-colors">
+              <a href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events" target="_blank" rel="noopener noreferrer" className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors">
                 PolygonScan
               </a>
             </div>
             <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 p-4 space-y-2 text-xs">
-              <div className="flex justify-between"><span className="text-purple-600 dark:text-purple-400">Kontrata</span><code className="font-mono text-[10px] text-foreground">StamlesTimestamp</code></div>
-              <div className="flex justify-between"><span className="text-purple-600 dark:text-purple-400">Network</span><span className="text-foreground">Polygon Amoy Testnet</span></div>
-              <div className="flex justify-between"><span className="text-purple-600 dark:text-purple-400">Address</span><code className="font-mono text-[10px] text-purple-400">0x62ab...EC85</code></div>
+              <div className="flex justify-between"><span className="text-blue-600 dark:text-blue-400">Kontrata</span><code className="font-mono text-[10px] text-foreground">StamlesTimestamp</code></div>
+              <div className="flex justify-between"><span className="text-blue-600 dark:text-blue-400">Network</span><span className="text-foreground">Polygon Amoy Testnet</span></div>
+              <div className="flex justify-between"><span className="text-blue-600 dark:text-blue-400">Address</span><code className="font-mono text-[10px] text-blue-400">0x62ab...EC85</code></div>
             </div>
-            <p className="mt-3 text-[10px] text-purple-500 leading-relaxed">
+            <p className="mt-3 text-[10px] text-blue-500 leading-relaxed">
               Hash-i i dokumentit eshte ne STAMLES queue. Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle tree dhe vetem root-i (32 byte) ruhet ne Polygon blockchain. Kjo provon ekzistencen e dokumentit pa ekspozuar permbajtjen.
             </p>
           </div>
@@ -752,7 +752,7 @@ export default function EntryDetailPage({
                           const colorClass =
                             part.type === "key" ? "text-blue-400" :
                             part.type === "string" ? "text-green-400" :
-                            part.type === "boolean" ? "text-purple-400" :
+                            part.type === "boolean" ? "text-blue-400" :
                             part.type === "number" ? "text-amber-400" :
                             "text-slate-400";
                           return <span key={i} className={colorClass}>{part.value}</span>;

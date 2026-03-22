@@ -104,31 +104,44 @@ export async function embedPAdESSignature(
 
   const privateKeyPem = decryptPrivateKey(cert.encryptedPrivateKey);
 
-  // Reconstruct certificate from stored data
-  // DB stores publicKey PEM (not certificate PEM), so we rebuild the cert
-  const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
-  const publicKey = forge.pki.publicKeyFromPem(cert.publicKey);
+  // Use stored certificate PEM if available; otherwise reconstruct and sign with CA
+  let certificatePem: string;
 
-  // Create a temporary certificate for PKCS#7 signing
-  const tempCert = forge.pki.createCertificate();
-  tempCert.publicKey = publicKey;
-  tempCert.serialNumber = cert.serialNumber;
-  tempCert.validity.notBefore = cert.validFrom;
-  tempCert.validity.notAfter = cert.validTo;
+  if (cert.certificatePem) {
+    certificatePem = cert.certificatePem;
+  } else {
+    // Fallback: reconstruct certificate from stored data and sign with Issuing CA
+    const publicKey = forge.pki.publicKeyFromPem(cert.publicKey);
 
-  // Parse subject/issuer DN
-  const parseDN = (dn: string) => {
-    return dn.split(", ").map((part) => {
-      const [key, ...rest] = part.split("=");
-      return { shortName: key.trim(), value: rest.join("=").trim() };
-    }).filter((a) => a.shortName && a.value) as forge.pki.CertificateField[];
-  };
+    const tempCert = forge.pki.createCertificate();
+    tempCert.publicKey = publicKey;
+    tempCert.serialNumber = cert.serialNumber;
+    tempCert.validity.notBefore = cert.validFrom;
+    tempCert.validity.notAfter = cert.validTo;
 
-  tempCert.setSubject(parseDN(cert.subjectDN));
-  tempCert.setIssuer(parseDN(cert.issuerDN));
-  tempCert.sign(privateKey, forge.md.sha256.create());
+    const parseDN = (dn: string) => {
+      return dn.split(", ").map((part) => {
+        const [key, ...rest] = part.split("=");
+        return { shortName: key.trim(), value: rest.join("=").trim() };
+      }).filter((a) => a.shortName && a.value) as forge.pki.CertificateField[];
+    };
 
-  const certificatePem = forge.pki.certificateToPem(tempCert);
+    tempCert.setSubject(parseDN(cert.subjectDN));
+    tempCert.setIssuer(parseDN(cert.issuerDN));
+
+    // Sign with Issuing CA instead of self-signing
+    try {
+      const { getIssuingCA } = await import("./ca");
+      const issuingCA = getIssuingCA();
+      tempCert.sign(issuingCA.privateKey, forge.md.sha256.create());
+    } catch {
+      // If CA not available, self-sign as last resort
+      const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+      tempCert.sign(privateKey, forge.md.sha256.create());
+    }
+
+    certificatePem = forge.pki.certificateToPem(tempCert);
+  }
 
   // Get CA chain
   let caCerts: string[] = [];

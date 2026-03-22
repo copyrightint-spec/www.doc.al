@@ -60,12 +60,12 @@ export const ROLE_BADGE: Record<string, { label: string; variant: "default" | "s
 // Audit action icons and labels
 export const ACTION_CONFIG: Record<string, { icon: LucideIcon; color: string; bg: string; label: string }> = {
   DOCUMENT_UPLOADED: { icon: Upload, color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-900/30", label: "Dokument i ngarkuar" },
-  SIGNATURE_REQUESTED: { icon: Mail, color: "text-purple-600", bg: "bg-purple-100 dark:bg-purple-900/30", label: "Kerkese per nenshkrim" },
+  SIGNATURE_REQUESTED: { icon: Mail, color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-900/30", label: "Kerkese per nenshkrim" },
   DOCUMENT_SIGNED: { icon: PenTool, color: "text-green-600", bg: "bg-green-100 dark:bg-green-900/30", label: "Dokument i nenshkruar" },
   CERTIFICATE_GENERATED: { icon: Shield, color: "text-emerald-600", bg: "bg-emerald-100 dark:bg-emerald-900/30", label: "Certifikate e gjeneruar" },
   DOCUMENT_VIEWED: { icon: Eye, color: "text-slate-600", bg: "bg-slate-100 dark:bg-slate-800", label: "Dokument i pare" },
   TIMESTAMP_CREATED: { icon: Clock, color: "text-orange-600", bg: "bg-orange-100 dark:bg-orange-900/30", label: "Timestamp i krijuar" },
-  KYC_SUBMITTED: { icon: CreditCard, color: "text-indigo-600", bg: "bg-indigo-100 dark:bg-indigo-900/30", label: "KYC e dorezuar" },
+  KYC_SUBMITTED: { icon: CreditCard, color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-900/30", label: "KYC e dorezuar" },
   SIGNING_REQUEST_CREATED: { icon: Send, color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-900/30", label: "Kerkese nenshkrimi e krijuar" },
   SIGNING_REQUEST_COMPLETED: { icon: CheckCircle, color: "text-green-600", bg: "bg-green-100 dark:bg-green-900/30", label: "Kerkese nenshkrimi e perfunduar" },
   DOCUMENT_CREATED: { icon: FileText, color: "text-slate-600", bg: "bg-slate-100 dark:bg-slate-800", label: "Dokument i krijuar" },

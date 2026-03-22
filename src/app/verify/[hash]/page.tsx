@@ -270,10 +270,10 @@ export default function VerifyPage() {
                   Polygon Blockchain (STAMLES)
                 </span>
                 <div className="mt-2 flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/40">
-                    <Check className="h-3.5 w-3.5 text-purple-600" strokeWidth={3} />
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40">
+                    <Check className="h-3.5 w-3.5 text-blue-600" strokeWidth={3} />
                   </div>
-                  <span className="text-sm font-medium text-purple-700 dark:text-purple-400">
+                  <span className="text-sm font-medium text-blue-700 dark:text-blue-400">
                     I regjistruar ne Polygon
                   </span>
                 </div>
@@ -284,7 +284,7 @@ export default function VerifyPage() {
                   href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1 block text-xs text-purple-600 hover:text-purple-500 hover:underline dark:text-purple-400"
+                  className="mt-1 block text-xs text-blue-600 hover:text-blue-500 hover:underline dark:text-blue-400"
                 >
                   Shiko ne PolygonScan
                 </a>

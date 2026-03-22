@@ -260,7 +260,7 @@ export default function AdminEmailsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <MousePointerClick className="h-4 w-4 text-purple-500" />
+                <MousePointerClick className="h-4 w-4 text-blue-500" />
                 <span className="text-xs text-muted-foreground">Klikime</span>
               </div>
               <p className="mt-1 text-2xl font-bold text-foreground">{stats.clickRate}%</p>
@@ -492,7 +492,7 @@ export default function AdminEmailsPage() {
                         {email.clicks.map((click, idx) => (
                           <TimelineRow
                             key={click.id}
-                            icon={<MousePointerClick className="h-3 w-3 text-purple-500" />}
+                            icon={<MousePointerClick className="h-3 w-3 text-blue-500" />}
                             label={`Klikuar (${idx + 1})`}
                             time={click.clickedAt}
                             status="info"

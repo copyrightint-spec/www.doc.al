@@ -87,7 +87,7 @@ export default function AdminPage() {
   const statCards = stats
     ? [
         { label: "Total Users", value: stats.totalUsers, icon: UsersIcon, iconColor: "text-blue-500", iconBg: "bg-blue-900/30" },
-        { label: "Organizations", value: stats.totalOrganizations, icon: Building2, iconColor: "text-purple-500", iconBg: "bg-purple-900/30" },
+        { label: "Organizations", value: stats.totalOrganizations, icon: Building2, iconColor: "text-blue-500", iconBg: "bg-blue-900/30" },
         { label: "Documents", value: stats.totalDocuments, icon: FileText, iconColor: "text-green-500", iconBg: "bg-green-900/30" },
         { label: "Signatures", value: stats.totalSignatures, icon: PenTool, iconColor: "text-amber-500", iconBg: "bg-amber-900/30" },
         { label: "Timestamps", value: stats.totalTimestamps, icon: Clock, iconColor: "text-cyan-500", iconBg: "bg-cyan-900/30" },
