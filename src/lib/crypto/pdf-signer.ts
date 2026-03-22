@@ -191,7 +191,7 @@ export async function signPdf(
   const stampedPdfBytes = await pdfDoc.save();
   let stampedPdfBuffer = Buffer.from(stampedPdfBytes);
 
-  // Embed PAdES digital signature (PKCS#7/CMS) into PDF metadata
+  // Embed PAdES digital signature (PKCS#7/CMS) into PDF structure
   try {
     const { embedPAdESSignature } = await import("./pades-signer");
     stampedPdfBuffer = Buffer.from(await embedPAdESSignature(
