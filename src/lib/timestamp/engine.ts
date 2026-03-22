@@ -152,8 +152,11 @@ export async function verifyChainIntegrity(): Promise<{
  * Finds a timestamp entry by its fingerprint hash
  */
 export async function findByFingerprint(fingerprint: string) {
-  return prisma.timestampEntry.findFirst({
-    where: { fingerprint: fingerprint.toLowerCase() },
+  const fp = fingerprint.toLowerCase();
+
+  // First: direct lookup by fingerprint (signed hash)
+  const direct = await prisma.timestampEntry.findFirst({
+    where: { fingerprint: fp },
     include: {
       document: { select: { id: true, title: true, fileName: true } },
       signature: {
@@ -161,4 +164,29 @@ export async function findByFingerprint(fingerprint: string) {
       },
     },
   });
+
+  if (direct) return direct;
+
+  // Fallback: search by original file hash in document metadata
+  // (QR code contains pre-stamp hash, but DB stores post-stamp hash)
+  const doc = await prisma.document.findFirst({
+    where: {
+      metadata: { path: ["originalFileHash"], equals: fp },
+    },
+    select: { fileHash: true },
+  });
+
+  if (doc?.fileHash) {
+    return prisma.timestampEntry.findFirst({
+      where: { fingerprint: doc.fileHash.toLowerCase() },
+      include: {
+        document: { select: { id: true, title: true, fileName: true } },
+        signature: {
+          select: { id: true, signerName: true, signerEmail: true, signedAt: true },
+        },
+      },
+    });
+  }
+
+  return null;
 }

@@ -54,7 +54,9 @@ export async function signPdf(
   const lastPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1);
   const pageW = lastPage.getWidth();
 
-  // Compute hash of incoming PDF for QR code
+  // QR code points to verification page
+  // Note: We use the original file hash (before stamp) for QR because the final
+  // hash changes after PAdES signing. The verify page accepts both original and signed hashes.
   const preHash = options.documentHashForQR || computeSHA256(pdfBuffer);
   const baseUrl = process.env.NEXTAUTH_URL || "https://doc.al";
   const verifyUrl = `${baseUrl}/verify/${preHash}`;

@@ -130,6 +130,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Apply cryptographic digital signature to the visually signed PDF
+    const originalFileHash = computeSHA256(originalBuffer);
     let finalPdfBuffer: Buffer;
     let signedHash: string;
     let cryptoSignatureBase64: string | null = null;
