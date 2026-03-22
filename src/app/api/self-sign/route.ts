@@ -151,6 +151,7 @@ export async function POST(req: NextRequest) {
           signerName: userName,
           reason: "Nenshkrim dixhital permes doc.al",
           location: "doc.al Platform",
+          documentHashForQR: originalFileHash,
           position: placement ? {
             page: placement.pageIndex || 0,
             x: 50,
