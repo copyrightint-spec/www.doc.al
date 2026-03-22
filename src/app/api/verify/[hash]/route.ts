@@ -102,6 +102,7 @@ export async function GET(
 
     const meta = (document.metadata as Record<string, unknown>) || {};
     const stamp = (meta.docAlStamp as Record<string, unknown>) || {};
+    const ht = (meta.hashTimeline as Record<string, unknown>) || {};
 
     // Masko titullin per privatesi (trego vetem fillimin dhe fundin)
     const title = document.title;
@@ -125,6 +126,104 @@ export async function GET(
     const allSigned = document.signatures.every((s) => s.status === "SIGNED");
     const chainIntegrity = allSigned && document.status === "COMPLETED";
 
+    // Build public hash timeline (no sensitive data)
+    const hashTimeline: Array<{
+      step: number;
+      action: string;
+      hash?: string;
+      cid?: string;
+      timestamp: string;
+      label: string;
+      status: "completed" | "in-progress" | "pending";
+    }> = [];
+    let htStep = 1;
+
+    const originalFile = ht.originalFile as { hash: string; timestamp: string; label: string } | undefined;
+    if (originalFile) {
+      hashTimeline.push({
+        step: htStep++,
+        action: "UPLOAD",
+        hash: originalFile.hash,
+        timestamp: originalFile.timestamp,
+        label: originalFile.label,
+        status: "completed",
+      });
+    }
+
+    const visuallySigned = ht.visuallySigned as { hash: string; timestamp: string; label: string } | undefined;
+    if (visuallySigned) {
+      hashTimeline.push({
+        step: htStep++,
+        action: "VISUAL_SIGN",
+        hash: visuallySigned.hash,
+        timestamp: visuallySigned.timestamp,
+        label: visuallySigned.label,
+        status: "completed",
+      });
+    }
+
+    const cryptoSigned = ht.cryptoSigned as { hash: string; timestamp: string; label: string } | undefined;
+    if (cryptoSigned) {
+      hashTimeline.push({
+        step: htStep++,
+        action: "PADES_SIGN",
+        hash: cryptoSigned.hash,
+        timestamp: cryptoSigned.timestamp,
+        label: cryptoSigned.label,
+        status: "completed",
+      });
+    }
+
+    const chainRegistered = ht.chainRegistered as { sequenceNumber: number; fingerprint: string; timestamp: string; label: string } | undefined;
+    if (chainRegistered) {
+      hashTimeline.push({
+        step: htStep++,
+        action: "CHAIN",
+        hash: chainRegistered.fingerprint,
+        timestamp: chainRegistered.timestamp,
+        label: `${chainRegistered.label} #${chainRegistered.sequenceNumber}`,
+        status: "completed",
+      });
+    }
+
+    if (latestTimestamp?.polygonTxHash) {
+      hashTimeline.push({
+        step: htStep++,
+        action: "POLYGON",
+        hash: latestTimestamp.polygonTxHash,
+        timestamp: latestTimestamp.serverTimestamp.toISOString(),
+        label: "Polygon Blockchain",
+        status: "completed",
+      });
+    } else if (latestTimestamp) {
+      hashTimeline.push({
+        step: htStep++,
+        action: "POLYGON",
+        timestamp: latestTimestamp.serverTimestamp.toISOString(),
+        label: "Polygon Blockchain",
+        status: latestTimestamp.stamlesStatus === "BATCHED" ? "in-progress" : "pending",
+      });
+    }
+
+    if (latestTimestamp?.ipfsCid) {
+      hashTimeline.push({
+        step: htStep++,
+        action: "IPFS",
+        cid: latestTimestamp.ipfsCid,
+        timestamp: latestTimestamp.serverTimestamp.toISOString(),
+        label: "IPFS Proof",
+        status: "completed",
+      });
+    } else if (latestTimestamp) {
+      hashTimeline.push({
+        step: htStep++,
+        action: "IPFS",
+        timestamp: latestTimestamp.serverTimestamp.toISOString(),
+        label: "IPFS Proof",
+        status: "pending",
+      });
+    }
+
     return NextResponse.json({
       valid: true,
       data: {
@@ -145,6 +244,7 @@ export async function GET(
           ? `https://ipfs.io/ipfs/${document.timestampEntries[0].ipfsCid}`
           : null,
         documentCreatedAt: document.createdAt.toISOString(),
+        hashTimeline: hashTimeline.length > 0 ? hashTimeline : undefined,
       },
     });
   } catch (error) {

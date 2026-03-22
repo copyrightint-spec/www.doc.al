@@ -7,6 +7,17 @@ import {
   X,
   Clock,
   Link as LinkIcon,
+  Upload,
+  PenTool,
+  Shield,
+  Link2,
+  Hexagon,
+  Globe,
+  Hash,
+  Copy,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/cn";
@@ -28,6 +39,16 @@ interface BlockchainInfo {
   btcTxId: string | null;
 }
 
+interface HashTimelineStep {
+  step: number;
+  action: string;
+  hash?: string;
+  cid?: string;
+  timestamp: string;
+  label: string;
+  status: "completed" | "in-progress" | "pending";
+}
+
 interface VerificationData {
   documentTitle: string;
   certificationHash: string;
@@ -40,6 +61,7 @@ interface VerificationData {
   ipfsCid: string | null;
   ipfsUrl: string | null;
   documentCreatedAt: string;
+  hashTimeline?: HashTimelineStep[];
 }
 
 function formatDate(d: string) {
@@ -50,6 +72,117 @@ function formatDate(d: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+const VERIFY_HASH_ICONS: Record<string, typeof Hash> = {
+  UPLOAD: Upload,
+  VISUAL_SIGN: PenTool,
+  PADES_SIGN: Shield,
+  CHAIN: Link2,
+  POLYGON: Hexagon,
+  IPFS: Globe,
+};
+
+function VerifyHashTimeline({ steps }: { steps: HashTimelineStep[] }) {
+  const [expandedStep, setExpandedStep] = useState<number | null>(null);
+  const [copiedHash, setCopiedHash] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedHash(text);
+    setTimeout(() => setCopiedHash(null), 2000);
+  };
+
+  return (
+    <div className="mt-3 space-y-2">
+      {steps.map((step) => {
+        const IconComponent = VERIFY_HASH_ICONS[step.action] || Hash;
+        const displayHash = step.hash || step.cid || "";
+        const isExpanded = expandedStep === step.step;
+        const isCompleted = step.status === "completed";
+
+        return (
+          <div key={step.step} className="flex items-start gap-3 rounded-xl bg-muted px-4 py-3">
+            <div
+              className={cn(
+                "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full",
+                isCompleted
+                  ? "bg-green-100 dark:bg-green-900/40"
+                  : step.status === "in-progress"
+                  ? "bg-blue-100 dark:bg-blue-900/40"
+                  : "bg-gray-100 dark:bg-gray-800"
+              )}
+            >
+              <IconComponent
+                className={cn(
+                  "h-3.5 w-3.5",
+                  isCompleted
+                    ? "text-green-600 dark:text-green-400"
+                    : step.status === "in-progress"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-gray-400 dark:text-gray-500"
+                )}
+                strokeWidth={2}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-muted-foreground">
+                  {step.step}
+                </span>
+                <p className="text-sm font-medium text-foreground">{step.label}</p>
+                {!isCompleted && (
+                  <span
+                    className={cn(
+                      "rounded px-1.5 py-0.5 text-[10px] font-medium",
+                      step.status === "in-progress"
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                        : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                    )}
+                  >
+                    {step.status === "in-progress" ? "Ne progres" : "Ne pritje"}
+                  </span>
+                )}
+              </div>
+              {displayHash && (
+                <button
+                  onClick={() => setExpandedStep(isExpanded ? null : step.step)}
+                  className="mt-1 flex w-full items-center gap-1 text-left font-mono text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <span className="truncate">
+                    {isExpanded
+                      ? displayHash
+                      : displayHash.substring(0, 16) + "..." + displayHash.substring(displayHash.length - 6)}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyToClipboard(displayHash);
+                    }}
+                    className="flex-shrink-0 rounded p-0.5 hover:bg-muted-foreground/10"
+                  >
+                    {copiedHash === displayHash ? (
+                      <CheckCircle className="h-3 w-3 text-green-500" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                  </button>
+                  {isExpanded ? (
+                    <ChevronUp className="h-3 w-3 flex-shrink-0" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 flex-shrink-0" />
+                  )}
+                </button>
+              )}
+              <p className="mt-0.5 text-[10px] text-muted-foreground/60">
+                {formatDate(step.timestamp)}
+              </p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function VerifyPage() {
@@ -334,6 +467,16 @@ export default function VerifyPage() {
                   </div>
                 )}
               </div>
+
+              {/* Hash Timeline */}
+              {data.hashTimeline && data.hashTimeline.length > 0 && (
+                <div className="px-6 py-4">
+                  <span className="text-sm text-muted-foreground">
+                    Kronologjia e Hash-eve
+                  </span>
+                  <VerifyHashTimeline steps={data.hashTimeline} />
+                </div>
+              )}
 
               {/* Chain Integrity */}
               <div className="px-6 py-4">

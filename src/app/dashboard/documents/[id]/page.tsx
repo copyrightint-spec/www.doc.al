@@ -28,6 +28,11 @@ import {
   ExternalLink,
   Download,
   Lock,
+  Copy,
+  ChevronDown,
+  ChevronUp,
+  Link2,
+  Fingerprint,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +61,24 @@ interface SignatureInfo {
   signedAt: string | null;
   viewedAt: string | null;
   createdAt: string;
+}
+
+interface HashTimelineStep {
+  step: number;
+  action: string;
+  hash?: string;
+  cid?: string;
+  timestamp: string;
+  label: string;
+  status: "completed" | "in-progress" | "pending";
+  certificate?: string;
+  sequenceNumber?: number;
+  fingerprint?: string;
+  sequentialFingerprint?: string;
+  txHash?: string;
+  block?: number;
+  explorerUrl?: string;
+  gatewayUrl?: string;
 }
 
 interface DocumentData {
@@ -126,26 +149,242 @@ const STATUS_COLORS = {
   },
 };
 
+const HASH_ACTION_ICONS: Record<string, typeof FileText> = {
+  UPLOAD: Upload,
+  VISUAL_SIGN: PenTool,
+  PADES_SIGN: Shield,
+  CHAIN: Link2,
+  POLYGON: Hexagon,
+  IPFS: Globe,
+};
+
+const HASH_STATUS_STYLES = {
+  completed: {
+    dot: "border-green-500 bg-green-500",
+    icon: "text-white",
+    line: "bg-green-400",
+  },
+  "in-progress": {
+    dot: "border-blue-500 bg-blue-500",
+    icon: "text-white",
+    line: "bg-blue-300",
+  },
+  pending: {
+    dot: "border-gray-300 bg-gray-200 dark:border-gray-600 dark:bg-gray-700",
+    icon: "text-gray-400 dark:text-gray-500",
+    line: "bg-gray-200 dark:bg-gray-700",
+  },
+};
+
+function HashTimelineSection({ steps }: { steps: HashTimelineStep[] }) {
+  const [expandedStep, setExpandedStep] = useState<number | null>(null);
+  const [copiedHash, setCopiedHash] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedHash(text);
+    setTimeout(() => setCopiedHash(null), 2000);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Fingerprint className="h-5 w-5 text-primary" />
+          Kronologjia e Hash-eve
+        </CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Te gjitha hash-et kriptografike te krijuara gjate procesit te nenshkrimit
+        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="relative">
+          {steps.map((step, index) => {
+            const isLast = index === steps.length - 1;
+            const styles = HASH_STATUS_STYLES[step.status];
+            const IconComponent = HASH_ACTION_ICONS[step.action] || Hash;
+            const isExpanded = expandedStep === step.step;
+            const displayHash = step.hash || step.cid || "";
+
+            return (
+              <div key={step.step} className="relative flex gap-4">
+                {/* Timeline column */}
+                <div className="flex flex-col items-center">
+                  <div
+                    className={cn(
+                      "relative z-10 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2",
+                      styles.dot
+                    )}
+                  >
+                    <IconComponent className={cn("h-4 w-4", styles.icon)} strokeWidth={2} />
+                  </div>
+                  {!isLast && (
+                    <div className={cn("w-0.5 min-h-[24px] flex-1", styles.line)} />
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className={cn("flex-1", isLast ? "pb-0" : "pb-6")}>
+                  <div className="rounded-xl border border-border bg-muted/50 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center justify-center rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+                            {step.step}
+                          </span>
+                          <p className="font-medium text-foreground">{step.label}</p>
+                          <Badge
+                            variant={
+                              step.status === "completed"
+                                ? "success"
+                                : step.status === "in-progress"
+                                ? "info"
+                                : "default"
+                            }
+                          >
+                            {step.status === "completed"
+                              ? "Perfunduar"
+                              : step.status === "in-progress"
+                              ? "Ne progres"
+                              : "Ne pritje"}
+                          </Badge>
+                        </div>
+                      </div>
+                      <span className="text-[11px] text-muted-foreground">
+                        {relativeTime(step.timestamp)}
+                      </span>
+                    </div>
+
+                    {/* Hash display */}
+                    {displayHash && (
+                      <div className="mt-2">
+                        <button
+                          onClick={() => setExpandedStep(isExpanded ? null : step.step)}
+                          className="flex w-full items-center gap-1.5 rounded-lg bg-background px-3 py-2 text-left font-mono text-xs text-muted-foreground hover:bg-muted transition-colors"
+                        >
+                          <span className="flex-1 truncate">
+                            {isExpanded
+                              ? displayHash
+                              : displayHash.substring(0, 20) + "..." + displayHash.substring(displayHash.length - 8)}
+                          </span>
+                          <span className="flex items-center gap-1 flex-shrink-0">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                copyToClipboard(displayHash);
+                              }}
+                              className="rounded p-1 hover:bg-muted-foreground/10"
+                              title="Kopjo hash"
+                            >
+                              {copiedHash === displayHash ? (
+                                <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                            {isExpanded ? (
+                              <ChevronUp className="h-3.5 w-3.5" />
+                            ) : (
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            )}
+                          </span>
+                        </button>
+                        {isExpanded && (
+                          <p className="mt-1 break-all rounded-lg bg-background px-3 py-2 font-mono text-[10px] text-muted-foreground">
+                            {displayHash}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Action-specific links and details */}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {step.certificate && (
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-100 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                          <Shield className="h-3 w-3" />
+                          SN: {step.certificate.substring(0, 12)}...
+                        </span>
+                      )}
+                      {step.sequenceNumber && (
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-orange-100 px-2.5 py-1 text-[11px] font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                          <Clock className="h-3 w-3" />
+                          Chain #{step.sequenceNumber}
+                        </span>
+                      )}
+                      {step.txHash && (
+                        <a
+                          href={step.explorerUrl || `https://polygonscan.com/tx/${step.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
+                        >
+                          <Hexagon className="h-3 w-3" />
+                          TX: {step.txHash.substring(0, 10)}...
+                          <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      )}
+                      {step.block && (
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          Block #{step.block}
+                        </span>
+                      )}
+                      {step.cid && step.gatewayUrl && (
+                        <a
+                          href={step.gatewayUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded-lg bg-teal-100 px-2.5 py-1 text-[11px] font-medium text-teal-700 hover:bg-teal-200 dark:bg-teal-900/30 dark:text-teal-300 dark:hover:bg-teal-900/50"
+                        >
+                          <Globe className="h-3 w-3" />
+                          CID: {step.cid.substring(0, 12)}...
+                          <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Full timestamp */}
+                    <p className="mt-2 text-[10px] text-muted-foreground/60">
+                      {formatDateTime(step.timestamp)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function DocumentDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const [document, setDocument] = useState<DocumentData | null>(null);
   const [signatures, setSignatures] = useState<SignatureInfo[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
+  const [hashTimeline, setHashTimeline] = useState<HashTimelineStep[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/documents/${id}/timeline`);
-        const data = await res.json();
+        const [timelineRes, hashRes] = await Promise.all([
+          fetch(`/api/documents/${id}/timeline`),
+          fetch(`/api/documents/${id}/hash-timeline`),
+        ]);
+        const data = await timelineRes.json();
         if (data.success) {
           setDocument(data.data.document);
           setSignatures(data.data.signatures);
           setTimeline(data.data.timeline);
         } else {
           setError(data.error || "Ndodhi nje gabim");
+        }
+        const hashData = await hashRes.json();
+        if (hashData.success) {
+          setHashTimeline(hashData.data.timeline);
         }
       } catch {
         setError("Ndodhi nje gabim ne lidhje");
@@ -357,6 +596,11 @@ export default function DocumentDetailPage() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Hash Timeline */}
+      {hashTimeline.length > 0 && (
+        <HashTimelineSection steps={hashTimeline} />
       )}
 
       {/* Audit Timeline */}

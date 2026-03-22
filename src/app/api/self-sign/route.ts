@@ -100,6 +100,7 @@ export async function POST(req: NextRequest) {
     const originalBuffer = Buffer.from(await originalFile.arrayBuffer());
     const visuallySignedBuffer = Buffer.from(await signedFile.arrayBuffer());
     const originalHash = computeSHA256(originalBuffer);
+    const visuallySignedHash = computeSHA256(visuallySignedBuffer);
 
     // 1. Get or create user certificate for cryptographic signing
     let certificate = await prisma.certificate.findFirst({
@@ -187,6 +188,26 @@ export async function POST(req: NextRequest) {
     ]);
 
     // 4. Create Document record
+    const hashTimeline = {
+      originalFile: {
+        hash: originalHash,
+        timestamp: now.toISOString(),
+        label: "Dokumenti origjinal",
+      },
+      visuallySigned: {
+        hash: visuallySignedHash,
+        timestamp: now.toISOString(),
+        label: "Pas firmës vizuale",
+      },
+      cryptoSigned: {
+        hash: signedHash,
+        timestamp: now.toISOString(),
+        label: "Pas nenshkrimit dixhital (PAdES)",
+        certificateSerial: certInfo?.serialNumber || null,
+      },
+      // chainRegistered + stamles + ipfs are added after timestamp/cron
+    };
+
     const document = await prisma.document.create({
       data: {
         title,
@@ -204,6 +225,7 @@ export async function POST(req: NextRequest) {
           signedAt: now.toISOString(),
           cryptoSigned: !!cryptoSignatureBase64,
           certificateSerial: certInfo?.serialNumber || null,
+          hashTimeline,
         },
       },
     });
@@ -232,6 +254,30 @@ export async function POST(req: NextRequest) {
       documentId: document.id,
       signatureId: signature.id,
     });
+
+    // 6b. Update hashTimeline with chain registration data
+    {
+      const existingMeta = (document.metadata as Record<string, unknown>) || {};
+      const existingTimeline = (existingMeta.hashTimeline as Record<string, unknown>) || {};
+      await prisma.document.update({
+        where: { id: document.id },
+        data: {
+          metadata: {
+            ...existingMeta,
+            hashTimeline: {
+              ...existingTimeline,
+              chainRegistered: {
+                sequenceNumber: timestampEntry.sequenceNumber,
+                fingerprint: timestampEntry.fingerprint,
+                sequentialFingerprint: timestampEntry.sequentialFingerprint,
+                timestamp: new Date().toISOString(),
+                label: "Regjistruar ne zinxhirin doc.al",
+              },
+            },
+          },
+        },
+      });
+    }
 
     // 7. IPFS proof will be published automatically by check-stamles cron
     // after Polygon blockchain confirmation (ensures complete proof with TX data)

@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
           },
         },
         document: {
-          select: { fileHash: true },
+          select: { id: true, fileHash: true, metadata: true },
         },
       },
       take: 500,
@@ -116,7 +116,10 @@ export async function GET(req: NextRequest) {
                 system: "STAMLES Merkle Batching",
                 status: "CONFIRMED",
               };
-              // Add polygon proof data
+              // Add polygon proof data + hash timeline
+              const docMeta = (entry.document?.metadata as Record<string, unknown>) || {};
+              const existingTimeline = (docMeta.hashTimeline as Record<string, unknown>) || {};
+
               const fullProof = {
                 ...proofMetadata,
                 polygonProof: {
@@ -126,6 +129,9 @@ export async function GET(req: NextRequest) {
                   batchNumber: result.batchNumber,
                   confirmedAt: new Date().toISOString(),
                 },
+                hashTimeline: Object.keys(existingTimeline).length > 0
+                  ? existingTimeline
+                  : undefined,
               };
 
               const ipfsCid = await publishToIPFS(fullProof as typeof proofMetadata);
@@ -142,6 +148,55 @@ export async function GET(req: NextRequest) {
             where: { id: entry.id },
             data: updateData,
           });
+
+          // Update document hashTimeline with polygon + IPFS entries
+          if (entry.document?.id) {
+            try {
+              const currentDoc = await prisma.document.findUnique({
+                where: { id: entry.document.id },
+                select: { metadata: true },
+              });
+              const currentMeta = (currentDoc?.metadata as Record<string, unknown>) || {};
+              const currentHt = (currentMeta.hashTimeline as Record<string, unknown>) || {};
+              const nowISO = new Date().toISOString();
+
+              const updatedHt: Record<string, unknown> = {
+                ...currentHt,
+                polygon: {
+                  txHash: result.polygonTxHash,
+                  blockNumber: result.polygonBlock,
+                  merkleRoot: result.merkleRoot,
+                  batchNumber: result.batchNumber,
+                  timestamp: nowISO,
+                  label: "Polygon Blockchain",
+                },
+              };
+
+              if (updateData.ipfsCid) {
+                updatedHt.ipfs = {
+                  cid: updateData.ipfsCid,
+                  timestamp: nowISO,
+                  label: "IPFS Proof",
+                  gatewayUrl: `https://ipfs.io/ipfs/${updateData.ipfsCid}`,
+                };
+              }
+
+              const updatedMeta = JSON.parse(JSON.stringify({
+                ...currentMeta,
+                hashTimeline: updatedHt,
+              }));
+
+              await prisma.document.update({
+                where: { id: entry.document.id },
+                data: {
+                  metadata: updatedMeta,
+                },
+              });
+            } catch (metaErr) {
+              console.error(`[CRON:check-stamles] hashTimeline update failed:`, metaErr);
+            }
+          }
+
           confirmed++;
         } else if (result.status === "BATCHED") {
           if (entry.stamlesStatus !== "BATCHED") {
