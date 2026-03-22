@@ -1164,9 +1164,9 @@ export default function SelfSignPage() {
 
   // Phase: SIGN - Two panel layout with PDF viewer + sidebar
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col" style={{ margin: "-1.5rem", marginTop: "-1.5rem" }}>
-      {/* Top bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-3 sm:px-4 py-2.5">
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col -m-4 sm:-m-6 lg:-m-8">
+      {/* Top bar - z-10 app bar level */}
+      <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-3 sm:px-4 py-2.5">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Button variant="ghost" size="sm" onClick={resetAll} className="min-h-[44px]">
             <ChevronLeft className="h-3.5 w-3.5" />
@@ -1323,29 +1323,8 @@ export default function SelfSignPage() {
           </Button>
         </div>
 
-        {/* Mobile signature bar */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-20 border-t border-border bg-card p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center gap-3 overflow-x-auto scrollbar-none">
-          {signatureOptions.map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => selectSignature(opt)}
-              className={`flex-shrink-0 rounded-lg border-2 p-2 min-h-[48px] min-w-[64px] flex items-center justify-center ${
-                activeSignatureId === opt.id ? "border-primary bg-primary/5" : "border-border"
-              }`}
-            >
-              {opt.dataUrl && <img src={opt.dataUrl} alt="" className="h-8 w-16 object-contain" />}
-            </button>
-          ))}
-          <button
-            onClick={() => setShowDrawPanel(!showDrawPanel)}
-            className="flex-shrink-0 rounded-lg border-2 border-dashed border-slate-300 p-2 min-h-[48px] min-w-[48px] flex items-center justify-center"
-          >
-            <PenTool className="h-6 w-6 text-muted-foreground" />
-          </button>
-        </div>
-
         {/* Right: PDF viewer with signature overlay */}
-        <div className="flex-1 overflow-y-auto bg-slate-200 p-2 sm:p-4 md:p-6 pb-24 md:pb-6 dark:bg-slate-950" style={{ cursor: signatureDataUrl && !placement ? "crosshair" : "default" }}>
+        <div className="flex-1 overflow-y-auto bg-slate-200 p-2 sm:p-4 md:p-6 dark:bg-slate-950" style={{ cursor: signatureDataUrl && !placement ? "crosshair" : "default" }}>
           {pdfUrl && pdfReady && ReactPDF && (() => {
             const PdfDocument = ReactPDF!.Document;
             const PdfPage = ReactPDF!.Page;
@@ -1365,8 +1344,8 @@ export default function SelfSignPage() {
               <div className="mx-auto space-y-6" style={{ maxWidth: PDF_RENDER_WIDTH }}>
                 {Array.from({ length: numPages }, (_, i) => (
                   <div key={i} className="relative mx-auto shadow-xl rounded-sm overflow-hidden" data-page-idx={i}>
-                    {/* Page number badge */}
-                    <div className="absolute left-2 top-2 z-10 rounded-lg bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                    {/* Page number badge - z-[5] within page context, below app bar */}
+                    <div className="absolute left-2 top-2 z-[5] rounded-lg bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
                       Faqja {i + 1} / {numPages}
                     </div>
 
@@ -1428,6 +1407,57 @@ export default function SelfSignPage() {
             );
           })()}
         </div>
+      </div>
+
+      {/* Mobile signature bar - sticky at bottom, inside flow (not fixed) */}
+      <div className="md:hidden flex-shrink-0 border-t border-border bg-card p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="flex items-center gap-3 overflow-x-auto scrollbar-none">
+          {signatureOptions.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => selectSignature(opt)}
+              className={`flex-shrink-0 rounded-lg border-2 p-2 min-h-[48px] min-w-[64px] flex items-center justify-center ${
+                activeSignatureId === opt.id ? "border-primary bg-primary/5" : "border-border"
+              }`}
+            >
+              {opt.dataUrl && <img src={opt.dataUrl} alt="" className="h-8 w-16 object-contain" />}
+            </button>
+          ))}
+          <button
+            onClick={() => setShowDrawPanel(!showDrawPanel)}
+            className="flex-shrink-0 rounded-lg border-2 border-dashed border-slate-300 p-2 min-h-[48px] min-w-[48px] flex items-center justify-center"
+          >
+            <PenTool className="h-6 w-6 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Mobile draw panel */}
+        {showDrawPanel && (
+          <div className="mt-3 rounded-xl border border-border bg-card p-3">
+            <div className="rounded-lg border border-slate-300 bg-white dark:border-slate-600">
+              <canvas
+                ref={drawCanvasRef}
+                className="w-full cursor-crosshair touch-none min-h-[100px]"
+                style={{ aspectRatio: "10 / 3" }}
+                onMouseDown={startNewDraw}
+                onMouseMove={continueNewDraw}
+                onMouseUp={endNewDraw}
+                onMouseLeave={endNewDraw}
+                onTouchStart={startNewDraw}
+                onTouchMove={continueNewDraw}
+                onTouchEnd={endNewDraw}
+              />
+            </div>
+            <div className="mt-2 flex gap-3">
+              <Button variant="secondary" size="sm" onClick={clearNewDraw} className="flex-1 text-[11px]">
+                Pastro
+              </Button>
+              <Button size="sm" onClick={confirmNewDraw} className="flex-1 text-[11px]">
+                Perdor
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

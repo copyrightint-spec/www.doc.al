@@ -9,7 +9,7 @@ interface StepTermsProps {
 
 export function StepTerms({ termsHtml, onChange }: StepTermsProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overflow-x-hidden">
       <div>
         <h3 className="text-lg font-semibold">Termat e Kontrates</h3>
         <p className="text-sm text-muted-foreground">
@@ -20,7 +20,7 @@ export function StepTerms({ termsHtml, onChange }: StepTermsProps) {
       <DocumentEditor
         content={termsHtml}
         onChange={onChange}
-        className="min-h-[500px]"
+        className="min-h-[400px] sm:min-h-[500px]"
       />
     </div>
   );

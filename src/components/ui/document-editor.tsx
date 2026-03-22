@@ -464,7 +464,7 @@ function EditorToolbar({ editor }: { editor: Editor }) {
   }, [editor]);
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-slate-50/80 px-2 py-1.5 dark:border-slate-700 dark:bg-slate-900/80">
+    <div className="sticky top-0 z-20 flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-slate-50 px-2 py-1.5 dark:border-slate-700 dark:bg-slate-900">
       {/* Text Style */}
       <ToolbarButton
         onClick={() => editor.chain().focus().setParagraph().run()}

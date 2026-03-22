@@ -115,14 +115,14 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h3 className="text-lg font-semibold">Palet Kontraktuese</h3>
           <p className="text-sm text-muted-foreground">
             Shtoni te pakten 1 pale per kontraten (mund te nenshkruani edhe vetem)
           </p>
         </div>
-        <Button onClick={addParty} variant="secondary" size="sm">
+        <Button onClick={addParty} variant="secondary" size="sm" className="min-h-[48px] sm:min-h-[36px] w-full sm:w-auto flex-shrink-0">
           <Plus className="mr-1.5 h-4 w-4" />
           Shto Pale
         </Button>
@@ -145,41 +145,42 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
 
       {parties.map((party, index) => (
         <Card key={index}>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
+          <CardContent className="p-4 sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white dark:bg-slate-100 dark:text-slate-900">
                   {party.partyNumber}
                 </span>
-                <div>
+                <div className="min-w-0">
                   <span className="text-sm font-medium">Pala {party.partyNumber}</span>
                   {party.fullName && (
-                    <span className="text-xs text-muted-foreground ml-2">— {party.fullName}</span>
+                    <span className="text-xs text-muted-foreground ml-2 truncate">— {party.fullName}</span>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {currentUser && !party.userId && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => autoFillCurrentUser(index)}
-                    className="text-xs"
+                    className="text-xs min-h-[48px] sm:min-h-[36px]"
                   >
                     <UserPlus className="mr-1 h-3.5 w-3.5" />
-                    Ploteso nga llogaria
+                    <span className="hidden sm:inline">Ploteso nga llogaria</span>
+                    <span className="sm:hidden">Ploteso</span>
                   </Button>
                 )}
                 <button
                   onClick={() => removeParty(index)}
-                  className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+                  className="p-2.5 sm:p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 transition-colors min-h-[48px] sm:min-h-0 flex items-center justify-center"
                 >
                   <Trash2 className="h-4 w-4 text-red-500" />
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                   Roli
@@ -188,6 +189,7 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
                   value={party.role}
                   onChange={(e) => updateParty(index, "role", e.target.value)}
                   placeholder="p.sh. Punedhenesi, Punemarresi, Qiradhenes..."
+                  className="mt-1 min-h-[48px] sm:min-h-[40px]"
                 />
               </div>
               <div>
@@ -198,6 +200,7 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
                   value={party.fullName}
                   onChange={(e) => updateParty(index, "fullName", e.target.value)}
                   placeholder="Emri dhe mbiemri"
+                  className="mt-1 min-h-[48px] sm:min-h-[40px]"
                 />
               </div>
               <div>
@@ -208,6 +211,7 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
                   value={party.idNumber}
                   onChange={(e) => updateParty(index, "idNumber", e.target.value)}
                   placeholder="Nr. personal ose NIPT"
+                  className="mt-1 min-h-[48px] sm:min-h-[40px]"
                 />
               </div>
               <div>
@@ -218,6 +222,7 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
                   value={party.address}
                   onChange={(e) => updateParty(index, "address", e.target.value)}
                   placeholder="Adresa e plote"
+                  className="mt-1 min-h-[48px] sm:min-h-[40px]"
                 />
               </div>
               <div>
@@ -228,6 +233,7 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
                   value={party.phone}
                   onChange={(e) => updateParty(index, "phone", e.target.value)}
                   placeholder="+355 6X XXX XXXX"
+                  className="mt-1 min-h-[48px] sm:min-h-[40px]"
                 />
               </div>
               <div>
@@ -239,14 +245,15 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
                   onChange={(e) => updateParty(index, "email", e.target.value)}
                   placeholder="email@example.com"
                   type="email"
+                  className="mt-1 min-h-[48px] sm:min-h-[40px]"
                 />
               </div>
             </div>
 
             {/* User search */}
             {!party.userId && (
-              <div className="mt-3 pt-3 border-t">
-                <div className="flex items-center gap-2">
+              <div className="mt-4 pt-3 border-t">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
@@ -256,7 +263,7 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
                         setSearchEmail(e.target.value);
                         setSearchForParty(index);
                       }}
-                      className="pl-9 h-8 text-xs"
+                      className="pl-9 min-h-[48px] sm:min-h-[36px] text-xs"
                     />
                   </div>
                   <Button
@@ -264,21 +271,21 @@ export function StepParties({ parties, onChange, currentUser }: StepPartiesProps
                     size="sm"
                     onClick={() => searchUser(index)}
                     disabled={searching}
-                    className="h-8 text-xs"
+                    className="min-h-[48px] sm:min-h-[36px] text-xs w-full sm:w-auto"
                   >
                     {searching && searchForParty === index ? "Duke kerkuar..." : "Kerko"}
                   </Button>
                 </div>
                 {searchResult && searchForParty === index && (
-                  <div className="mt-2 flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800 p-2">
-                    <div className="text-xs">
+                  <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded-lg bg-slate-50 dark:bg-slate-800 p-3">
+                    <div className="text-xs min-w-0">
                       <span className="font-medium">{searchResult.name}</span>
                       <span className="text-muted-foreground ml-2">{searchResult.email}</span>
                     </div>
                     <Button
                       size="sm"
                       onClick={() => applySearchResult(index)}
-                      className="h-7 text-xs"
+                      className="min-h-[48px] sm:min-h-[32px] text-xs w-full sm:w-auto flex-shrink-0"
                     >
                       Perdor
                     </Button>

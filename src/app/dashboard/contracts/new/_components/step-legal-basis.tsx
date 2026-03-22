@@ -122,7 +122,7 @@ export function StepLegalBasis({ selectedIds, onChange, onLegalBasesLoaded }: St
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Kerko ligje, terma, fjale kyçe..."
-          className="pl-9"
+          className="pl-9 min-h-[48px] sm:min-h-[40px]"
         />
       </div>
 

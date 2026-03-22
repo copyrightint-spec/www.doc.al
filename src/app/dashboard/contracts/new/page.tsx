@@ -327,47 +327,49 @@ export default function ContractBuilderPage() {
     }));
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="mx-auto w-full max-w-2xl space-y-4 sm:space-y-6 overflow-x-hidden pb-24 sm:pb-6">
       {/* Header */}
       <div className="flex items-center gap-3 sm:gap-4">
         <Link href="/dashboard/contracts">
-          <Button variant="ghost" size="sm" className="min-h-[44px]">
+          <Button variant="ghost" size="sm" className="min-h-[48px] sm:min-h-[36px]">
             <ArrowLeft className="mr-1 h-4 w-4" />
             <span className="hidden sm:inline">Kthehu</span>
           </Button>
         </Link>
-        <div className="flex-1">
-          <h1 className="text-lg sm:text-xl font-semibold tracking-tight">Krijo Kontrate te Re</h1>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg sm:text-xl font-semibold tracking-tight truncate">Krijo Kontrate te Re</h1>
         </div>
       </div>
 
-      {/* Step indicator - horizontal scroll on mobile */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
-        {STEPS.map((s, i) => (
-          <div key={s.id} className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={() => i <= step && setStep(i)}
-              disabled={i > step}
-              className={`flex items-center gap-2 rounded-full px-3 py-2 sm:py-1.5 text-xs font-medium transition-colors min-h-[40px] ${
-                i === step
-                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                  : i < step
-                    ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                    : "bg-slate-100 text-slate-400 dark:bg-slate-800"
-              }`}
-            >
-              {i < step ? (
-                <Check className="h-3 w-3" />
-              ) : (
-                <span>{s.number}</span>
+      {/* Step indicator - sticky with background, horizontal scroll on mobile */}
+      <div className="sticky top-0 z-10 bg-background -mx-4 px-4 sm:mx-0 sm:px-0 py-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory">
+          {STEPS.map((s, i) => (
+            <div key={s.id} className="flex items-center gap-2 flex-shrink-0 snap-start">
+              <button
+                onClick={() => i <= step && setStep(i)}
+                disabled={i > step}
+                className={`flex items-center gap-2 rounded-full px-3 py-2 sm:py-1.5 text-xs font-medium transition-colors min-h-[48px] sm:min-h-[40px] ${
+                  i === step
+                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                    : i < step
+                      ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                      : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+                }`}
+              >
+                {i < step ? (
+                  <Check className="h-3 w-3" />
+                ) : (
+                  <span>{s.number}</span>
+                )}
+                {s.label}
+              </button>
+              {i < STEPS.length - 1 && (
+                <div className={`h-px w-6 sm:w-8 ${i < step ? "bg-green-300" : "bg-slate-200 dark:bg-slate-700"} flex-shrink-0`} />
               )}
-              {s.label}
-            </button>
-            {i < STEPS.length - 1 && (
-              <div className={`h-px w-6 sm:w-8 ${i < step ? "bg-green-300" : "bg-slate-200 dark:bg-slate-700"} flex-shrink-0`} />
-            )}
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Title + Logo input (shown on step 0) */}
@@ -381,7 +383,7 @@ export default function ContractBuilderPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="p.sh. Kontrate Pune, Kontrate Qiraje..."
-              className="mt-1"
+              className="mt-1 min-h-[48px] sm:min-h-[40px]"
             />
           </div>
 
@@ -500,24 +502,26 @@ export default function ContractBuilderPage() {
         />
       )}
 
-      {/* Navigation buttons */}
-      <div className="flex justify-between pt-4 border-t gap-3">
-        <Button
-          variant="secondary"
-          onClick={handleBack}
-          disabled={step === 0}
-          className="min-h-[48px] flex-1 sm:flex-none"
-        >
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Mbrapa
-        </Button>
-
-        {step < STEPS.length - 1 && (
-          <Button onClick={handleNext} disabled={!canProceed()} className="min-h-[48px] flex-1 sm:flex-none">
-            Vazhdo
-            <ArrowRight className="ml-1.5 h-4 w-4" />
+      {/* Navigation buttons - sticky on mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background p-4 sm:static sm:z-auto sm:border-t sm:bg-transparent sm:p-0 sm:pt-4">
+        <div className="mx-auto flex w-full max-w-2xl justify-between gap-3">
+          <Button
+            variant="secondary"
+            onClick={handleBack}
+            disabled={step === 0}
+            className="min-h-[48px] flex-1 sm:flex-none"
+          >
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            Kthehu
           </Button>
-        )}
+
+          {step < STEPS.length - 1 && (
+            <Button onClick={handleNext} disabled={!canProceed()} className="min-h-[48px] flex-1 sm:flex-none">
+              Vazhdo
+              <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
