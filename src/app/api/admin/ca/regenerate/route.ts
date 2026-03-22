@@ -8,6 +8,8 @@ import {
   getIssuingCA,
 } from "@/lib/crypto/ca";
 import { generateUserCertificate } from "@/lib/crypto/certificates";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { verifyTotp } from "@/lib/totp";
 import forge from "node-forge";
 
 function extractCertInfo(cert: forge.pki.Certificate) {
@@ -43,7 +45,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let body: { type: string };
+    // Rate limit: 1 per hour per user
+    const rlKey = `caRegenerate:${session.user.id}`;
+    const rl = checkRateLimit(rlKey, { windowMs: 60 * 60 * 1000, max: 1 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Keni arritur limitin e kerkesave. Provoni perseri me vone." },
+        { status: 429 }
+      );
+    }
+
+    let body: { type: string; totpCode?: string };
     try {
       body = await req.json();
     } catch {
@@ -53,7 +65,34 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { type } = body;
+    const { type, totpCode } = body;
+
+    // Require TOTP confirmation for CA regeneration
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { totpEnabled: true, totpSecret: true },
+    });
+
+    if (user?.totpEnabled) {
+      if (!totpCode) {
+        return NextResponse.json(
+          { error: "Kodi TOTP eshte i detyrueshem per rigjenerimin e CA" },
+          { status: 400 }
+        );
+      }
+      if (!user.totpSecret || !verifyTotp(user.totpSecret, totpCode)) {
+        return NextResponse.json(
+          { error: "Kodi TOTP eshte i pasakte" },
+          { status: 403 }
+        );
+      }
+    } else {
+      // If TOTP is not enabled, reject - require 2FA for this critical operation
+      return NextResponse.json(
+        { error: "Duhet te aktivizoni 2FA perpara se te rigjeneroni CA" },
+        { status: 403 }
+      );
+    }
 
     if (!["root", "issuing", "user-certificates"].includes(type)) {
       return NextResponse.json(

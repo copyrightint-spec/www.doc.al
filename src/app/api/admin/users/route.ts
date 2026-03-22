@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -55,9 +56,28 @@ export async function GET(req: NextRequest) {
     prisma.user.count({ where }),
   ]);
 
+  // Hide PII from non-SUPER_ADMIN
+  const sanitizedUsers = users.map(u => {
+    if (session.user.role !== "SUPER_ADMIN") {
+      return { ...u, kycDocumentUrl: null, kycMetadata: null };
+    }
+    return u;
+  });
+
+  // CSV export
+  if (searchParams.get("format") === "csv") {
+    const csv = sanitizedUsers.map(u =>
+      `${u.createdAt},${u.email},${(u.name || "").replace(/,/g, " ")},${u.role},${u.kycStatus},${u.organization?.name || ""}`
+    ).join("\n");
+    const header = "Created,Email,Name,Role,KYC Status,Organization\n";
+    return new Response(header + csv, {
+      headers: { "Content-Type": "text/csv", "Content-Disposition": "attachment; filename=users.csv" }
+    });
+  }
+
   return NextResponse.json({
     success: true,
-    data: { users, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } },
+    data: { users: sanitizedUsers, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } },
   });
 }
 
@@ -152,6 +172,16 @@ export async function DELETE(req: NextRequest) {
 
   if (!userId) {
     return NextResponse.json({ error: "userId required" }, { status: 400 });
+  }
+
+  // Rate limit: 5 per hour per admin user
+  const rlKey = `userDelete:${session.user.id}`;
+  const rl = checkRateLimit(rlKey, { windowMs: 60 * 60 * 1000, max: 5 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Keni arritur limitin e fshirjeve. Provoni perseri me vone." },
+      { status: 429 }
+    );
   }
 
   // Prevent deleting yourself

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Alert } from "@/components/ui/alert";
 import { PageSpinner, Spinner } from "@/components/ui/spinner";
+import { Download } from "lucide-react";
 import { ROLE_BADGE, KYC_STATUS } from "@/lib/constants/status";
 import { formatDate } from "@/lib/utils/date";
 import { cn } from "@/lib/cn";
@@ -200,7 +201,25 @@ export default function AdminUsersPage() {
         />
       )}
 
-      <PageHeader title="Users Management" subtitle={`${total} total users`} />
+      <PageHeader
+        title="Users Management"
+        subtitle={`${total} total users`}
+        actions={
+          <Button
+            variant="secondary"
+            onClick={() => {
+              const params = new URLSearchParams({ format: "csv", limit: "10000" });
+              if (search) params.set("search", search);
+              if (roleFilter) params.set("role", roleFilter);
+              if (kycFilter) params.set("kycStatus", kycFilter);
+              window.open(`/api/admin/users?${params}`, "_blank");
+            }}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Eksporto CSV
+          </Button>
+        }
+      />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Mail, ChevronDown } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -41,22 +41,29 @@ const STATUS_BADGE: Record<string, { label: string; variant: "default" | "succes
 
 export default function AdminContactsPage() {
   const [contacts, setContacts] = useState<ContactRequest[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchContacts();
-  }, [statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function fetchContacts() {
-    const params = new URLSearchParams();
+  const fetchContacts = useCallback(async () => {
+    const params = new URLSearchParams({ page: page.toString(), limit: "20" });
     if (statusFilter) params.set("status", statusFilter);
     const res = await fetch(`/api/admin/contacts?${params}`);
     const data = await res.json();
-    if (data.success) setContacts(data.data);
+    if (data.success) {
+      setContacts(data.data.contacts);
+      setTotal(data.data.pagination.total);
+      setTotalPages(data.data.pagination.totalPages);
+    }
     setLoading(false);
-  }
+  }, [page, statusFilter]);
+
+  useEffect(() => {
+    fetchContacts();
+  }, [fetchContacts]);
 
   async function updateStatus(id: string, status: string) {
     await fetch("/api/admin/contacts", {
@@ -67,13 +74,25 @@ export default function AdminContactsPage() {
     fetchContacts();
   }
 
+  function renderPageNumbers() {
+    const pages: number[] = [];
+    const maxVisible = 7;
+    let start = Math.max(1, page - Math.floor(maxVisible / 2));
+    const end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  }
+
   if (loading) {
     return <PageSpinner />;
   }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
-      <PageHeader title="Organization Requests" subtitle={`${contacts.length} requests`} />
+      <PageHeader title="Organization Requests" subtitle={`${total} requests`} />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
@@ -82,7 +101,7 @@ export default function AdminContactsPage() {
             key={s}
             variant={statusFilter === s ? "secondary" : "ghost"}
             size="sm"
-            onClick={() => setStatusFilter(s)}
+            onClick={() => { setStatusFilter(s); setPage(1); }}
           >
             {s || "All"}
           </Button>
@@ -167,6 +186,43 @@ export default function AdminContactsPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Faqja {page} nga {totalPages} ({total} gjithsej)
+          </p>
+          <div className="flex gap-1">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+            >
+              Para
+            </Button>
+            {renderPageNumbers().map((p) => (
+              <Button
+                key={p}
+                variant={p === page ? "primary" : "ghost"}
+                size="sm"
+                onClick={() => setPage(p)}
+              >
+                {p}
+              </Button>
+            ))}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page >= totalPages}
+            >
+              Pas
+            </Button>
+          </div>
         </div>
       )}
     </div>

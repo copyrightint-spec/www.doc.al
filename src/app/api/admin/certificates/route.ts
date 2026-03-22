@@ -97,6 +97,15 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "certificateId eshte i detyrueshem" }, { status: 400 });
     }
 
+    // Validate action enum
+    const VALID_ACTIONS = ["revoke", "toggleAutoRenew"];
+    if (!action || !VALID_ACTIONS.includes(action)) {
+      return NextResponse.json(
+        { error: `Veprimi i pavlefshem. Duhet te jete nje nga: ${VALID_ACTIONS.join(", ")}` },
+        { status: 400 }
+      );
+    }
+
     const certificate = await prisma.certificate.findUnique({
       where: { id: certificateId },
     });

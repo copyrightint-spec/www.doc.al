@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { z } from "zod";
+
+const createSchema = z.object({
+  title: z.string().min(1).max(500),
+  description: z.string().max(5000).optional(),
+  lawReference: z.string().max(500).optional(),
+  suggestedTerms: z.string().max(5000).optional(),
+  category: z.string().max(100).optional(),
+  sortOrder: z.number().int().min(0).max(9999).optional(),
+});
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,17 +33,22 @@ export async function GET(req: NextRequest) {
       ...(category && { category }),
     };
 
+    const page = parseInt(req.nextUrl.searchParams.get("page") || "1");
+    const limit = Math.min(parseInt(req.nextUrl.searchParams.get("limit") || "20"), 100);
+
     const [legalBases, total] = await Promise.all([
       prisma.legalBasis.findMany({
         where,
         orderBy: { sortOrder: "asc" },
+        skip: (page - 1) * limit,
+        take: limit,
       }),
       prisma.legalBasis.count({ where }),
     ]);
 
     return NextResponse.json({
       success: true,
-      data: { legalBases, total },
+      data: { legalBases, total, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } },
     });
   } catch (error) {
     console.error("[admin/legal-bases] GET error:", error);
@@ -47,22 +62,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  const body = await req.json();
-  const { title, lawReference, description, suggestedTerms, category, sortOrder } = body;
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "JSON i pavlefshem" }, { status: 400 });
+  }
 
-  if (!title || !lawReference || !description || !suggestedTerms) {
+  const parsed = createSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Title, law reference, description, and suggested terms are required" },
+      { error: "Te dhena te pavlefshme", details: parsed.error.flatten().fieldErrors },
       { status: 400 }
     );
   }
 
+  const { title, lawReference, description, suggestedTerms, category, sortOrder } = parsed.data;
+
   const legalBasis = await prisma.legalBasis.create({
     data: {
       title,
-      lawReference,
-      description,
-      suggestedTerms,
+      lawReference: lawReference || "",
+      description: description || "",
+      suggestedTerms: suggestedTerms || "",
       category: category || "general",
       sortOrder: sortOrder ?? 0,
     },

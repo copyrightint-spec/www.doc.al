@@ -54,6 +54,12 @@ export const RATE_LIMITS = {
   emailTracking: { windowMs: 60 * 1000, max: 100 },
   /** General: 60 per minute per IP */
   general: { windowMs: 60 * 1000, max: 60 },
+  /** Admin: 60 per minute per IP */
+  admin: { windowMs: 60 * 1000, max: 60 },
+  /** CA Regeneration: 1 per hour per user */
+  caRegenerate: { windowMs: 60 * 60 * 1000, max: 1 },
+  /** User deletion: 5 per hour per user */
+  userDelete: { windowMs: 60 * 60 * 1000, max: 5 },
 } as const;
 
 export type RateLimitPreset = keyof typeof RATE_LIMITS;

@@ -48,6 +48,9 @@ export default function AdminLegalBasesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -64,7 +67,7 @@ export default function AdminLegalBasesPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
+      const params = new URLSearchParams({ page: page.toString(), limit: "20" });
       if (search) params.set("search", search);
       if (categoryFilter) params.set("category", categoryFilter);
 
@@ -72,11 +75,13 @@ export default function AdminLegalBasesPage() {
       const json = await res.json();
       if (json.success) {
         setLegalBases(json.data.legalBases);
+        setTotal(json.data.pagination.total);
+        setTotalPages(json.data.pagination.totalPages);
       }
     } finally {
       setLoading(false);
     }
-  }, [search, categoryFilter]);
+  }, [page, search, categoryFilter]);
 
   useEffect(() => {
     fetchData();
@@ -185,7 +190,7 @@ export default function AdminLegalBasesPage() {
           <Input
             placeholder="Kerko..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="pl-9"
           />
         </div>
@@ -193,7 +198,7 @@ export default function AdminLegalBasesPage() {
           {CATEGORIES.map((cat) => (
             <button
               key={cat.value}
-              onClick={() => setCategoryFilter(cat.value)}
+              onClick={() => { setCategoryFilter(cat.value); setPage(1); }}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 categoryFilter === cat.value
                   ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
@@ -291,6 +296,51 @@ export default function AdminLegalBasesPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Faqja {page} nga {totalPages} ({total} gjithsej)
+          </p>
+          <div className="flex gap-1">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+            >
+              Para
+            </Button>
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              const maxVisible = 7;
+              let start = Math.max(1, page - Math.floor(maxVisible / 2));
+              const end = Math.min(totalPages, start + maxVisible - 1);
+              if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
+              const p = start + i;
+              if (p > totalPages) return null;
+              return (
+                <Button
+                  key={p}
+                  variant={p === page ? "primary" : "ghost"}
+                  size="sm"
+                  onClick={() => setPage(p)}
+                >
+                  {p}
+                </Button>
+              );
+            })}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page >= totalPages}
+            >
+              Pas
+            </Button>
+          </div>
         </div>
       )}
 

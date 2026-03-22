@@ -14,6 +14,7 @@ import {
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -54,6 +55,7 @@ export default function AdminSealsPage() {
   const [seals, setSeals] = useState<Seal[]>([]);
   const [stats, setStats] = useState({ totalSeals: 0, activeSeals: 0, totalApplications: 0 });
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -62,6 +64,7 @@ export default function AdminSealsPage() {
   const fetchSeals = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ page: page.toString(), limit: "30" });
+    if (search) params.set("search", search);
     if (statusFilter) params.set("status", statusFilter);
     const res = await fetch(`/api/admin/seals?${params}`);
     const data = await res.json();
@@ -71,7 +74,7 @@ export default function AdminSealsPage() {
       setTotalPages(data.data.pagination.totalPages);
     }
     setLoading(false);
-  }, [statusFilter, page]);
+  }, [search, statusFilter, page]);
 
   useEffect(() => { fetchSeals(); }, [fetchSeals]);
 
@@ -94,7 +97,14 @@ export default function AdminSealsPage() {
         <StatCard label="Aplikime Totale" value={stats.totalApplications.toString()} icon={FileText} iconColor="text-blue-500" iconBg="bg-blue-900/30" />
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
+        <Input
+          type="text"
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Kerko sipas emrit te vules ose organizates..."
+          className="min-w-[200px] flex-1"
+        />
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}

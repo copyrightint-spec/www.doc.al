@@ -14,9 +14,17 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get("page") || "1");
   const limit = Math.min(parseInt(searchParams.get("limit") || "30"), 100);
 
+  const search = searchParams.get("search") || "";
+
   const where: Record<string, unknown> = {};
   if (status) where.status = status;
   if (orgId) where.organizationId = orgId;
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { organization: { name: { contains: search, mode: "insensitive" } } },
+    ];
+  }
 
   const [seals, total] = await Promise.all([
     prisma.companySeal.findMany({
@@ -62,6 +70,15 @@ export async function PATCH(req: NextRequest) {
   const { id, action, reason } = body;
 
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+
+  // Validate action enum
+  const VALID_ACTIONS = ["activate", "deactivate", "revoke"];
+  if (!action || !VALID_ACTIONS.includes(action)) {
+    return NextResponse.json(
+      { error: `Veprimi i pavlefshem. Duhet te jete nje nga: ${VALID_ACTIONS.join(", ")}` },
+      { status: 400 }
+    );
+  }
 
   const updateData: Record<string, unknown> = {};
 

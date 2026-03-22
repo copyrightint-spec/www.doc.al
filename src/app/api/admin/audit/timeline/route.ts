@@ -638,6 +638,29 @@ export async function GET(req: NextRequest) {
     // Sort all events chronologically
     events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
+    // Mask PII for non-SUPER_ADMIN
+    if (session.user.role !== "SUPER_ADMIN") {
+      for (const event of events) {
+        for (const [key, value] of Object.entries(event.details)) {
+          if (typeof value !== "string") continue;
+          // Mask email addresses
+          if (value.includes("@")) {
+            const [local, domain] = value.split("@");
+            event.details[key] = `${local[0]}***@${domain}`;
+          }
+          // Mask IP addresses (both IPv4 and IPv6-mapped)
+          if (key === "IP" || key.toLowerCase() === "ip" || key === "ipAddress") {
+            if (value && value !== "-") {
+              event.details[key] = value.replace(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/, (ip) => {
+                const parts = ip.split(".");
+                return `${parts[0]}.***.***.${parts[3]}`;
+              });
+            }
+          }
+        }
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {

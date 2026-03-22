@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import nodemailer from "nodemailer";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -105,5 +106,87 @@ export async function GET(req: NextRequest) {
       { error: "Gabim gjate perpunimit te kerkeses" },
       { status: 500 }
     );
+  }
+}
+
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
+  try {
+    const { emailLogId } = await req.json();
+    if (!emailLogId) {
+      return NextResponse.json({ error: "emailLogId required" }, { status: 400 });
+    }
+
+    const emailLog = await prisma.emailLog.findUnique({ where: { id: emailLogId } });
+    if (!emailLog) {
+      return NextResponse.json({ error: "Email log not found" }, { status: 404 });
+    }
+
+    if (!["FAILED", "BOUNCED"].includes(emailLog.status)) {
+      return NextResponse.json(
+        { error: "Vetem emailet e deshtuar ose te kthyera mund te ridergoheshin" },
+        { status: 400 }
+      );
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "docal-mail",
+      port: parseInt(process.env.SMTP_PORT || "587"),
+      secure: false,
+      tls: { rejectUnauthorized: false },
+    });
+
+    // Create a new email log for the resend
+    const newLog = await prisma.emailLog.create({
+      data: {
+        from: emailLog.from,
+        to: emailLog.to,
+        subject: emailLog.subject,
+        status: "QUEUED",
+        entityType: emailLog.entityType,
+        entityId: emailLog.entityId,
+        userId: emailLog.userId,
+        metadata: { resendOf: emailLogId, resendBy: session.user.email },
+      },
+    });
+
+    try {
+      await transporter.sendMail({
+        from: emailLog.from,
+        to: emailLog.to,
+        subject: emailLog.subject,
+      });
+
+      await prisma.emailLog.update({
+        where: { id: newLog.id },
+        data: { status: "SENT", sentAt: new Date() },
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          action: "ADMIN_EMAIL_RESEND",
+          entityType: "EmailLog",
+          entityId: emailLogId,
+          userId: session.user.id,
+          metadata: { to: emailLog.to, subject: emailLog.subject, newEmailLogId: newLog.id },
+        },
+      });
+
+      return NextResponse.json({ success: true, message: "Email u ridergua me sukses" });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      await prisma.emailLog.update({
+        where: { id: newLog.id },
+        data: { status: "FAILED", failedAt: new Date(), errorMessage },
+      });
+      return NextResponse.json({ error: `Gabim gjate dergimit: ${errorMessage}` }, { status: 500 });
+    }
+  } catch (error) {
+    console.error("[Admin Emails] Resend error:", error);
+    return NextResponse.json({ error: "Gabim gjate ridergimit" }, { status: 500 });
   }
 }

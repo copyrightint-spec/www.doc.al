@@ -113,6 +113,7 @@ export default function AdminEmailsPage() {
     totalPages: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [resending, setResending] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
   const [recipientFilter, setRecipientFilter] = useState("");
@@ -157,6 +158,27 @@ export default function AdminEmailsPage() {
     }, 30000);
     return () => clearInterval(interval);
   }, [fetchEmails, pagination.page]);
+
+  async function resendEmail(emailLogId: string) {
+    setResending(emailLogId);
+    try {
+      const res = await fetch("/api/admin/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailLogId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchEmails(pagination.page);
+      } else {
+        alert(data.error || "Gabim gjate ridergimit");
+      }
+    } catch {
+      alert("Gabim gjate ridergimit te emailit");
+    } finally {
+      setResending(null);
+    }
+  }
 
   function parseUserAgent(ua: string | null): string {
     if (!ua) return "-";
@@ -446,6 +468,21 @@ export default function AdminEmailsPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Resend button for failed/bounced emails */}
+                    {["FAILED", "BOUNCED"].includes(email.status) && (
+                      <div>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); resendEmail(email.id); }}
+                          disabled={resending === email.id}
+                        >
+                          <RefreshCw className={cn("mr-2 h-3.5 w-3.5", resending === email.id && "animate-spin")} />
+                          {resending === email.id ? "Duke riderguar..." : "Ridërgo"}
+                        </Button>
+                      </div>
+                    )}
 
                     {/* Tracking Timeline */}
                     <div>

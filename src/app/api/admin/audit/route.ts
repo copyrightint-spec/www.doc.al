@@ -76,6 +76,17 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
+  // CSV export
+  if (searchParams.get("format") === "csv") {
+    const csv = logs.map(e =>
+      `${e.createdAt},${e.action},${e.entityType},${e.entityId},${e.userId || ""},${e.ipAddress || ""}`
+    ).join("\n");
+    const header = "Date,Action,Entity Type,Entity ID,User ID,IP Address\n";
+    return new Response(header + csv, {
+      headers: { "Content-Type": "text/csv", "Content-Disposition": "attachment; filename=audit-log.csv" }
+    });
+  }
+
   return NextResponse.json({
     success: true,
     data: {

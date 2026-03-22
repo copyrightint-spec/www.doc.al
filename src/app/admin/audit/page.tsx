@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, Fragment } from "react";
-import { Activity, CalendarDays, Users, Zap, ChevronDown, Search, GitBranch } from "lucide-react";
+import { Activity, CalendarDays, Users, Zap, ChevronDown, Search, GitBranch, Download } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -111,12 +111,29 @@ export default function AdminAuditPage() {
         title="Audit Log"
         subtitle="System-wide activity and event history"
         actions={
-          <Link href="/admin/audit/timeline">
-            <Button variant="secondary">
-              <GitBranch className="mr-2 h-4 w-4" />
-              Kronologjia e Detajuar
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                const params = new URLSearchParams({ format: "csv", limit: "10000" });
+                if (search) params.set("search", search);
+                if (actionFilter) params.set("action", actionFilter);
+                if (entityTypeFilter) params.set("entityType", entityTypeFilter);
+                if (dateFrom) params.set("from", dateFrom);
+                if (dateTo) params.set("to", dateTo);
+                window.open(`/api/admin/audit?${params}`, "_blank");
+              }}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Eksporto CSV
             </Button>
-          </Link>
+            <Link href="/admin/audit/timeline">
+              <Button variant="secondary">
+                <GitBranch className="mr-2 h-4 w-4" />
+                Kronologjia e Detajuar
+              </Button>
+            </Link>
+          </div>
         }
       />
 
