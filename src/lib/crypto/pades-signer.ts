@@ -16,9 +16,11 @@
 import forge from "node-forge";
 import { prisma } from "@/lib/db";
 import { decryptPrivateKey } from "./certificates";
+import { createTimeStampToken } from "./tsa";
 
-// Size of PKCS#7 placeholder in hex chars (8192 bytes = 16384 hex chars)
-const SIGNATURE_MAX_LENGTH = 8192;
+// Size of PKCS#7 placeholder in hex chars (16384 bytes = 32768 hex chars)
+// Increased to accommodate the embedded RFC 3161 timestamp token
+const SIGNATURE_MAX_LENGTH = 16384;
 
 /**
  * Embed a PAdES-compliant digital signature into a PDF document.
@@ -420,10 +422,109 @@ function createPKCS7Signature(
   // Sign (detached - content not included in output)
   p7.sign({ detached: true });
 
-  // Convert to DER
+  // Convert to ASN.1
   const asn1 = p7.toAsn1();
+
+  // Embed RFC 3161 timestamp token as an unsigned attribute
+  // OID 1.2.840.113549.1.9.16.2.14 = id-smime-aa-signatureTimeStampToken
+  try {
+    embedTimestampToken(asn1);
+  } catch (err) {
+    // If timestamp embedding fails, continue without it
+    console.warn("[PAdES] Failed to embed timestamp token:", err);
+  }
+
   const der = forge.asn1.toDer(asn1);
   return Buffer.from(der.getBytes(), "binary");
+}
+
+/**
+ * Embed an RFC 3161 timestamp token into the PKCS#7 SignedData as an
+ * unsigned attribute (id-smime-aa-signatureTimeStampToken).
+ *
+ * The timestamp is computed over the signature value from the SignerInfo,
+ * proving when the signature was created.
+ */
+function embedTimestampToken(pkcs7Asn1: forge.asn1.Asn1): void {
+  // Navigate: ContentInfo -> [0] SignedData -> signerInfos (last element) -> first SignerInfo
+  const contentInfoValue = pkcs7Asn1.value as forge.asn1.Asn1[];
+
+  // content [0] EXPLICIT SignedData
+  const signedDataWrapper = contentInfoValue[1] as forge.asn1.Asn1;
+  const signedData = (signedDataWrapper.value as forge.asn1.Asn1[])[0] as forge.asn1.Asn1;
+  const signedDataValue = signedData.value as forge.asn1.Asn1[];
+
+  // signerInfos is the last SET in SignedData
+  const signerInfosSet = signedDataValue[signedDataValue.length - 1] as forge.asn1.Asn1;
+  const signerInfo = (signerInfosSet.value as forge.asn1.Asn1[])[0] as forge.asn1.Asn1;
+  const signerInfoValue = signerInfo.value as forge.asn1.Asn1[];
+
+  // The signature is the last OCTET STRING in SignerInfo
+  let signatureValue: string | null = null;
+  for (let i = signerInfoValue.length - 1; i >= 0; i--) {
+    const elem = signerInfoValue[i] as forge.asn1.Asn1;
+    if (
+      elem.tagClass === forge.asn1.Class.UNIVERSAL &&
+      elem.type === forge.asn1.Type.OCTETSTRING
+    ) {
+      signatureValue = elem.value as string;
+      break;
+    }
+  }
+
+  if (!signatureValue) {
+    throw new Error("Could not find signature value in SignerInfo");
+  }
+
+  // Hash the signature value with SHA-256
+  const md = forge.md.sha256.create();
+  md.update(signatureValue);
+  const signatureHash = md.digest().toHex();
+
+  // Create the timestamp token over the signature hash
+  const tsToken = createTimeStampToken(signatureHash);
+
+  // Parse the timestamp token back to ASN.1
+  const tsTokenAsn1 = forge.asn1.fromDer(
+    forge.util.createBuffer(tsToken.toString("binary"))
+  );
+
+  // Build the unsigned attribute:
+  // unsignedAttrs [1] IMPLICIT SET OF Attribute
+  // Attribute ::= SEQUENCE { type OID, values SET OF ANY }
+  const OID_SIGNATURE_TIMESTAMP = "1.2.840.113549.1.9.16.2.14";
+
+  const unsignedAttrs = forge.asn1.create(
+    forge.asn1.Class.CONTEXT_SPECIFIC,
+    1,
+    true,
+    [
+      forge.asn1.create(
+        forge.asn1.Class.UNIVERSAL,
+        forge.asn1.Type.SEQUENCE,
+        true,
+        [
+          // attribute type OID
+          forge.asn1.create(
+            forge.asn1.Class.UNIVERSAL,
+            forge.asn1.Type.OID,
+            false,
+            forge.asn1.oidToDer(OID_SIGNATURE_TIMESTAMP).getBytes()
+          ),
+          // attribute values SET
+          forge.asn1.create(
+            forge.asn1.Class.UNIVERSAL,
+            forge.asn1.Type.SET,
+            true,
+            [tsTokenAsn1]
+          ),
+        ]
+      ),
+    ]
+  );
+
+  // Append unsigned attributes to the SignerInfo
+  signerInfoValue.push(unsignedAttrs);
 }
 
 // ---------------------------------------------------------------------------

@@ -165,6 +165,8 @@ function generateIssuingCA(rootCA: CACertificate): CACertificate {
   cert.setSubject(subjectAttrs);
   cert.setIssuer(rootCA.certificate.subject.attributes);
 
+  const baseUrl = getBaseUrl();
+
   cert.setExtensions([
     {
       name: "basicConstraints",
@@ -188,6 +190,10 @@ function generateIssuingCA(rootCA: CACertificate): CACertificate {
       authorityCertIssuer: true,
       serialNumber: true,
     },
+    // CRL Distribution Points (OID 2.5.29.31)
+    buildCDPExtension(`${baseUrl}/api/crl`),
+    // Authority Information Access (OID 1.3.6.1.5.5.7.1.1)
+    buildAIAExtension(`${baseUrl}/api/ocsp`, `${baseUrl}/api/ca/issuing`),
   ]);
 
   // Sign with Root CA key
@@ -251,6 +257,8 @@ export function signCertificateWithCA(
   // Retrieve extensions already set on the cert and add CA-related ones
   const existingExtensions = cert.extensions || [];
 
+  const baseUrl = getBaseUrl();
+
   // Add Authority Key Identifier
   existingExtensions.push({
     name: "authorityKeyIdentifier",
@@ -259,11 +267,13 @@ export function signCertificateWithCA(
     serialNumber: true,
   });
 
-  // Note: AIA and CDP extensions require ASN.1 encoding not fully
-  // supported by node-forge. These URLs are documented in the CA page:
-  // - CA Issuer: /api/ca/issuing.crt
-  // - OCSP: /api/ocsp
-  // - CRL: /api/crl
+  // CRL Distribution Points (OID 2.5.29.31)
+  existingExtensions.push(buildCDPExtension(`${baseUrl}/api/crl`));
+
+  // Authority Information Access (OID 1.3.6.1.5.5.7.1.1)
+  existingExtensions.push(
+    buildAIAExtension(`${baseUrl}/api/ocsp`, `${baseUrl}/api/ca/issuing`)
+  );
 
   cert.setExtensions(existingExtensions);
 
@@ -462,6 +472,144 @@ export function generateCRL(revokedEntries: RevokedEntry[]): string {
   const crlB64 = forge.util.encode64(crlDer, 64);
 
   return `-----BEGIN X509 CRL-----\r\n${crlB64}\r\n-----END X509 CRL-----\r\n`;
+}
+
+// ---------------------------------------------------------------------------
+// CDP / AIA Extension Builders (ASN.1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a CRL Distribution Points extension (OID 2.5.29.31).
+ *
+ * ASN.1 structure:
+ *   CRLDistributionPoints ::= SEQUENCE OF DistributionPoint
+ *   DistributionPoint ::= SEQUENCE {
+ *     distributionPoint [0] DistributionPointName OPTIONAL
+ *   }
+ *   DistributionPointName ::= CHOICE {
+ *     fullName [0] GeneralNames
+ *   }
+ *   GeneralNames ::= SEQUENCE OF GeneralName
+ *   GeneralName ::= CHOICE { uniformResourceIdentifier [6] IA5String }
+ */
+function buildCDPExtension(crlUrl: string): { id: string; critical: boolean; value: string } {
+  const cdpValue = forge.asn1.create(
+    forge.asn1.Class.UNIVERSAL,
+    forge.asn1.Type.SEQUENCE,
+    true,
+    [
+      // DistributionPoint
+      forge.asn1.create(
+        forge.asn1.Class.UNIVERSAL,
+        forge.asn1.Type.SEQUENCE,
+        true,
+        [
+          // distributionPoint [0] EXPLICIT
+          forge.asn1.create(
+            forge.asn1.Class.CONTEXT_SPECIFIC,
+            0,
+            true,
+            [
+              // fullName [0] IMPLICIT GeneralNames
+              forge.asn1.create(
+                forge.asn1.Class.CONTEXT_SPECIFIC,
+                0,
+                true,
+                [
+                  // uniformResourceIdentifier [6] IMPLICIT IA5String
+                  forge.asn1.create(
+                    forge.asn1.Class.CONTEXT_SPECIFIC,
+                    6,
+                    false,
+                    crlUrl
+                  ),
+                ]
+              ),
+            ]
+          ),
+        ]
+      ),
+    ]
+  );
+
+  return {
+    id: "2.5.29.31",
+    critical: false,
+    value: forge.asn1.toDer(cdpValue).getBytes(),
+  };
+}
+
+/**
+ * Build an Authority Information Access extension (OID 1.3.6.1.5.5.7.1.1).
+ *
+ * ASN.1 structure:
+ *   AuthorityInfoAccessSyntax ::= SEQUENCE OF AccessDescription
+ *   AccessDescription ::= SEQUENCE {
+ *     accessMethod    OID,
+ *     accessLocation  GeneralName
+ *   }
+ */
+function buildAIAExtension(
+  ocspUrl: string,
+  caIssuersUrl: string
+): { id: string; critical: boolean; value: string } {
+  const aiaValue = forge.asn1.create(
+    forge.asn1.Class.UNIVERSAL,
+    forge.asn1.Type.SEQUENCE,
+    true,
+    [
+      // OCSP access description
+      forge.asn1.create(
+        forge.asn1.Class.UNIVERSAL,
+        forge.asn1.Type.SEQUENCE,
+        true,
+        [
+          // accessMethod: id-ad-ocsp (1.3.6.1.5.5.7.48.1)
+          forge.asn1.create(
+            forge.asn1.Class.UNIVERSAL,
+            forge.asn1.Type.OID,
+            false,
+            forge.asn1.oidToDer("1.3.6.1.5.5.7.48.1").getBytes()
+          ),
+          // accessLocation: uniformResourceIdentifier [6]
+          forge.asn1.create(
+            forge.asn1.Class.CONTEXT_SPECIFIC,
+            6,
+            false,
+            ocspUrl
+          ),
+        ]
+      ),
+      // CA Issuers access description
+      forge.asn1.create(
+        forge.asn1.Class.UNIVERSAL,
+        forge.asn1.Type.SEQUENCE,
+        true,
+        [
+          // accessMethod: id-ad-caIssuers (1.3.6.1.5.5.7.48.2)
+          forge.asn1.create(
+            forge.asn1.Class.UNIVERSAL,
+            forge.asn1.Type.OID,
+            false,
+            forge.asn1.oidToDer("1.3.6.1.5.5.7.48.2").getBytes()
+          ),
+          // accessLocation: uniformResourceIdentifier [6]
+          forge.asn1.create(
+            forge.asn1.Class.CONTEXT_SPECIFIC,
+            6,
+            false,
+            caIssuersUrl
+          ),
+        ]
+      ),
+    ]
+  );
+
+  return {
+    id: "1.3.6.1.5.5.7.1.1",
+    critical: false,
+    value: forge.asn1.toDer(aiaValue).getBytes(),
+  };
 }
 
 // ---------------------------------------------------------------------------
