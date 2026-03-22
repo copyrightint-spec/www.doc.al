@@ -1164,9 +1164,9 @@ export default function SelfSignPage() {
 
   // Phase: SIGN - Two panel layout with PDF viewer + sidebar
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col -m-4 sm:-m-6 lg:-m-8">
-      {/* Top bar - z-10 app bar level */}
-      <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-3 sm:px-4 py-2.5">
+    <div className="flex h-[calc(100vh-7rem)] md:h-[calc(100vh-4rem)] flex-col rounded-xl border border-border overflow-hidden">
+      {/* Top bar */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-3 sm:px-4 py-2.5">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Button variant="ghost" size="sm" onClick={resetAll} className="min-h-[44px]">
             <ChevronLeft className="h-3.5 w-3.5" />
