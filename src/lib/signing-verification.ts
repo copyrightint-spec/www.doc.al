@@ -4,7 +4,7 @@ import { sendVerificationCode } from "./email";
 import { verifyTotp } from "./totp";
 
 const MAX_ATTEMPTS = 5;
-const MAX_EMAIL_SENDS_PER_HOUR = 3;
+const MAX_EMAIL_SENDS_PER_HOUR = 20;
 const CODE_EXPIRY_MINUTES = 5;
 
 /**
