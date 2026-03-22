@@ -136,27 +136,27 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <nav className="border-b border-border px-6 py-4">
+      <nav className="border-b border-border px-4 sm:px-6 py-3 sm:py-4">
         <div className="mx-auto max-w-6xl flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/docal-icon.png" unoptimized alt="doc.al" width={44} height={44} className="h-11 w-11" />
-            <span className="text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/docal-icon.png" unoptimized alt="doc.al" width={44} height={44} className="h-9 w-9 sm:h-11 sm:w-11" />
+            <span className="text-2xl sm:text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
           </Link>
           <Link
             href="/auth/login"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center"
           >
             Hyr
           </Link>
         </div>
       </nav>
 
-      <div className="flex flex-1 items-center justify-center px-4 py-12">
+      <div className="flex flex-1 items-center justify-center px-4 py-6 sm:py-12">
         <Card className="w-full max-w-md">
-          <CardContent className="p-8">
-            <div className="mb-8 text-center">
-              <Image src="/docal-icon.png" unoptimized alt="doc.al" width={80} height={80} className="mx-auto h-20 w-20" />
-              <h1 className="mt-3 text-3xl font-bold text-foreground">
+          <CardContent className="p-5 sm:p-8">
+            <div className="mb-6 sm:mb-8 text-center">
+              <Image src="/docal-icon.png" unoptimized alt="doc.al" width={80} height={80} className="mx-auto h-16 w-16 sm:h-20 sm:w-20" />
+              <h1 className="mt-3 text-2xl sm:text-3xl font-bold text-foreground">
                 doc<span className="text-blue-600">.al</span>
               </h1>
             </div>
@@ -245,7 +245,7 @@ export default function RegisterPage() {
                     className="flex justify-center"
                   />
 
-                  <Button type="submit" disabled={loading} className="w-full">
+                  <Button type="submit" disabled={loading} className="w-full min-h-[48px]">
                     {loading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -304,7 +304,7 @@ export default function RegisterPage() {
                     <p className="mt-1 text-xs text-muted-foreground">Kodi skadon pas 5 minutash</p>
                   </div>
 
-                  <Button type="submit" disabled={loading || verificationCode.length !== 6} className="w-full">
+                  <Button type="submit" disabled={loading || verificationCode.length !== 6} className="w-full min-h-[48px]">
                     {loading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -323,7 +323,7 @@ export default function RegisterPage() {
                   <button
                     onClick={handleResendCode}
                     disabled={resendCooldown > 0}
-                    className="text-sm text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-sm text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] px-4"
                   >
                     {resendCooldown > 0
                       ? `Ridergoni kodin pas ${resendCooldown}s`
@@ -353,8 +353,8 @@ export default function RegisterPage() {
                   </p>
                 </div>
 
-                <Link href="/auth/login" className="mt-6 inline-block">
-                  <Button className="w-full">
+                <Link href="/auth/login" className="mt-6 block">
+                  <Button className="w-full min-h-[48px]">
                     <ArrowRight className="h-4 w-4" />
                     Hyni ne llogari
                   </Button>

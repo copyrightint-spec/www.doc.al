@@ -327,28 +327,28 @@ export default function ContractBuilderPage() {
     }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
         <Link href="/dashboard/contracts">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="min-h-[44px]">
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Kthehu
+            <span className="hidden sm:inline">Kthehu</span>
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-xl font-semibold tracking-tight">Krijo Kontrate te Re</h1>
+          <h1 className="text-lg sm:text-xl font-semibold tracking-tight">Krijo Kontrate te Re</h1>
         </div>
       </div>
 
-      {/* Step indicator */}
-      <div className="flex items-center gap-2">
+      {/* Step indicator - horizontal scroll on mobile */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
         {STEPS.map((s, i) => (
-          <div key={s.id} className="flex items-center gap-2">
+          <div key={s.id} className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={() => i <= step && setStep(i)}
               disabled={i > step}
-              className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-2 rounded-full px-3 py-2 sm:py-1.5 text-xs font-medium transition-colors min-h-[40px] ${
                 i === step
                   ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
                   : i < step
@@ -364,7 +364,7 @@ export default function ContractBuilderPage() {
               {s.label}
             </button>
             {i < STEPS.length - 1 && (
-              <div className={`h-px w-8 ${i < step ? "bg-green-300" : "bg-slate-200 dark:bg-slate-700"}`} />
+              <div className={`h-px w-6 sm:w-8 ${i < step ? "bg-green-300" : "bg-slate-200 dark:bg-slate-700"} flex-shrink-0`} />
             )}
           </div>
         ))}
@@ -380,7 +380,7 @@ export default function ContractBuilderPage() {
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="p.sh. Kontrate Pune, Kontrate Qiraje, Marreveshje Bashkepunimi..."
+              placeholder="p.sh. Kontrate Pune, Kontrate Qiraje..."
               className="mt-1"
             />
           </div>
@@ -391,12 +391,13 @@ export default function ContractBuilderPage() {
               Logo e Kompanise / Individit
             </label>
             {hasLogo === null ? (
-              <div className="mt-2 flex items-center gap-3">
+              <div className="mt-2 flex flex-wrap items-center gap-3">
                 <p className="text-sm text-muted-foreground">A keni logo zyrtare?</p>
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => setHasLogo(true)}
+                  className="min-h-[44px]"
                 >
                   Po, vendos logon
                 </Button>
@@ -404,6 +405,7 @@ export default function ContractBuilderPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setHasLogo(false)}
+                  className="min-h-[44px]"
                 >
                   Jo
                 </Button>
@@ -499,18 +501,19 @@ export default function ContractBuilderPage() {
       )}
 
       {/* Navigation buttons */}
-      <div className="flex justify-between pt-4 border-t">
+      <div className="flex justify-between pt-4 border-t gap-3">
         <Button
           variant="secondary"
           onClick={handleBack}
           disabled={step === 0}
+          className="min-h-[48px] flex-1 sm:flex-none"
         >
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           Mbrapa
         </Button>
 
         {step < STEPS.length - 1 && (
-          <Button onClick={handleNext} disabled={!canProceed()}>
+          <Button onClick={handleNext} disabled={!canProceed()} className="min-h-[48px] flex-1 sm:flex-none">
             Vazhdo
             <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>

@@ -268,28 +268,28 @@ export default function ExplorerPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card px-6 py-4">
+      <header className="border-b border-border bg-card px-4 sm:px-6 py-3 sm:py-4">
         <div className="mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <Link href="/" className="flex items-center gap-2.5">
-                <Image src="/docal-icon.png" unoptimized alt="doc.al" width={44} height={44} className="h-11 w-11" />
-                <span className="text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <Link href="/" className="flex items-center gap-2">
+                <Image src="/docal-icon.png" unoptimized alt="doc.al" width={44} height={44} className="h-9 w-9 sm:h-11 sm:w-11 flex-shrink-0" />
+                <span className="text-2xl sm:text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
               </Link>
-              <h1 className="mt-1 text-sm text-muted-foreground">
-                Timestamp Explorer - Public Chain
+              <h1 className="mt-1 text-xs sm:text-sm text-muted-foreground">
+                Timestamp Explorer
               </h1>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              <div className="hidden sm:flex items-center gap-4">
                 <Link
                   href="/certificates"
-                  className="hidden text-sm text-muted-foreground hover:text-foreground sm:block"
+                  className="text-sm text-muted-foreground hover:text-foreground"
                 >
                   Certifikata
                 </Link>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="inline-block h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                 Real-time
                 {pagination && (
@@ -370,16 +370,27 @@ export default function ExplorerPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-6 py-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4 sm:py-6">
+        {/* Mobile real-time indicator */}
+        <div className="sm:hidden flex items-center gap-2 text-xs text-muted-foreground mb-3">
+          <span className="inline-block h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+          Real-time
+          {pagination && (
+            <span className="ml-2">
+              {pagination.total} entries
+            </span>
+          )}
+        </div>
+
         {/* Filters */}
-        <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="mb-4 flex flex-col sm:flex-row gap-3">
           <select
             value={typeFilter}
             onChange={(e) => {
               setTypeFilter(e.target.value);
               setPage(1);
             }}
-            className="rounded-xl border border-border bg-muted px-3 py-2 text-sm text-foreground"
+            className="rounded-xl border border-border bg-muted px-3 py-3 sm:py-2 text-base sm:text-sm text-foreground min-h-[48px] sm:min-h-0"
           >
             <option value="">Te gjitha tipet</option>
             <option value="SINGLE_FILE">single-file</option>
@@ -394,12 +405,143 @@ export default function ExplorerPage() {
               setPage(1);
             }}
             placeholder="Kerko me fingerprint hash..."
-            className="min-w-[200px] flex-1"
+            className="w-full sm:min-w-[200px] sm:flex-1"
           />
         </div>
 
-        {/* Table */}
-        <Card className="overflow-hidden">
+        {/* Mobile card view */}
+        <div className="md:hidden space-y-3">
+          {entries.map((entry) => (
+            <Card
+              key={entry.id}
+              onClick={() => toggleDetail(entry.sequenceNumber)}
+              className={cn(
+                "p-4 cursor-pointer transition-colors",
+                expandedSeq === entry.sequenceNumber && "ring-2 ring-blue-500/30 bg-blue-50/50 dark:bg-blue-950/20",
+                newEntryIds.has(entry.id) && "bg-green-50 dark:bg-green-950/30 animate-pulse"
+              )}
+            >
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/explorer/${entry.sequenceNumber}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="font-mono font-bold text-blue-600 dark:text-blue-400 text-base"
+                  >
+                    #{entry.sequenceNumber}
+                  </Link>
+                  <Badge variant={TYPE_BADGE_VARIANT[entry.type] || "default"}>
+                    {TYPE_LABELS[entry.type] || entry.type}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {entry.stamlesStatus === "CONFIRMED" || entry.otsStatus === "CONFIRMED" ? (
+                    <Badge variant="success" className="text-[10px]">Confirmed</Badge>
+                  ) : entry.stamlesStatus === "BATCHED" ? (
+                    <Badge variant="info" className="text-[10px]">Batched</Badge>
+                  ) : (
+                    <Badge variant="warning" className="text-[10px]">Queued</Badge>
+                  )}
+                  {entry.ipfsCid && <Badge variant="info" className="text-[10px]">IPFS</Badge>}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mb-1.5">{formatDate(entry.serverTimestamp)}</p>
+              <div className="space-y-1">
+                <div>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Fingerprint</span>
+                  <p className="font-mono text-xs text-foreground/70 truncate">{entry.fingerprint}</p>
+                </div>
+                <div>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Seq. Fingerprint</span>
+                  <p className="font-mono text-xs text-foreground/70 truncate">{entry.sequentialFingerprint}</p>
+                </div>
+              </div>
+              <div className="mt-2 flex items-center justify-center">
+                <ChevronRight className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform",
+                  expandedSeq === entry.sequenceNumber && "rotate-90"
+                )} />
+              </div>
+
+              {/* Expanded detail on mobile */}
+              {expandedSeq === entry.sequenceNumber && (
+                <div className="mt-3 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
+                  {detailLoading ? (
+                    <div className="flex justify-center py-4"><Spinner /></div>
+                  ) : detail ? (
+                    <div className="space-y-3">
+                      <div>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Full Fingerprint</span>
+                        <div className="mt-1 rounded-lg bg-muted px-2 py-1.5 flex items-center gap-1">
+                          <code className="break-all font-mono text-[11px] text-foreground flex-1">{detail.fingerprint}</code>
+                          <CopyButton text={detail.fingerprint} />
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Full Seq. Fingerprint</span>
+                        <div className="mt-1 rounded-lg bg-muted px-2 py-1.5 flex items-center gap-1">
+                          <code className="break-all font-mono text-[11px] text-foreground flex-1">{detail.sequentialFingerprint}</code>
+                          <CopyButton text={detail.sequentialFingerprint} />
+                        </div>
+                      </div>
+                      {detail.document && (
+                        <div className="rounded-lg border border-border p-2.5">
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Dokumenti</span>
+                          <p className="text-sm text-foreground mt-0.5">{detail.document.title}</p>
+                          <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
+                            <span>{detail.document.fileName}</span>
+                            <span>{formatBytes(detail.document.fileSize)}</span>
+                          </div>
+                        </div>
+                      )}
+                      {detail.signature && (
+                        <div className="rounded-lg border border-border p-2.5">
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Nenshkruesi</span>
+                          <p className="text-sm text-foreground mt-0.5">{detail.signature.signerName}</p>
+                          <Badge variant={detail.signature.status === "SIGNED" ? "success" : "warning"} className="mt-1">
+                            {detail.signature.status === "SIGNED" ? "Nenshkruar" : "Ne pritje"}
+                          </Badge>
+                        </div>
+                      )}
+                      <Link
+                        href={`/explorer/${detail.sequenceNumber}`}
+                        className="block"
+                      >
+                        <Button variant="secondary" size="sm" className="w-full min-h-[44px]">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          Faqja e plote
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-muted-foreground py-2">Gabim ne ngarkimin e detajeve</p>
+                  )}
+                </div>
+              )}
+            </Card>
+          ))}
+          {entries.length === 0 && initialLoading && (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Card key={`skel-m-${i}`} className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Skeleton className="h-5 w-12" />
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </div>
+                  <Skeleton className="h-3 w-40 mb-2" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-3/4 mt-1" />
+                </Card>
+              ))}
+            </div>
+          )}
+          {entries.length === 0 && !initialLoading && (
+            <p className="text-center text-muted-foreground py-8">Nuk ka timestamp entries akoma</p>
+          )}
+        </div>
+
+        {/* Desktop Table */}
+        <Card className="overflow-hidden hidden md:block">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
@@ -890,10 +1032,9 @@ export default function ExplorerPage() {
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Faqja {pagination.page} nga {pagination.totalPages} (
-              {pagination.total} gjithsej)
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Faqja {pagination.page} / {pagination.totalPages} ({pagination.total})
             </p>
             <div className="flex gap-2">
               <Button
@@ -901,6 +1042,7 @@ export default function ExplorerPage() {
                 size="sm"
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
+                className="min-h-[44px] min-w-[44px]"
               >
                 Para
               </Button>
@@ -911,6 +1053,7 @@ export default function ExplorerPage() {
                   setPage(Math.min(pagination.totalPages, page + 1))
                 }
                 disabled={page === pagination.totalPages}
+                className="min-h-[44px] min-w-[44px]"
               >
                 Pas
               </Button>

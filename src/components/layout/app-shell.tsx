@@ -77,6 +77,7 @@ export function AppShell({ children, variant = "dashboard" }: AppShellProps) {
     <div className={cn("flex min-h-screen", isAdmin ? "bg-slate-950" : "bg-background")}>
       <Sidebar
         navItems={navItems}
+        settingsItems={isAdmin ? undefined : settingsNav}
         variant={isAdmin ? "admin" : "default"}
         sidebarOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -90,7 +91,7 @@ export function AppShell({ children, variant = "dashboard" }: AppShellProps) {
         onMenuClick={() => setSidebarOpen(true)}
       />
 
-      <main className="flex-1 pt-14 lg:ml-[260px]">
+      <main className="flex-1 pb-20 pt-12 md:pb-0 md:pt-14 md:ml-[260px]">
         {children}
       </main>
     </div>

@@ -669,8 +669,8 @@ export default function SelfSignPage() {
   // Phase: UPLOAD
   if (phase === "upload") {
     return (
-      <div className="mx-auto max-w-3xl p-6 lg:p-8">
-        <Button variant="ghost" size="sm" asChild className="mb-6">
+      <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
+        <Button variant="ghost" size="sm" asChild className="mb-4 sm:mb-6 min-h-[44px]">
           <Link href="/dashboard/contracts">
             <ChevronLeft className="h-4 w-4" />
             Kthehu te eSign
@@ -680,20 +680,20 @@ export default function SelfSignPage() {
         <PageHeader
           title="Nenshkruaj Vete nje PDF"
           subtitle="Ngarko dokumentin, vendos firmen, verifiko identitetin, dhe shkarkoni."
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         />
 
-        {/* Step indicator */}
-        <div className="mb-8 flex items-center justify-center gap-1">
+        {/* Step indicator - horizontal scroll on mobile */}
+        <div className="mb-6 sm:mb-8 flex items-center justify-start sm:justify-center gap-1 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
           {["Ngarko", "Vendos Firmen", "Konfirmo", "Verifiko", "Perfundo"].map((label, i) => (
-            <div key={label} className="flex items-center gap-1">
-              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
+            <div key={label} className="flex items-center gap-1 flex-shrink-0">
+              <div className={`flex items-center gap-1.5 rounded-full px-3 py-2 sm:py-1.5 text-xs font-medium min-h-[36px] ${
                 i === 0 ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900" : "bg-slate-100 text-slate-400 dark:bg-slate-800"
               }`}>
                 <span>{i + 1}</span>
                 <span className="hidden sm:inline">{label}</span>
               </div>
-              {i < 4 && <div className="h-px w-4 bg-slate-200 dark:bg-slate-700" />}
+              {i < 4 && <div className="h-px w-4 bg-slate-200 dark:bg-slate-700 flex-shrink-0" />}
             </div>
           ))}
         </div>
@@ -703,26 +703,26 @@ export default function SelfSignPage() {
             variant="destructive"
             icon={<AlertTriangle className="h-5 w-5" />}
             title={error}
-            className="mb-6"
+            className="mb-4 sm:mb-6"
           />
         )}
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div
               onDragOver={(e) => { e.preventDefault(); setIsDraggingFile(true); }}
               onDragLeave={() => setIsDraggingFile(false)}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`cursor-pointer rounded-2xl border-2 border-dashed p-16 text-center transition-colors ${
+              className={`cursor-pointer rounded-2xl border-2 border-dashed p-8 sm:p-16 text-center transition-colors min-h-[160px] flex flex-col items-center justify-center ${
                 isDraggingFile
                   ? "border-primary bg-primary/5"
                   : "border-slate-300 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-600"
               }`}
             >
-              <Upload className="mx-auto h-14 w-14 text-slate-300 dark:text-slate-600" strokeWidth={1} />
-              <p className="mt-4 text-sm font-medium text-foreground">Terhiq dhe leshoni skedarin PDF ketu</p>
-              <p className="mt-1 text-xs text-muted-foreground">ose klikoni per te zgjedhur nje skedar (maks. 50 MB)</p>
+              <Upload className="mx-auto h-12 w-12 sm:h-14 sm:w-14 text-slate-300 dark:text-slate-600" strokeWidth={1} />
+              <p className="mt-4 text-base sm:text-sm font-medium text-foreground">Terhiq dhe leshoni skedarin PDF ketu</p>
+              <p className="mt-1 text-sm sm:text-xs text-muted-foreground">ose klikoni per te zgjedhur nje skedar (maks. 50 MB)</p>
               <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" className="hidden" onChange={handleFileInput} />
             </div>
           </CardContent>
@@ -734,17 +734,17 @@ export default function SelfSignPage() {
   // Phase: CONFIRM
   if (phase === "confirm") {
     return (
-      <div className="mx-auto max-w-2xl p-6 lg:p-8">
-        <Button variant="ghost" size="sm" onClick={() => setPhase("sign")} className="mb-6">
+      <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
+        <Button variant="ghost" size="sm" onClick={() => setPhase("sign")} className="mb-4 sm:mb-6 min-h-[44px]">
           <ChevronLeft className="h-4 w-4" />
           Kthehu te vendosja e firmes
         </Button>
 
-        {/* Step indicator */}
-        <div className="mb-8 flex items-center justify-center gap-1">
+        {/* Step indicator - horizontal scroll on mobile */}
+        <div className="mb-6 sm:mb-8 flex items-center justify-start sm:justify-center gap-1 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
           {["Ngarko", "Vendos Firmen", "Konfirmo", "Verifiko", "Perfundo"].map((label, i) => (
-            <div key={label} className="flex items-center gap-1">
-              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
+            <div key={label} className="flex items-center gap-1 flex-shrink-0">
+              <div className={`flex items-center gap-1.5 rounded-full px-3 py-2 sm:py-1.5 text-xs font-medium min-h-[36px] ${
                 i < 2 ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                 : i === 2 ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
                 : "bg-slate-100 text-slate-400 dark:bg-slate-800"
@@ -752,13 +752,13 @@ export default function SelfSignPage() {
                 {i < 2 ? <Check className="h-3 w-3" /> : <span>{i + 1}</span>}
                 <span className="hidden sm:inline">{label}</span>
               </div>
-              {i < 4 && <div className={`h-px w-4 ${i < 2 ? "bg-green-300" : "bg-slate-200 dark:bg-slate-700"}`} />}
+              {i < 4 && <div className={`h-px w-4 ${i < 2 ? "bg-green-300" : "bg-slate-200 dark:bg-slate-700"} flex-shrink-0`} />}
             </div>
           ))}
         </div>
 
         <Card>
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div className="text-center">
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
                 <Eye className="h-6 w-6 text-foreground" strokeWidth={1.5} />
@@ -796,7 +796,7 @@ export default function SelfSignPage() {
                   type="checkbox"
                   checked={eidasConsent}
                   onChange={(e) => setEidasConsent(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500 flex-shrink-0"
+                  className="mt-1 h-5 w-5 min-h-[20px] min-w-[20px] rounded border-slate-300 text-green-600 focus:ring-green-500 flex-shrink-0"
                 />
                 <span className="text-xs text-muted-foreground leading-relaxed">
                   Pranoj kushtet e nenshkrimit elektronik sipas Rregullores eIDAS (BE Nr. 910/2014)
@@ -808,18 +808,18 @@ export default function SelfSignPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="secondary"
                 onClick={() => setPhase("sign")}
-                className="flex-1"
+                className="flex-1 min-h-[48px]"
               >
                 Kthehu
               </Button>
               <Button
                 onClick={startVerification}
                 disabled={!eidasConsent}
-                className="flex-1"
+                className="flex-1 min-h-[48px]"
               >
                 <ShieldCheck className="h-4 w-4" />
                 Vazhdo me Verifikimin
@@ -834,12 +834,12 @@ export default function SelfSignPage() {
   // Phase: VERIFY
   if (phase === "verify") {
     return (
-      <div className="mx-auto max-w-md p-6 lg:p-8">
-        {/* Step indicator */}
-        <div className="mb-8 flex items-center justify-center gap-1">
+      <div className="mx-auto max-w-md p-4 sm:p-6 lg:p-8">
+        {/* Step indicator - horizontal scroll on mobile */}
+        <div className="mb-6 sm:mb-8 flex items-center justify-start sm:justify-center gap-1 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
           {["Ngarko", "Vendos Firmen", "Konfirmo", "Verifiko", "Perfundo"].map((label, i) => (
-            <div key={label} className="flex items-center gap-1">
-              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
+            <div key={label} className="flex items-center gap-1 flex-shrink-0">
+              <div className={`flex items-center gap-1.5 rounded-full px-3 py-2 sm:py-1.5 text-xs font-medium min-h-[36px] ${
                 i < 3 ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                 : i === 3 ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
                 : "bg-slate-100 text-slate-400 dark:bg-slate-800"
@@ -847,13 +847,13 @@ export default function SelfSignPage() {
                 {i < 3 ? <Check className="h-3 w-3" /> : <span>{i + 1}</span>}
                 <span className="hidden sm:inline">{label}</span>
               </div>
-              {i < 4 && <div className={`h-px w-4 ${i < 3 ? "bg-green-300" : "bg-slate-200 dark:bg-slate-700"}`} />}
+              {i < 4 && <div className={`h-px w-4 ${i < 3 ? "bg-green-300" : "bg-slate-200 dark:bg-slate-700"} flex-shrink-0`} />}
             </div>
           ))}
         </div>
 
         <Card>
-          <CardContent className="p-8">
+          <CardContent className="p-5 sm:p-8">
             <div className="mb-6 text-center">
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
                 <ShieldCheck className="h-6 w-6 text-foreground" strokeWidth={1.5} />
@@ -987,22 +987,22 @@ export default function SelfSignPage() {
   // Phase: DONE
   if (phase === "done") {
     return (
-      <div className="mx-auto max-w-2xl p-6 lg:p-8">
-        {/* Step indicator - all complete */}
-        <div className="mb-8 flex items-center justify-center gap-1">
+      <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
+        {/* Step indicator - all complete, horizontal scroll on mobile */}
+        <div className="mb-6 sm:mb-8 flex items-center justify-start sm:justify-center gap-1 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
           {["Ngarko", "Vendos Firmen", "Konfirmo", "Verifiko", "Perfundo"].map((label, i) => (
-            <div key={label} className="flex items-center gap-1">
-              <div className="flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1.5 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
+            <div key={label} className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-2 sm:py-1.5 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300 min-h-[36px]">
                 <Check className="h-3 w-3" />
                 <span className="hidden sm:inline">{label}</span>
               </div>
-              {i < 4 && <div className="h-px w-4 bg-green-300" />}
+              {i < 4 && <div className="h-px w-4 bg-green-300 flex-shrink-0" />}
             </div>
           ))}
         </div>
 
         <Card>
-          <CardContent className="p-8">
+          <CardContent className="p-4 sm:p-8">
             {/* Success header */}
             <div className="text-center mb-6">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
@@ -1047,10 +1047,10 @@ export default function SelfSignPage() {
 
             {/* Server result details */}
             {serverResult && (
-              <div className="mb-6 rounded-xl border border-border p-4 space-y-2 text-xs">
-                <div className="flex justify-between">
+              <div className="mb-6 rounded-xl border border-border p-3 sm:p-4 space-y-2 text-xs">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                   <span className="text-muted-foreground">Document Hash:</span>
-                  <span className="font-mono text-foreground truncate max-w-[220px]">{serverResult.documentHash}</span>
+                  <span className="font-mono text-foreground truncate max-w-full sm:max-w-[220px]">{serverResult.documentHash}</span>
                 </div>
                 {serverResult.sequenceNumber && (
                   <div className="flex justify-between">
@@ -1124,22 +1124,22 @@ export default function SelfSignPage() {
                   </Card>
                 </div>
 
-                <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-                  <Button asChild>
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
+                  <Button asChild className="w-full sm:w-auto min-h-[48px]">
                     <a href={signedPdfUrl} download={signedFileName}>
                       <Download className="h-4 w-4" />
                       Shkarko PDF
                     </a>
                   </Button>
-                  <Button variant="secondary" onClick={resetAll}>
+                  <Button variant="secondary" onClick={resetAll} className="w-full sm:w-auto min-h-[48px]">
                     Nenshkruaj tjeter
                   </Button>
-                  <Button variant="secondary" asChild>
+                  <Button variant="secondary" asChild className="w-full sm:w-auto min-h-[48px]">
                     <Link href="/dashboard/documents">
                       Shiko Dokumentat
                     </Link>
                   </Button>
-                  <Button variant="secondary" asChild>
+                  <Button variant="secondary" asChild className="w-full sm:w-auto min-h-[48px]">
                     <Link href="/dashboard/contracts">
                       Kthehu te eSign
                     </Link>
@@ -1166,11 +1166,11 @@ export default function SelfSignPage() {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col" style={{ margin: "-1.5rem", marginTop: "-1.5rem" }}>
       {/* Top bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-4 py-2.5">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button variant="ghost" size="sm" onClick={resetAll}>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-3 sm:px-4 py-2.5">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <Button variant="ghost" size="sm" onClick={resetAll} className="min-h-[44px]">
             <ChevronLeft className="h-3.5 w-3.5" />
-            Kthehu
+            <span className="hidden sm:inline">Kthehu</span>
           </Button>
           <div className="h-4 w-px bg-border hidden sm:block" />
           <div className="flex items-center gap-2 min-w-0 hidden sm:flex">
@@ -1193,6 +1193,7 @@ export default function SelfSignPage() {
             size="sm"
             onClick={() => setPhase("confirm")}
             disabled={!placement || !signatureDataUrl}
+            className="min-h-[44px] min-w-[44px]"
           >
             <Check className="h-3.5 w-3.5" />
             Vazhdo
@@ -1261,7 +1262,7 @@ export default function SelfSignPage() {
                 <div className="rounded-lg border border-slate-300 bg-white dark:border-slate-600">
                   <canvas
                     ref={drawCanvasRef}
-                    className="w-full cursor-crosshair touch-none"
+                    className="w-full cursor-crosshair touch-none min-h-[100px]"
                     style={{ aspectRatio: "10 / 3" }}
                     onMouseDown={startNewDraw}
                     onMouseMove={continueNewDraw}
@@ -1323,13 +1324,13 @@ export default function SelfSignPage() {
         </div>
 
         {/* Mobile signature bar */}
-        <div className="md:hidden absolute bottom-0 left-0 right-0 z-20 border-t border-border bg-card p-3 flex items-center gap-2 overflow-x-auto">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-20 border-t border-border bg-card p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center gap-3 overflow-x-auto scrollbar-none">
           {signatureOptions.map((opt) => (
             <button
               key={opt.id}
               onClick={() => selectSignature(opt)}
-              className={`flex-shrink-0 rounded-lg border-2 p-1.5 ${
-                activeSignatureId === opt.id ? "border-primary" : "border-border"
+              className={`flex-shrink-0 rounded-lg border-2 p-2 min-h-[48px] min-w-[64px] flex items-center justify-center ${
+                activeSignatureId === opt.id ? "border-primary bg-primary/5" : "border-border"
               }`}
             >
               {opt.dataUrl && <img src={opt.dataUrl} alt="" className="h-8 w-16 object-contain" />}
@@ -1337,14 +1338,14 @@ export default function SelfSignPage() {
           ))}
           <button
             onClick={() => setShowDrawPanel(!showDrawPanel)}
-            className="flex-shrink-0 rounded-lg border-2 border-dashed border-slate-300 p-1.5"
+            className="flex-shrink-0 rounded-lg border-2 border-dashed border-slate-300 p-2 min-h-[48px] min-w-[48px] flex items-center justify-center"
           >
-            <PenTool className="h-8 w-8 text-muted-foreground p-1" />
+            <PenTool className="h-6 w-6 text-muted-foreground" />
           </button>
         </div>
 
         {/* Right: PDF viewer with signature overlay */}
-        <div className="flex-1 overflow-y-auto bg-slate-200 p-4 md:p-6 dark:bg-slate-950" style={{ cursor: signatureDataUrl && !placement ? "crosshair" : "default" }}>
+        <div className="flex-1 overflow-y-auto bg-slate-200 p-2 sm:p-4 md:p-6 pb-24 md:pb-6 dark:bg-slate-950" style={{ cursor: signatureDataUrl && !placement ? "crosshair" : "default" }}>
           {pdfUrl && pdfReady && ReactPDF && (() => {
             const PdfDocument = ReactPDF!.Document;
             const PdfPage = ReactPDF!.Page;

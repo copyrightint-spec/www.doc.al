@@ -115,7 +115,7 @@ export default function SecuritySettingsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-xl p-8">
+    <div className="mx-auto max-w-xl p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Siguria"
         subtitle="Konfiguro autentifikimin me dy faktor (2FA) per te nenshkruar dokumente."
@@ -143,7 +143,7 @@ export default function SecuritySettingsPage() {
             <Button
               onClick={handleSetup}
               disabled={loading}
-              className="mt-4"
+              className="mt-4 w-full sm:w-auto min-h-[48px]"
             >
               {loading ? (
                 <>
@@ -184,7 +184,7 @@ export default function SecuritySettingsPage() {
                 <Button
                   type="submit"
                   disabled={loading || token.length !== 6}
-                  className="w-full"
+                  className="w-full min-h-[48px]"
                 >
                   {loading ? (
                     <>
@@ -298,7 +298,7 @@ export default function SecuritySettingsPage() {
               type="submit"
               disabled={pwLoading}
               variant="destructive"
-              className="w-full"
+              className="w-full min-h-[48px]"
             >
               {pwLoading ? (
                 <>

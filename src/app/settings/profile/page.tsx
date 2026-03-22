@@ -162,7 +162,7 @@ export default function ProfilePage() {
   const roleConfig = ROLE_BADGE[profile.role];
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
+    <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Profili im"
         subtitle="Menaxhoni te dhenat tuaja personale dhe preferencat e llogarise."
@@ -212,38 +212,42 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent className="divide-y divide-border p-0">
           {/* Name */}
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-4 gap-2">
             <div className="flex-1">
               <p className="text-sm text-muted-foreground">Emri</p>
               {editingName ? (
-                <div className="mt-1 flex items-center gap-2">
+                <div className="mt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <Input
                     type="text"
                     value={nameValue}
                     onChange={(e) => setNameValue(e.target.value)}
-                    className="max-w-xs"
+                    className="w-full sm:max-w-xs"
                   />
-                  <Button
-                    onClick={() => saveField("name", nameValue)}
-                    disabled={saving}
-                    size="sm"
-                  >
-                    {saving ? <Spinner size="sm" /> : "Ruaj"}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => { setEditingName(false); setNameValue(profile.name); }}
-                  >
-                    Anulo
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => saveField("name", nameValue)}
+                      disabled={saving}
+                      size="sm"
+                      className="flex-1 sm:flex-none min-h-[44px]"
+                    >
+                      {saving ? <Spinner size="sm" /> : "Ruaj"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { setEditingName(false); setNameValue(profile.name); }}
+                      className="flex-1 sm:flex-none min-h-[44px]"
+                    >
+                      Anulo
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <p className="text-sm font-medium text-foreground">{profile.name}</p>
               )}
             </div>
             {!editingName && (
-              <Button variant="link" size="sm" onClick={() => setEditingName(true)}>
+              <Button variant="link" size="sm" onClick={() => setEditingName(true)} className="self-start sm:self-center min-h-[44px]">
                 <Pencil className="mr-1 h-3 w-3" />
                 Ndrysho
               </Button>
@@ -251,11 +255,11 @@ export default function ProfilePage() {
           </div>
 
           {/* Email */}
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-4">
             <div>
               <p className="text-sm text-muted-foreground">Email</p>
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-foreground">{profile.email}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm font-medium text-foreground break-all">{profile.email}</p>
                 {profile.emailVerified && (
                   <Badge variant="success">
                     <Check className="mr-1 h-3 w-3" />
@@ -267,32 +271,36 @@ export default function ProfilePage() {
           </div>
 
           {/* Phone */}
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-4 gap-2">
             <div className="flex-1">
               <p className="text-sm text-muted-foreground">Telefoni</p>
               {editingPhone ? (
-                <div className="mt-1 flex items-center gap-2">
+                <div className="mt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <Input
                     type="tel"
                     value={phoneValue}
                     onChange={(e) => setPhoneValue(e.target.value)}
                     placeholder="+355 6X XXX XXXX"
-                    className="max-w-xs"
+                    className="w-full sm:max-w-xs"
                   />
-                  <Button
-                    onClick={() => saveField("phone", phoneValue)}
-                    disabled={saving}
-                    size="sm"
-                  >
-                    {saving ? <Spinner size="sm" /> : "Ruaj"}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => { setEditingPhone(false); setPhoneValue(profile.phone || ""); }}
-                  >
-                    Anulo
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => saveField("phone", phoneValue)}
+                      disabled={saving}
+                      size="sm"
+                      className="flex-1 sm:flex-none min-h-[44px]"
+                    >
+                      {saving ? <Spinner size="sm" /> : "Ruaj"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { setEditingPhone(false); setPhoneValue(profile.phone || ""); }}
+                      className="flex-1 sm:flex-none min-h-[44px]"
+                    >
+                      Anulo
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <p className="text-sm font-medium text-foreground">
@@ -301,7 +309,7 @@ export default function ProfilePage() {
               )}
             </div>
             {!editingPhone && (
-              <Button variant="link" size="sm" onClick={() => setEditingPhone(true)}>
+              <Button variant="link" size="sm" onClick={() => setEditingPhone(true)} className="self-start sm:self-center min-h-[44px]">
                 <Pencil className="mr-1 h-3 w-3" />
                 Ndrysho
               </Button>
@@ -309,7 +317,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Organization */}
-          <div className="px-6 py-4">
+          <div className="px-4 sm:px-6 py-4">
             <p className="text-sm text-muted-foreground">Organizata</p>
             <p className="text-sm font-medium text-foreground">
               {profile.organizationName || "Individ"}
@@ -327,7 +335,7 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent className="divide-y divide-border p-0">
           {/* KYC Status */}
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4">
             <div>
               <p className="text-sm text-muted-foreground">Verifikimi i Identitetit (KYC)</p>
               <div className="mt-1">
@@ -342,7 +350,7 @@ export default function ProfilePage() {
           </div>
 
           {/* 2FA */}
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4">
             <div>
               <p className="text-sm text-muted-foreground">Autentifikimi me dy faktor (2FA)</p>
               <div className="mt-1">
@@ -359,7 +367,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Certificate */}
-          <div className="px-6 py-4">
+          <div className="px-4 sm:px-6 py-4">
             <div>
               <p className="text-sm text-muted-foreground">Certifikata Dixhitale</p>
               <div className="mt-1">
@@ -377,7 +385,7 @@ export default function ProfilePage() {
 
           {/* Change password - only for credentials users */}
           {profile.hasPassword && (
-            <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4">
               <div>
                 <p className="text-sm text-muted-foreground">Fjalekalimi</p>
                 <p className="text-sm text-muted-foreground">********</p>
@@ -401,7 +409,7 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent className="divide-y divide-border p-0">
           {/* Account created */}
-          <div className="px-6 py-4">
+          <div className="px-4 sm:px-6 py-4">
             <p className="text-sm text-muted-foreground">Llogaria u krijua me</p>
             <p className="text-sm font-medium text-foreground">
               {new Date(profile.createdAt).toLocaleDateString("sq-AL", {
@@ -413,7 +421,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Role */}
-          <div className="px-6 py-4">
+          <div className="px-4 sm:px-6 py-4">
             <p className="text-sm text-muted-foreground">Roli</p>
             <div className="mt-1">
               <Badge variant={roleConfig?.variant || "default"}>
@@ -423,34 +431,38 @@ export default function ProfilePage() {
           </div>
 
           {/* Notification channel */}
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-4 gap-2">
             <div className="flex-1">
               <p className="text-sm text-muted-foreground">Kanali i njoftimeve</p>
               {editingChannel ? (
-                <div className="mt-1 flex items-center gap-2">
+                <div className="mt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <select
                     value={channelValue}
                     onChange={(e) => setChannelValue(e.target.value)}
-                    className="rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="rounded-xl border border-border bg-muted px-4 py-3 sm:py-2.5 text-base sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px] sm:min-h-0 w-full sm:w-auto"
                   >
                     <option value="EMAIL">Email</option>
                     <option value="SMS">SMS</option>
                     <option value="SMS_VOICE">Thirrje zanore (SMS Voice)</option>
                   </select>
-                  <Button
-                    onClick={() => saveField("preferredNotificationChannel", channelValue)}
-                    disabled={saving}
-                    size="sm"
-                  >
-                    {saving ? <Spinner size="sm" /> : "Ruaj"}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => { setEditingChannel(false); setChannelValue(profile.preferredNotificationChannel); }}
-                  >
-                    Anulo
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => saveField("preferredNotificationChannel", channelValue)}
+                      disabled={saving}
+                      size="sm"
+                      className="flex-1 sm:flex-none min-h-[44px]"
+                    >
+                      {saving ? <Spinner size="sm" /> : "Ruaj"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { setEditingChannel(false); setChannelValue(profile.preferredNotificationChannel); }}
+                      className="flex-1 sm:flex-none min-h-[44px]"
+                    >
+                      Anulo
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <p className="text-sm font-medium text-foreground">
@@ -459,7 +471,7 @@ export default function ProfilePage() {
               )}
             </div>
             {!editingChannel && (
-              <Button variant="link" size="sm" onClick={() => setEditingChannel(true)}>
+              <Button variant="link" size="sm" onClick={() => setEditingChannel(true)} className="self-start sm:self-center min-h-[44px]">
                 <Pencil className="mr-1 h-3 w-3" />
                 Ndrysho
               </Button>

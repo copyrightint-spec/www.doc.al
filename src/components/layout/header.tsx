@@ -36,21 +36,22 @@ export function Header({
   const isAdminUser = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
   return (
-    <div className="fixed left-0 right-0 top-0 z-20 lg:left-[260px]">
+    <div className="fixed left-0 right-0 top-0 z-20 md:left-[260px]">
       <header
         className={cn(
-          "flex h-14 items-center justify-between border-b px-6 backdrop-blur-sm",
+          "flex h-12 items-center justify-between border-b px-4 backdrop-blur-sm md:h-14 md:px-6",
           isAdmin
             ? "border-slate-800 bg-slate-900/80"
             : "border-border bg-card/80"
         )}
       >
-        <div className="flex items-center gap-4">
-          <button className="lg:hidden" onClick={onMenuClick}>
+        <div className="flex items-center gap-3 md:gap-4">
+          {/* Hamburger only visible below md when sidebar is hidden */}
+          <button className="hidden" onClick={onMenuClick} aria-label="Open menu">
             <Menu className={cn("h-5 w-5", isAdmin ? "text-slate-400" : "text-muted-foreground")} />
           </button>
           <h1 className={cn(
-            "text-lg font-semibold",
+            "text-base font-semibold md:text-lg",
             isAdmin ? "text-slate-50" : "text-foreground"
           )}>
             {title}
@@ -85,11 +86,21 @@ export function Header({
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
                 <div className={cn(
-                  "absolute right-0 z-20 mt-2 w-56 rounded-xl border py-1 shadow-xl",
+                  "fixed inset-x-0 bottom-0 top-auto z-20 rounded-t-2xl border-t py-1 shadow-xl md:absolute md:inset-auto md:right-0 md:bottom-auto md:mt-2 md:w-56 md:rounded-xl md:border",
                   isAdmin
                     ? "border-slate-800 bg-slate-900"
                     : "border-border bg-card"
-                )}>
+                )}
+                  style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+                >
+                  {/* Mobile sheet handle */}
+                  <div className="flex justify-center py-2 md:hidden">
+                    <div className={cn(
+                      "h-1 w-10 rounded-full",
+                      isAdmin ? "bg-slate-700" : "bg-muted-foreground/30"
+                    )} />
+                  </div>
+
                   <div className={cn("border-b px-4 py-3", isAdmin ? "border-slate-800" : "border-border")}>
                     <p className={cn("text-sm font-medium", isAdmin ? "text-slate-100" : "text-foreground")}>
                       {user.name}
@@ -113,7 +124,7 @@ export function Header({
                       key={item.href}
                       href={item.href!}
                       className={cn(
-                        "flex items-center gap-2 px-4 py-2 text-sm transition-colors",
+                        "flex items-center gap-2 px-4 py-3 text-sm min-h-[44px] transition-colors md:py-2 md:min-h-0",
                         isAdmin
                           ? "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -128,7 +139,7 @@ export function Header({
                   {isAdminUser && !isAdmin && (
                     <Link
                       href="/admin"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                      className="flex items-center gap-2 px-4 py-3 text-sm min-h-[44px] text-muted-foreground hover:bg-muted hover:text-foreground md:py-2 md:min-h-0"
                       onClick={() => setMenuOpen(false)}
                     >
                       <Settings className="h-4 w-4" strokeWidth={1.5} />
@@ -139,7 +150,7 @@ export function Header({
                   {isAdmin && (
                     <Link
                       href="/dashboard"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-100"
+                      className="flex items-center gap-2 px-4 py-3 text-sm min-h-[44px] text-slate-400 hover:bg-slate-800 hover:text-slate-100 md:py-2 md:min-h-0"
                       onClick={() => setMenuOpen(false)}
                     >
                       <Home className="h-4 w-4" strokeWidth={1.5} />
@@ -151,7 +162,7 @@ export function Header({
                     <button
                       onClick={() => signOut({ callbackUrl: "/auth/login" })}
                       className={cn(
-                        "flex w-full items-center gap-2 px-4 py-2 text-sm",
+                        "flex w-full items-center gap-2 px-4 py-3 text-sm min-h-[44px] md:py-2 md:min-h-0",
                         isAdmin
                           ? "text-red-400 hover:bg-slate-800"
                           : "text-destructive hover:bg-muted"

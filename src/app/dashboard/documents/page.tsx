@@ -97,7 +97,7 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
+    <div className="mx-auto max-w-7xl space-y-4 sm:space-y-6 p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Dokumentat e Mia"
         subtitle={`${total} dokumente gjithsej`}
@@ -119,15 +119,15 @@ export default function DocumentsPage() {
       )}
 
       {/* Filter Tabs + Search */}
-      <div className="flex flex-wrap gap-3">
+      <div className="space-y-3">
         <Input
           type="text"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder="Kerko dokumenta..."
-          className="min-w-[200px] flex-1"
+          className="w-full"
         />
-        <div className="flex gap-1.5">
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
           {FILTER_TABS.map((tab) => (
             <Button
               key={tab.value}
@@ -135,6 +135,7 @@ export default function DocumentsPage() {
               size="sm"
               onClick={() => { setStatusFilter(tab.value); setPage(1); }}
               className={cn(
+                "flex-shrink-0 min-h-[44px]",
                 statusFilter !== tab.value && "bg-muted text-muted-foreground hover:bg-muted/80"
               )}
             >
@@ -174,15 +175,15 @@ export default function DocumentsPage() {
           {documents.map((doc) => {
             const status = DOCUMENT_STATUS[doc.status] || DOCUMENT_STATUS.DRAFT;
             return (
-              <Card key={doc.id} className="p-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-medium text-foreground">{doc.title}</h3>
+              <Card key={doc.id} className="p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                      <h3 className="font-medium text-foreground text-base sm:text-sm">{doc.title}</h3>
                       <Badge variant={status.variant}>{status.label}</Badge>
                     </div>
-                    <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                      <span>{doc.fileName}</span>
+                    <div className="mt-1.5 flex flex-wrap gap-2 sm:gap-3 text-xs text-muted-foreground">
+                      <span className="truncate max-w-[180px] sm:max-w-none">{doc.fileName}</span>
                       <span>{formatBytes(doc.fileSize)}</span>
                       <span>{formatDate(doc.createdAt)}</span>
                       <span>{doc._count.signatures} nenshkrime</span>
@@ -210,19 +211,17 @@ export default function DocumentsPage() {
                     )}
                   </div>
 
-                  <div className="ml-4 flex gap-2">
-                    <Button variant="secondary" size="sm" asChild>
-                      <Link href={`/dashboard/documents/${doc.id}`}>
-                        <Eye className="h-3.5 w-3.5" />
-                        Shiko
-                      </Link>
-                    </Button>
-                  </div>
+                  <Button variant="secondary" size="sm" asChild className="w-full sm:w-auto min-h-[44px] flex-shrink-0">
+                    <Link href={`/dashboard/documents/${doc.id}`}>
+                      <Eye className="h-3.5 w-3.5" />
+                      Shiko
+                    </Link>
+                  </Button>
                 </div>
 
-                <div className="mt-3 rounded-lg bg-muted px-3 py-2">
+                <div className="mt-3 rounded-lg bg-muted px-3 py-2 overflow-hidden">
                   <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">SHA-256: </span>
-                  <code className="font-mono text-xs text-muted-foreground">{doc.fileHash}</code>
+                  <code className="font-mono text-xs text-muted-foreground break-all sm:break-normal">{doc.fileHash}</code>
                 </div>
               </Card>
             );
@@ -239,11 +238,11 @@ export default function DocumentsPage() {
       )}
 
       {total > 20 && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">Faqja {page} nga {Math.ceil(total / 20)}</p>
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>Para</Button>
-            <Button variant="secondary" size="sm" onClick={() => setPage(page + 1)} disabled={page >= Math.ceil(total / 20)}>Pas</Button>
+            <Button variant="secondary" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="min-h-[44px] min-w-[44px]">Para</Button>
+            <Button variant="secondary" size="sm" onClick={() => setPage(page + 1)} disabled={page >= Math.ceil(total / 20)} className="min-h-[44px] min-w-[44px]">Pas</Button>
           </div>
         </div>
       )}

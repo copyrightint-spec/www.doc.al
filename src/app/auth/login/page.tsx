@@ -46,27 +46,27 @@ function LoginForm() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Minimal nav */}
-      <nav className="border-b border-border px-6 py-4">
+      <nav className="border-b border-border px-4 sm:px-6 py-3 sm:py-4">
         <div className="mx-auto max-w-6xl flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/docal-icon.png" unoptimized alt="doc.al" width={44} height={44} className="h-11 w-11" />
-            <span className="text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/docal-icon.png" unoptimized alt="doc.al" width={44} height={44} className="h-9 w-9 sm:h-11 sm:w-11" />
+            <span className="text-2xl sm:text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
           </Link>
           <Link
             href="/auth/register"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center"
           >
             Regjistrohu
           </Link>
         </div>
       </nav>
 
-      <div className="flex flex-1 items-center justify-center px-4 py-12">
+      <div className="flex flex-1 items-center justify-center px-4 py-6 sm:py-12">
         <Card className="w-full max-w-md">
-          <CardContent className="p-8">
-            <div className="mb-8 text-center">
-              <Image src="/docal-icon.png" unoptimized alt="doc.al" width={80} height={80} className="mx-auto h-20 w-20" />
-              <h1 className="mt-3 text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></h1>
+          <CardContent className="p-5 sm:p-8">
+            <div className="mb-6 sm:mb-8 text-center">
+              <Image src="/docal-icon.png" unoptimized alt="doc.al" width={80} height={80} className="mx-auto h-16 w-16 sm:h-20 sm:w-20" />
+              <h1 className="mt-3 text-2xl sm:text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 Nenshkrim Elektronik & Timestamp
               </p>
@@ -125,7 +125,7 @@ function LoginForm() {
                 className="flex justify-center"
               />
 
-              <Button type="submit" disabled={loading} className="w-full">
+              <Button type="submit" disabled={loading} className="w-full min-h-[48px]">
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -140,7 +140,7 @@ function LoginForm() {
               </Button>
             </form>
 
-            <div className="my-6 flex items-center gap-3">
+            <div className="my-5 sm:my-6 flex items-center gap-3">
               <div className="h-px flex-1 bg-border" />
               <span className="text-xs text-muted-foreground">ose</span>
               <div className="h-px flex-1 bg-border" />
@@ -148,7 +148,7 @@ function LoginForm() {
 
             <Button
               variant="secondary"
-              className="w-full"
+              className="w-full min-h-[48px]"
               onClick={() => signIn("google", { callbackUrl })}
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24">

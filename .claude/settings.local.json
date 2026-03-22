@@ -75,7 +75,9 @@
       "Bash(uipro init:*)",
       "Bash(printf '\\\\n')",
       "Bash(ssh ubuntu@37.187.226.220 \"ls /tmp/docal-build/src/lib/ 2>/dev/null | head -10\")",
-      "Bash(curl -s http://37.187.226.220:3000/api/certificates/public)"
+      "Bash(curl -s http://37.187.226.220:3000/api/certificates/public)",
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"document signing dashboard admin dark mode mobile app professional\" --design-system -p \"doc.al\")",
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"mobile app sidebar bottom navigation touch\" --domain ux -n 10)"
     ]
   }
 }
