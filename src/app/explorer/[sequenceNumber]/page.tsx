@@ -14,13 +14,13 @@ import {
   LogOut,
   Lock,
   Link as LinkIcon,
-  Server,
-  Box,
-  CheckCircle,
+  FileText,
+  Hexagon,
+  Globe,
+  ExternalLink,
   Clock,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ChainVisualization from "@/components/ChainVisualization";
@@ -54,6 +54,10 @@ interface EntryDetail {
   btcBlockHash: string | null;
   otsStatus: string;
   ipfsCid: string | null;
+  polygonTxHash: string | null;
+  polygonBlockNumber: number | null;
+  stamlesStatus: string | null;
+  stamlesBatchId: string | null;
   document: {
     title: string;
     fileName: string;
@@ -104,7 +108,7 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
     >
       {copied ? (
         <>
@@ -155,6 +159,213 @@ function formatDateShort(iso: string) {
   );
 }
 
+function truncateHash(hash: string) {
+  if (hash.length <= 16) return hash;
+  return hash.slice(0, 10) + "..." + hash.slice(-6);
+}
+
+interface HashTimelineItem {
+  step: number;
+  action: string;
+  icon: React.ComponentType<{ className?: string }>;
+  hash?: string;
+  cid?: string;
+  label: string;
+  sublabel?: string;
+  link?: string;
+  status: "completed" | "in-progress" | "pending";
+}
+
+function HashTimeline({ entry }: { entry: EntryDetail }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const timeline: HashTimelineItem[] = [];
+
+  // Step 1: Document hash
+  timeline.push({
+    step: 1,
+    action: "DOCUMENT",
+    icon: FileText,
+    hash: entry.fingerprint,
+    label: "Hash i Dokumentit (SHA-256)",
+    status: "completed",
+  });
+
+  // Step 2: Chain registration
+  timeline.push({
+    step: 2,
+    action: "CHAIN",
+    icon: LinkIcon,
+    hash: entry.sequentialFingerprint,
+    label: `Zinxhiri doc.al #${entry.sequenceNumber}`,
+    sublabel: entry.previousEntry
+      ? `Lidhur me #${entry.previousEntry.sequenceNumber}`
+      : "Genesis",
+    status: "completed",
+  });
+
+  // Step 3: Polygon
+  if (entry.polygonTxHash) {
+    timeline.push({
+      step: 3,
+      action: "POLYGON",
+      icon: Hexagon,
+      hash: entry.polygonTxHash,
+      label: "Polygon Blockchain",
+      sublabel: entry.polygonBlockNumber
+        ? `Block #${entry.polygonBlockNumber.toLocaleString()}`
+        : undefined,
+      link: `https://amoy.polygonscan.com/tx/${entry.polygonTxHash}`,
+      status: "completed",
+    });
+  } else {
+    timeline.push({
+      step: 3,
+      action: "POLYGON",
+      icon: Hexagon,
+      label: "Polygon Blockchain",
+      status: entry.stamlesStatus === "BATCHED" ? "in-progress" : "pending",
+    });
+  }
+
+  // Step 4: IPFS
+  if (entry.ipfsCid) {
+    timeline.push({
+      step: 4,
+      action: "IPFS",
+      icon: Globe,
+      cid: entry.ipfsCid,
+      label: "IPFS Proof",
+      link: `https://ipfs.io/ipfs/${entry.ipfsCid}`,
+      status: "completed",
+    });
+  } else {
+    timeline.push({
+      step: 4,
+      action: "IPFS",
+      icon: Globe,
+      label: "IPFS Proof",
+      status: "pending",
+    });
+  }
+
+  const dotColor = (status: string) => {
+    if (status === "completed") return "bg-green-500";
+    if (status === "in-progress") return "bg-blue-500 animate-pulse";
+    return "bg-slate-500";
+  };
+
+  const lineColor = (status: string) => {
+    if (status === "completed") return "bg-green-500/30";
+    if (status === "in-progress") return "bg-blue-500/30";
+    return "bg-border";
+  };
+
+  return (
+    <div>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 transition-colors min-h-[44px]"
+      >
+        <ChevronRight
+          className={cn(
+            "h-4 w-4 transition-transform",
+            expanded && "rotate-90"
+          )}
+        />
+        Shiko Kronologjine
+      </button>
+
+      {expanded && (
+        <div className="mt-3 pl-1">
+          {timeline.map((item, idx) => {
+            const Icon = item.icon;
+            const isLast = idx === timeline.length - 1;
+            const hashValue = item.hash || item.cid;
+
+            return (
+              <div key={item.step} className="relative flex gap-3">
+                {/* Vertical connector line */}
+                {!isLast && (
+                  <div
+                    className={cn(
+                      "absolute left-[7px] top-[20px] bottom-0 w-px",
+                      lineColor(item.status)
+                    )}
+                  />
+                )}
+
+                {/* Dot */}
+                <div className="relative z-10 flex-shrink-0 pt-1.5">
+                  <div
+                    className={cn("h-[14px] w-[14px] rounded-full", dotColor(item.status))}
+                  />
+                </div>
+
+                {/* Content */}
+                <div className={cn("flex-1 pb-4", isLast && "pb-0")}>
+                  <div className="flex items-center gap-2">
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">
+                      {item.label}
+                    </span>
+                    {item.status === "in-progress" && (
+                      <span className="text-[10px] text-blue-500">
+                        Ne perpunim...
+                      </span>
+                    )}
+                    {item.status === "pending" && (
+                      <span className="text-[10px] text-muted-foreground">
+                        Ne pritje
+                      </span>
+                    )}
+                  </div>
+
+                  {item.sublabel && (
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {item.sublabel}
+                    </p>
+                  )}
+
+                  {hashValue && (
+                    <div className="mt-1 flex items-center gap-1">
+                      {item.link ? (
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                        >
+                          {truncateHash(hashValue)}
+                        </a>
+                      ) : (
+                        <code className="font-mono text-xs text-muted-foreground">
+                          {truncateHash(hashValue)}
+                        </code>
+                      )}
+                      <CopyButton text={hashValue} />
+                      {item.link && (
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EntryDetailPage({
   params,
 }: {
@@ -166,7 +377,9 @@ export default function EntryDetailPage({
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [showIpfsPopup, setShowIpfsPopup] = useState(false);
-  const [ipfsData, setIpfsData] = useState<Record<string, unknown> | null>(null);
+  const [ipfsData, setIpfsData] = useState<Record<string, unknown> | null>(
+    null
+  );
   const [ipfsLoading, setIpfsLoading] = useState(false);
   const [ipfsError, setIpfsError] = useState<string | null>(null);
 
@@ -200,55 +413,21 @@ export default function EntryDetailPage({
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        {/* Skeleton Header */}
-        <header className="border-b border-border bg-card px-6 py-4">
-          <div className="mx-auto max-w-5xl flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <Skeleton className="h-11 w-11 rounded-xl" />
-              <Skeleton className="h-8 w-24" />
+        <header className="border-b border-border bg-card px-4 sm:px-6 py-3">
+          <div className="mx-auto max-w-4xl flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-8 w-8 rounded" />
+              <Skeleton className="h-6 w-24" />
             </div>
-            <Skeleton className="h-8 w-32 rounded-xl" />
+            <Skeleton className="h-8 w-24 rounded" />
           </div>
         </header>
-        <div className="mx-auto max-w-5xl px-6 py-6 space-y-6">
-          {/* Entry header skeleton */}
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-12 w-12 rounded-xl" />
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          </div>
-          {/* Security layers skeleton */}
-          <div className="grid gap-4 md:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="rounded-2xl border border-border bg-card p-5 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-                <Skeleton className="h-3 w-full" />
-                <Skeleton className="h-3 w-3/4" />
-              </div>
-            ))}
-          </div>
-          {/* Hash sections skeleton */}
-          <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-            <Skeleton className="h-3 w-32" />
-            <Skeleton className="h-10 w-full rounded-xl" />
-            <Skeleton className="h-3 w-40" />
-            <Skeleton className="h-10 w-full rounded-xl" />
-          </div>
-          {/* Chain visualization skeleton */}
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <Skeleton className="h-4 w-48 mb-4" />
-            <div className="flex items-center justify-center gap-4">
-              <Skeleton className="h-16 w-24 rounded-xl" />
-              <Skeleton className="h-1 w-12" />
-              <Skeleton className="h-20 w-28 rounded-xl" />
-              <Skeleton className="h-1 w-12" />
-              <Skeleton className="h-16 w-24 rounded-xl" />
-            </div>
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-4">
+          <Skeleton className="h-6 w-48" />
+          <div className="space-y-3">
+            <Skeleton className="h-16 w-full rounded-lg" />
+            <Skeleton className="h-16 w-full rounded-lg" />
+            <Skeleton className="h-32 w-full rounded-lg" />
           </div>
         </div>
       </div>
@@ -278,19 +457,19 @@ export default function EntryDetailPage({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with user avatar */}
-      <header className="border-b border-border bg-card px-6 py-4">
+      {/* Header */}
+      <header className="border-b border-border bg-card px-4 sm:px-6 py-3">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Link
               href="/explorer"
-              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
               Explorer
             </Link>
             <div className="h-4 w-px bg-border" />
-            <h1 className="text-lg font-bold text-foreground">
+            <h1 className="text-base font-bold text-foreground">
               Entry #{entry.sequenceNumber}
             </h1>
             <Badge
@@ -298,7 +477,7 @@ export default function EntryDetailPage({
                 entry.type === "SINGLE_FILE"
                   ? "info"
                   : entry.type === "SIGNATURE"
-                    ? "purple"
+                    ? "info"
                     : "success"
               }
             >
@@ -306,29 +485,25 @@ export default function EntryDetailPage({
             </Badge>
           </div>
 
-          {/* User section */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {userSession ? (
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 rounded-xl px-2 py-1.5 transition-colors hover:bg-muted"
+                  className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors"
                 >
                   {userSession.image ? (
                     <img
                       src={userSession.image}
                       alt=""
-                      className="h-8 w-8 rounded-full ring-2 ring-border"
+                      className="h-7 w-7 rounded-full ring-1 ring-border"
                     />
                   ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-sm font-bold text-slate-700 ring-2 ring-border dark:bg-slate-700 dark:text-slate-300">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-700 ring-1 ring-border dark:bg-slate-700 dark:text-slate-300">
                       {userSession.name.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <span className="hidden text-sm font-medium text-foreground sm:block">
-                    {userSession.name}
-                  </span>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
                 {userMenuOpen && (
                   <>
@@ -336,10 +511,10 @@ export default function EntryDetailPage({
                       className="fixed inset-0 z-10"
                       onClick={() => setUserMenuOpen(false)}
                     />
-                    <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-border bg-card py-1 shadow-xl">
+                    <div className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-border bg-card py-1 shadow-lg">
                       <Link
                         href="/dashboard"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <Home className="h-4 w-4" />
@@ -347,18 +522,18 @@ export default function EntryDetailPage({
                       </Link>
                       <Link
                         href="/settings/profile"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <User className="h-4 w-4" />
                         Profili im
                       </Link>
-                      <div className="mt-1 border-t border-border pt-1">
+                      <div className="border-t border-border mt-1 pt-1">
                         <button
                           onClick={() =>
                             signOut({ callbackUrl: "/auth/login" })
                           }
-                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-muted dark:text-red-400"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-muted dark:text-red-400"
                         >
                           <LogOut className="h-4 w-4" />
                           Dil nga llogaria
@@ -377,723 +552,542 @@ export default function EntryDetailPage({
         </div>
       </header>
 
-      <div className="mx-auto max-w-4xl space-y-6 px-6 py-8">
-        {/* ========== DUAL TIMESTAMP DISPLAY ========== */}
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Krahasimi i Timestamps
-            </h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              {/* Server Timestamp */}
-              <div className="rounded-xl border border-border bg-muted p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <Server className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Server Timestamp (UTC)
-                  </span>
-                </div>
-                <p className="text-lg font-medium text-foreground">
-                  {formatDateFull(entry.serverTimestamp)}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Koha e regjistrimit ne serverin doc.al
-                </p>
-              </div>
-
-              {/* Blockchain Timestamp */}
-              {entry.otsStatus === "CONFIRMED" ? (
-                <div className="rounded-xl border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20 p-4">
-                  <div className="mb-2 flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400">
-                      Polygon Blockchain - Konfirmuar
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-                    <p className="text-lg font-medium text-green-700 dark:text-green-300">
-                      On-Chain
-                    </p>
-                  </div>
-                  {(entry as unknown as { polygonTxHash?: string }).polygonTxHash && (
-                    <a
-                      href={`https://amoy.polygonscan.com/tx/${(entry as unknown as { polygonTxHash: string }).polygonTxHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 block font-mono text-xs text-green-600 dark:text-green-400 hover:underline break-all"
-                    >
-                      TX: {(entry as unknown as { polygonTxHash: string }).polygonTxHash}
-                    </a>
-                  )}
-                </div>
-              ) : (
-                <div className="rounded-xl border-2 border-dashed border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-950/20 p-5">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                      <Box className="h-6 w-6 text-blue-500 animate-pulse" />
-                      <span className="text-sm font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                        Ne Pritje
-                      </span>
-                    </div>
-                    <p className="text-lg font-bold text-blue-700 dark:text-blue-300 mb-2">
-                      Pritet konfirmimi nga STAMLES
-                    </p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 leading-relaxed max-w-sm mx-auto">
-                      STAMLES Decentralized Trust System po perpunon hash-in tuaj.
-                      Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle Tree dhe
-                      root-i dergohet ne Polygon blockchain.
-                    </p>
-                    <div className="mt-4 flex items-center justify-center gap-3">
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: "0.3s" }} />
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-300 animate-pulse" style={{ animationDelay: "0.6s" }} />
-                    </div>
-                    <a
-                      href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors"
-                    >
-                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                      Shiko Kontrakten ne PolygonScan
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Verification checkmark when both timestamps align */}
-            {entry.otsStatus === "CONFIRMED" && (
-              <div className="mt-4 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 dark:border-green-800/50 dark:bg-green-950/20">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-600">
-                  <CheckCircle className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-green-800 dark:text-green-300">
-                    Timestamps te verifikuara
-                  </p>
-                  <p className="text-xs text-green-700 dark:text-green-500/70">
-                    Timestamp i serverit dhe blockchain-it jane te lidhura
-                    kriptografikisht. Integriteti i te dhenave eshte i garantuar.
-                  </p>
-                </div>
-              </div>
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-4">
+        {/* Timestamp + Status */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          <p className="text-sm text-muted-foreground">
+            {formatDateFull(entry.serverTimestamp)}
+          </p>
+          <div className="flex items-center gap-2">
+            {entry.otsStatus === "CONFIRMED" || entry.stamlesStatus === "CONFIRMED" ? (
+              <Badge variant="success">
+                <span className="h-2 w-2 rounded-full bg-green-500" />
+                Konfirmuar ne Polygon
+              </Badge>
+            ) : entry.stamlesStatus === "BATCHED" ? (
+              <Badge variant="info">
+                <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                Ne Batch
+              </Badge>
+            ) : (
+              <Badge variant="default">
+                <span className="h-2 w-2 rounded-full bg-slate-400 animate-pulse" />
+                Ne Rradhe
+              </Badge>
             )}
-          </CardContent>
-        </Card>
-
-        {/* ========== CHAIN VISUALIZATION + HASH FORMULA ========== */}
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Zinxhiri i Integritetit
-            </h2>
-            <ChainVisualization
-              currentEntry={{
-                sequenceNumber: entry.sequenceNumber,
-                fingerprint: entry.fingerprint,
-                sequentialFingerprint: entry.sequentialFingerprint,
-                serverTimestamp: entry.serverTimestamp,
-              }}
-              previousEntry={entry.previousEntry}
-              nextEntry={entry.nextEntry}
-            />
-          </CardContent>
-        </Card>
-
-        {/* ========== 3 SECURITY LAYERS BADGES ========== */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-center">
-            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
-              <svg className="h-5 w-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </div>
-            <p className="text-xs font-bold text-blue-400">Polygon</p>
-            <p className="text-[9px] text-muted-foreground">Blockchain</p>
-          </div>
-          <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-center">
-            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
-              <svg className="h-5 w-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            </div>
-            <p className="text-xs font-bold text-blue-400">IPFS</p>
-            <p className="text-[9px] text-muted-foreground">Decentralized Proof</p>
-          </div>
-          <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-4 text-center">
-            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
-              <svg className="h-5 w-5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            </div>
-            <p className="text-xs font-bold text-green-400">STAMLES</p>
-            <p className="text-[9px] text-muted-foreground">Trust System</p>
+            {entry.ipfsCid && (
+              <Badge variant="info">IPFS</Badge>
+            )}
           </div>
         </div>
 
-        {/* ========== POLYGON BLOCKCHAIN ========== */}
-        <Card className="border-blue-500/20 overflow-hidden">
-          <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/50">
-                  <svg className="h-5 w-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                </div>
-                <div>
-                  <h3 className="font-bold text-blue-800 dark:text-blue-200">Polygon Blockchain</h3>
-                  <p className="text-[10px] text-blue-600 dark:text-blue-400">Merkle root i ruajtur on-chain</p>
-                </div>
-              </div>
-              <a href="https://amoy.polygonscan.com/address/0x62ab62912b89fA0aA3A1af3CF0dFAbAE3976EC85#events" target="_blank" rel="noopener noreferrer" className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors">
-                PolygonScan
-              </a>
-            </div>
-            <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 p-4 space-y-2 text-xs">
-              <div className="flex justify-between"><span className="text-blue-600 dark:text-blue-400">Kontrata</span><code className="font-mono text-[10px] text-foreground">StamlesTimestamp</code></div>
-              <div className="flex justify-between"><span className="text-blue-600 dark:text-blue-400">Network</span><span className="text-foreground">Polygon Amoy Testnet</span></div>
-              <div className="flex justify-between"><span className="text-blue-600 dark:text-blue-400">Address</span><code className="font-mono text-[10px] text-blue-400">0x62ab...EC85</code></div>
-            </div>
-            <p className="mt-3 text-[10px] text-blue-500 leading-relaxed">
-              Hash-i i dokumentit eshte ne STAMLES queue. Cdo 24 ore, te gjitha hash-et bashkohen ne nje Merkle tree dhe vetem root-i (32 byte) ruhet ne Polygon blockchain. Kjo provon ekzistencen e dokumentit pa ekspozuar permbajtjen.
-            </p>
-          </div>
-        </Card>
+        {/* Hashes */}
+        <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground">
+            Hash-et Kriptografike
+          </h2>
 
-        {/* ========== IPFS DECENTRALIZED PROOF ========== */}
-        {!entry.ipfsCid && (
-          <Card className="border-blue-500/20 overflow-hidden">
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/20 p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/50">
-                  <svg className="h-5 w-5 text-blue-600 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                </div>
-                <div>
-                  <h3 className="font-bold text-blue-800 dark:text-blue-200">IPFS Decentralized Proof</h3>
-                  <p className="text-[10px] text-blue-600 dark:text-blue-400">InterPlanetary File System - Distributed Storage Protocol</p>
-                </div>
-              </div>
-              <div className="rounded-xl bg-blue-100/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 p-4 text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Clock className="h-5 w-5 text-blue-500 animate-pulse" />
-                  <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">Ne Pritje</span>
-                </div>
-                <p className="text-xs text-blue-600 dark:text-blue-400 leading-relaxed max-w-md mx-auto">
-                  Prova IPFS do te publikohet automatikisht pas konfirmimit ne Polygon blockchain.
-                  IPFS (InterPlanetary File System) eshte nje protokol i decentralizuar per ruajtjen
-                  e te dhenave qe garanton qe prova e dokumentit tuaj te jete e aksesueshme globalisht dhe e pandryshueshme.
-                </p>
-              </div>
+          {/* Fingerprint */}
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs text-muted-foreground">
+                Fingerprint (SHA-256)
+              </span>
+              <CopyButton text={entry.fingerprint} />
             </div>
-          </Card>
-        )}
-        {entry.ipfsCid && (
-          <Card className="border-blue-500/20 overflow-hidden">
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/20 p-5">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/50">
-                    <svg className="h-5 w-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-blue-800 dark:text-blue-200">IPFS Decentralized Proof</h3>
-                    <p className="text-[10px] text-blue-600 dark:text-blue-400">Prove kriptografike e shperndare globalisht</p>
-                  </div>
-                </div>
-                <button
-                  onClick={async () => {
-                    setShowIpfsPopup(true);
-                    if (!ipfsData) {
-                      setIpfsLoading(true);
-                      setIpfsError(null);
-                      try {
-                        const res = await fetch(`https://ipfs.io/ipfs/${entry.ipfsCid}`);
-                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                        const data = await res.json();
-                        setIpfsData(data);
-                      } catch (err) {
-                        setIpfsError(err instanceof Error ? err.message : "Failed to fetch IPFS data");
-                      } finally {
-                        setIpfsLoading(false);
-                      }
-                    }
-                  }}
-                  className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
-                >
-                  Shiko ne IPFS
-                </button>
+            <div className="rounded bg-muted px-3 py-2">
+              <code className="break-all font-mono text-xs text-foreground">
+                {entry.fingerprint}
+              </code>
+            </div>
+          </div>
+
+          {/* Sequential Fingerprint */}
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs text-muted-foreground">
+                Sequential Fingerprint
+              </span>
+              <CopyButton text={entry.sequentialFingerprint} />
+            </div>
+            <div className="rounded bg-muted px-3 py-2">
+              <code className="break-all font-mono text-xs text-foreground">
+                {entry.sequentialFingerprint}
+              </code>
+            </div>
+          </div>
+
+          {/* Formula */}
+          <p className="text-xs text-muted-foreground border-t border-border pt-2">
+            Seq. Fingerprint = SHA-256(prevSeqFingerprint + fingerprint +
+            timestamp)
+          </p>
+        </div>
+
+        {/* Chain Visualization */}
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3">
+            Zinxhiri i Integritetit
+          </h2>
+          <ChainVisualization
+            currentEntry={{
+              sequenceNumber: entry.sequenceNumber,
+              fingerprint: entry.fingerprint,
+              sequentialFingerprint: entry.sequentialFingerprint,
+              serverTimestamp: entry.serverTimestamp,
+            }}
+            previousEntry={entry.previousEntry}
+            nextEntry={entry.nextEntry}
+          />
+        </div>
+
+        {/* Hash Timeline */}
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-2">
+            Kronologjia e Hash-eve
+          </h2>
+          <HashTimeline entry={entry} />
+        </div>
+
+        {/* Blockchain Status */}
+        <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground">
+            Statusi Blockchain
+          </h2>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            {/* Polygon */}
+            <div className="rounded-lg border border-border p-3">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span
+                  className={cn(
+                    "h-2 w-2 rounded-full",
+                    entry.stamlesStatus === "CONFIRMED"
+                      ? "bg-green-500"
+                      : "bg-blue-500 animate-pulse"
+                  )}
+                />
+                <span className="text-xs font-semibold text-foreground">
+                  Polygon
+                </span>
               </div>
-              <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 px-4 py-3 mb-3">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-blue-600 dark:text-blue-400">CID</span>
+              {entry.polygonTxHash ? (
+                <a
+                  href={`https://amoy.polygonscan.com/tx/${entry.polygonTxHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block font-mono text-[11px] text-blue-600 dark:text-blue-400 hover:underline break-all"
+                >
+                  TX: {truncateHash(entry.polygonTxHash)}
+                </a>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">
+                  Ne rradhe per Merkle batching
+                </p>
+              )}
+              {entry.polygonBlockNumber && (
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Block #{entry.polygonBlockNumber.toLocaleString()}
+                </p>
+              )}
+            </div>
+
+            {/* IPFS */}
+            <div className="rounded-lg border border-border p-3">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span
+                  className={cn(
+                    "h-2 w-2 rounded-full",
+                    entry.ipfsCid ? "bg-green-500" : "bg-slate-400"
+                  )}
+                />
+                <span className="text-xs font-semibold text-foreground">
+                  IPFS
+                </span>
+              </div>
+              {entry.ipfsCid ? (
+                <div>
+                  <button
+                    onClick={async () => {
+                      setShowIpfsPopup(true);
+                      if (!ipfsData) {
+                        setIpfsLoading(true);
+                        setIpfsError(null);
+                        try {
+                          const res = await fetch(
+                            `https://ipfs.io/ipfs/${entry.ipfsCid}`
+                          );
+                          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                          const data = await res.json();
+                          setIpfsData(data);
+                        } catch (err) {
+                          setIpfsError(
+                            err instanceof Error
+                              ? err.message
+                              : "Failed to fetch"
+                          );
+                        } finally {
+                          setIpfsLoading(false);
+                        }
+                      }
+                    }}
+                    className="font-mono text-[11px] text-blue-600 dark:text-blue-400 hover:underline break-all text-left"
+                  >
+                    {truncateHash(entry.ipfsCid)}
+                  </button>
                   <CopyButton text={entry.ipfsCid} />
                 </div>
-                <code className="block break-all font-mono text-xs text-blue-800 dark:text-blue-200">{entry.ipfsCid}</code>
-              </div>
-              {ipfsData && (
-                <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 px-4 py-3 mb-3 space-y-1.5">
-                  {(ipfsData as Record<string, unknown>).signedAt ? (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-blue-600 dark:text-blue-400">Krijuar me:</span>
-                      <span className="text-foreground font-medium">{formatDateShort(String((ipfsData as Record<string, unknown>).signedAt))}</span>
-                    </div>
-                  ) : null}
-                  {(ipfsData as Record<string, unknown>).version ? (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-blue-600 dark:text-blue-400">Version:</span>
-                      <span className="text-foreground font-medium">{String((ipfsData as Record<string, unknown>).version)}</span>
-                    </div>
-                  ) : null}
-                </div>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">Ne pritje</p>
               )}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-lg bg-white/40 dark:bg-slate-800/30 p-2.5">
-                  <span className="text-[9px] uppercase text-blue-500">Nenshkruesi</span>
-                  <p className="font-semibold text-foreground">{entry.signature ? entry.signature.signerName : "—"}</p>
+            </div>
+
+            {/* STAMLES */}
+            <div className="rounded-lg border border-border p-3">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span
+                  className={cn(
+                    "h-2 w-2 rounded-full",
+                    entry.stamlesStatus === "CONFIRMED"
+                      ? "bg-green-500"
+                      : "bg-blue-500 animate-pulse"
+                  )}
+                />
+                <span className="text-xs font-semibold text-foreground">
+                  STAMLES
+                </span>
+              </div>
+              <a
+                href={`https://scan.stamles.eu/verify/${entry.fingerprint}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Verifiko ne STAMLES
+              </a>
+            </div>
+          </div>
+
+          {/* Verification banner */}
+          {entry.otsStatus === "CONFIRMED" && (
+            <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 dark:border-green-800/50 dark:bg-green-950/20 px-3 py-2">
+              <Check className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <p className="text-xs text-green-800 dark:text-green-300">
+                Timestamp i verifikuar ne Polygon blockchain. Integriteti i te
+                dhenave eshte i garantuar.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Document */}
+        {entry.document && (
+          <div className="rounded-lg border border-border bg-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold text-muted-foreground">
+                Dokumenti
+              </h2>
+              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <Lock className="h-3 w-3" />
+                Private
+              </span>
+            </div>
+            <p className="text-sm font-medium text-foreground">
+              {entry.document.title}
+            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span>{entry.document.fileName}</span>
+              <span>{formatBytes(entry.document.fileSize)}</span>
+              <Badge
+                variant={
+                  entry.document.status === "COMPLETED"
+                    ? "success"
+                    : entry.document.status === "PENDING_SIGNATURE"
+                      ? "warning"
+                      : "default"
+                }
+              >
+                {entry.document.status.replace(/_/g, " ")}
+              </Badge>
+            </div>
+            {entry.document.fileHash && (
+              <div className="mt-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs text-muted-foreground">
+                    File Hash (SHA-256):
+                  </span>
+                  <CopyButton text={entry.document.fileHash} />
                 </div>
-                <div className="rounded-lg bg-white/40 dark:bg-slate-800/30 p-2.5">
-                  <span className="text-[9px] uppercase text-blue-500">Verifikimi</span>
-                  <div className="flex gap-1 mt-0.5">
-                    <span className="rounded bg-green-100 dark:bg-green-900/40 px-1 py-0.5 text-[8px] font-bold text-green-700 dark:text-green-400">eIDAS</span>
-                    <span className="rounded bg-green-100 dark:bg-green-900/40 px-1 py-0.5 text-[8px] font-bold text-green-700 dark:text-green-400">OTP</span>
-                    <span className="rounded bg-green-100 dark:bg-green-900/40 px-1 py-0.5 text-[8px] font-bold text-green-700 dark:text-green-400">2FA</span>
-                  </div>
+                <div className="rounded bg-muted px-3 py-2">
+                  <code className="break-all font-mono text-xs text-muted-foreground">
+                    {entry.document.fileHash}
+                  </code>
                 </div>
               </div>
-            </div>
-          </Card>
+            )}
+          </div>
         )}
 
-        {/* ========== IPFS POPUP MODAL ========== */}
+        {/* Signature */}
+        {entry.signature && (
+          <div className="rounded-lg border border-border bg-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold text-muted-foreground">
+                Nenshkruesi
+              </h2>
+              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <Lock className="h-3 w-3" />
+                Identiteti i maskuar
+              </span>
+            </div>
+            <p className="text-sm font-medium text-foreground">
+              {entry.signature.signerName}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {entry.signature.signerEmail}
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <Badge
+                variant={
+                  entry.signature.status === "SIGNED" ? "success" : "warning"
+                }
+              >
+                {entry.signature.status === "SIGNED"
+                  ? "Nenshkruar"
+                  : "Ne pritje"}
+              </Badge>
+              {entry.signature.signedAt && (
+                <span className="text-xs text-muted-foreground">
+                  {new Date(entry.signature.signedAt).toLocaleDateString(
+                    "en-GB"
+                  )}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Signing Timeline */}
+        {hasTimeline && (
+          <div className="rounded-lg border border-border bg-card p-4">
+            <h2 className="text-sm font-semibold text-muted-foreground mb-4">
+              Timeline e Nenshkrimeve
+            </h2>
+            <div className="relative">
+              {entry.documentSignatures!.map((sig, idx) => {
+                const isLast = idx === entry.documentSignatures!.length - 1;
+                const isSigned = sig.status === "SIGNED";
+                const isPending = sig.status === "PENDING";
+
+                return (
+                  <div key={idx} className="relative flex gap-3">
+                    {!isLast && (
+                      <div className="absolute bottom-0 left-[9px] top-[22px] w-px bg-border" />
+                    )}
+                    <div className="relative z-10 flex-shrink-0 pt-1">
+                      <div
+                        className={cn(
+                          "h-[18px] w-[18px] rounded-full flex items-center justify-center",
+                          isSigned
+                            ? "bg-green-600"
+                            : isPending
+                              ? "bg-blue-500 animate-pulse"
+                              : "bg-slate-400"
+                        )}
+                      >
+                        {isSigned ? (
+                          <Check className="h-3 w-3 text-white" />
+                        ) : (
+                          <Clock className="h-3 w-3 text-white" />
+                        )}
+                      </div>
+                    </div>
+                    <div className={cn("flex-1 pb-3", isLast && "pb-0")}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-foreground">
+                          {sig.signerName}
+                        </span>
+                        <Badge
+                          variant={
+                            isSigned
+                              ? "success"
+                              : isPending
+                                ? "warning"
+                                : "default"
+                          }
+                          className="text-[10px]"
+                        >
+                          {isSigned
+                            ? "Nenshkruar"
+                            : isPending
+                              ? "Ne pritje"
+                              : sig.status}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {sig.signerEmail}
+                      </p>
+                      {sig.signedAt && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {formatDateShort(sig.signedAt)}
+                        </p>
+                      )}
+                      {sig.timestampEntry && (
+                        <div className="mt-1 flex items-center gap-2">
+                          <Link
+                            href={`/explorer/${sig.timestampEntry.sequenceNumber}`}
+                            className="font-mono text-[10px] text-blue-600 dark:text-blue-400 hover:underline"
+                          >
+                            Entry #{sig.timestampEntry.sequenceNumber}
+                          </Link>
+                          <code className="font-mono text-[10px] text-muted-foreground/60">
+                            {sig.timestampEntry.fingerprint.slice(0, 16)}...
+                          </code>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* IPFS Popup Modal */}
         {showIpfsPopup && entry.ipfsCid && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
             onClick={() => setShowIpfsPopup(false)}
           >
             <div
-              className="relative mx-4 max-h-[85vh] w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl"
+              className="relative mx-4 max-h-[85vh] w-full max-w-2xl overflow-hidden rounded-lg border border-border bg-card shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-700 px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600/20">
-                    <svg className="h-4 w-4 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">IPFS Content</h3>
-                    <p className="text-[10px] text-slate-400 font-mono">{entry.ipfsCid.slice(0, 20)}...{entry.ipfsCid.slice(-8)}</p>
-                  </div>
+              <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-blue-500" />
+                  <span className="text-sm font-semibold text-foreground">
+                    IPFS Content
+                  </span>
+                  <code className="text-[10px] text-muted-foreground font-mono">
+                    {truncateHash(entry.ipfsCid)}
+                  </code>
                 </div>
                 <button
                   onClick={() => setShowIpfsPopup(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+                  className="h-8 w-8 flex items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 >
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <svg
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
               </div>
-
-              {/* Body */}
-              <div className="overflow-y-auto max-h-[60vh] p-6">
+              <div className="overflow-y-auto max-h-[60vh] p-4">
                 {ipfsLoading && (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-                    <p className="mt-3 text-sm text-slate-400">Duke marre te dhenat nga IPFS...</p>
+                  <div className="flex flex-col items-center py-8">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Duke marre te dhenat nga IPFS...
+                    </p>
                   </div>
                 )}
                 {ipfsError && (
-                  <div className="rounded-xl border border-red-800 bg-red-950/30 p-4 text-center">
-                    <p className="text-sm text-red-400">Gabim: {ipfsError}</p>
+                  <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-3 text-center">
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      Gabim: {ipfsError}
+                    </p>
                     <button
                       onClick={async () => {
                         setIpfsLoading(true);
                         setIpfsError(null);
                         try {
-                          const res = await fetch(`https://ipfs.io/ipfs/${entry.ipfsCid}`);
+                          const res = await fetch(
+                            `https://ipfs.io/ipfs/${entry.ipfsCid}`
+                          );
                           if (!res.ok) throw new Error(`HTTP ${res.status}`);
                           const data = await res.json();
                           setIpfsData(data);
                         } catch (err) {
-                          setIpfsError(err instanceof Error ? err.message : "Failed to fetch");
+                          setIpfsError(
+                            err instanceof Error
+                              ? err.message
+                              : "Failed to fetch"
+                          );
                         } finally {
                           setIpfsLoading(false);
                         }
                       }}
-                      className="mt-3 rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+                      className="mt-2 rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
                     >
                       Provo perseri
                     </button>
                   </div>
                 )}
                 {ipfsData && !ipfsLoading && (
-                  <div className="rounded-xl bg-slate-950 border border-slate-800 p-4 overflow-x-auto">
-                    <pre className="text-xs leading-relaxed font-mono whitespace-pre-wrap break-all">
-                      {(() => {
-                        const jsonStr = JSON.stringify(ipfsData, null, 2);
-                        const parts: { type: string; value: string }[] = [];
-                        // Simple JSON syntax highlighting via regex split
-                        const regex = /("(?:\\.|[^"\\])*"\s*:\s*)|("(?:\\.|[^"\\])*")|(\b(?:true|false|null)\b)|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g;
-                        let lastIndex = 0;
-                        let match;
-                        while ((match = regex.exec(jsonStr)) !== null) {
-                          if (match.index > lastIndex) {
-                            parts.push({ type: "punctuation", value: jsonStr.slice(lastIndex, match.index) });
-                          }
-                          if (match[1]) {
-                            parts.push({ type: "key", value: match[1] });
-                          } else if (match[2]) {
-                            parts.push({ type: "string", value: match[2] });
-                          } else if (match[3]) {
-                            parts.push({ type: "boolean", value: match[3] });
-                          } else if (match[4]) {
-                            parts.push({ type: "number", value: match[4] });
-                          }
-                          lastIndex = match.index + match[0].length;
-                        }
-                        if (lastIndex < jsonStr.length) {
-                          parts.push({ type: "punctuation", value: jsonStr.slice(lastIndex) });
-                        }
-                        return parts.map((part, i) => {
-                          const colorClass =
-                            part.type === "key" ? "text-blue-400" :
-                            part.type === "string" ? "text-green-400" :
-                            part.type === "boolean" ? "text-blue-400" :
-                            part.type === "number" ? "text-amber-400" :
-                            "text-slate-400";
-                          return <span key={i} className={colorClass}>{part.value}</span>;
-                        });
-                      })()}
+                  <div className="rounded-lg bg-muted p-3 overflow-x-auto">
+                    <pre className="text-xs leading-relaxed font-mono whitespace-pre-wrap break-all text-foreground">
+                      {JSON.stringify(ipfsData, null, 2)}
                     </pre>
                   </div>
                 )}
               </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between border-t border-slate-700 px-6 py-4">
+              <div className="flex items-center justify-between border-t border-border px-4 py-3">
                 <a
                   href={`https://ipfs.io/ipfs/${entry.ipfsCid}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  <ExternalLink className="h-3 w-3" />
                   Hap ne IPFS Gateway
                 </a>
                 {ipfsData && (
-                  <CopyButton text={JSON.stringify(ipfsData, null, 2)} label="Kopjo JSON" />
+                  <CopyButton
+                    text={JSON.stringify(ipfsData, null, 2)}
+                    label="Kopjo JSON"
+                  />
                 )}
               </div>
             </div>
           </div>
         )}
 
-        {/* ========== STAMLES - DECENTRALIZED TRUST SYSTEM ========== */}
-        <Card className="border-green-500/20 overflow-hidden">
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20 p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/50">
-                  <svg className="h-5 w-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                </div>
-                <div>
-                  <h3 className="font-bold text-green-800 dark:text-green-200">STAMLES - Decentralized Trust System</h3>
-                  <p className="text-[10px] text-green-600 dark:text-green-400">Merkle tree batching + Polygon blockchain</p>
-                </div>
-              </div>
-              <a href={`https://scan.stamles.eu/verify/${entry.fingerprint}`} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 transition-colors">
-                Shiko ne STAMLES
-              </a>
-            </div>
+        {/* Chain Navigation */}
+        <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
+          {entry.previousEntry ? (
+            <Link href={`/explorer/${entry.previousEntry.sequenceNumber}`}>
+              <Button variant="secondary" size="sm" className="gap-1 min-h-[44px]">
+                <ChevronLeft className="h-4 w-4" />
+                #{entry.previousEntry.sequenceNumber}
+              </Button>
+            </Link>
+          ) : (
+            <span className="text-xs text-muted-foreground">Genesis Entry</span>
+          )}
 
-            <div className="rounded-xl bg-white/60 dark:bg-slate-800/50 p-4 space-y-3">
-              <p className="text-xs text-green-700 dark:text-green-300 leading-relaxed">
-                Hash-i i dokumentit eshte i regjistruar ne STAMLES. Cdo 24 ore, te gjitha hash-et bashkohen ne nje
-                <strong> Merkle Tree</strong> dhe vetem <strong>Root-i</strong> (32 byte) ruhet ne <strong>Polygon blockchain</strong>.
-                Nje transaksion i vetem provon mijera dokumenta.
-              </p>
+          <span className="hidden items-center gap-1 text-xs text-muted-foreground md:flex">
+            <LinkIcon className="h-3.5 w-3.5" />
+            Chain kriptografike
+          </span>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <a href={`https://scan.stamles.eu/verify/${entry.fingerprint}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg bg-green-100/50 dark:bg-green-900/20 p-3 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-200 dark:bg-green-800/50">
-                    <svg className="h-4 w-4 text-green-700 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-green-700 dark:text-green-300 group-hover:underline">Verifiko ne STAMLES</p>
-                    <p className="text-[9px] text-green-600 dark:text-green-500">Merkle proof + Polygon TX</p>
-                  </div>
-                </a>
-                <a href="https://scan.stamles.eu/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg bg-green-100/50 dark:bg-green-900/20 p-3 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-200 dark:bg-green-800/50">
-                    <svg className="h-4 w-4 text-green-700 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-green-700 dark:text-green-300 group-hover:underline">STAMLES Explorer</p>
-                    <p className="text-[9px] text-green-600 dark:text-green-500">Blocks, hashes, transactions</p>
-                  </div>
-                </a>
-              </div>
-
-              <div className="mt-2 rounded-lg bg-white/40 dark:bg-slate-800/40 p-3">
-                <p className="text-[9px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400 mb-2">Si funksionon</p>
-                <div className="space-y-1.5 text-[10px] text-green-700 dark:text-green-300">
-                  <div className="flex items-center gap-2"><span className="flex h-4 w-4 items-center justify-center rounded bg-green-200 dark:bg-green-800 text-[8px] font-black">1</span>Hash-i i dokumentit dergohet ne STAMLES</div>
-                  <div className="flex items-center gap-2"><span className="flex h-4 w-4 items-center justify-center rounded bg-green-200 dark:bg-green-800 text-[8px] font-black">2</span>Bashkohet me hash-e te tjera ne Merkle Tree</div>
-                  <div className="flex items-center gap-2"><span className="flex h-4 w-4 items-center justify-center rounded bg-green-200 dark:bg-green-800 text-[8px] font-black">3</span>Vetem Root (32 byte) shkon ne Polygon</div>
-                  <div className="flex items-center gap-2"><span className="flex h-4 w-4 items-center justify-center rounded bg-green-200 dark:bg-green-800 text-[8px] font-black">4</span>Merkle proof provon hash-in tuaj kundrejt root-it on-chain</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* ========== DOCUMENT ========== */}
-        {entry.document && (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Dokumenti i lidhur
-                </h2>
-                <span className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[10px] font-medium text-muted-foreground">
-                  <Lock className="h-3 w-3" />
-                  Te dhenat jane te maskuara per privatesi
-                </span>
-              </div>
-              <div className="mt-3 flex items-center gap-3">
-                <Badge variant="default" className="text-sm font-bold">
-                  {entry.document.fileType}
-                </Badge>
-                <div>
-                  <p className="text-lg font-medium text-foreground">
-                    {entry.document.title}
-                  </p>
-                  <div className="mt-1 flex flex-wrap gap-3 text-sm text-muted-foreground">
-                    <span>{entry.document.fileName}</span>
-                    <span>{formatBytes(entry.document.fileSize)}</span>
-                    <Badge
-                      variant={
-                        entry.document.status === "COMPLETED"
-                          ? "success"
-                          : entry.document.status === "PENDING_SIGNATURE"
-                            ? "warning"
-                            : "default"
-                      }
-                    >
-                      {entry.document.status.replace(/_/g, " ")}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              {entry.document.fileHash && (
-                <div className="mt-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
-                      File Hash (SHA-256):
-                    </span>
-                    <CopyButton text={entry.document.fileHash} />
-                  </div>
-                  <div className="mt-1 rounded-xl bg-muted px-3 py-2">
-                    <code className="break-all font-mono text-xs text-muted-foreground">
-                      {entry.document.fileHash}
-                    </code>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* ========== SIGNATURE ========== */}
-        {entry.signature && (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Nenshkruesi
-                </h2>
-                <span className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[10px] font-medium text-muted-foreground">
-                  <Lock className="h-3 w-3" />
-                  Identiteti i maskuar
-                </span>
-              </div>
-              <div className="mt-3">
-                <p className="text-lg font-medium text-foreground">
-                  {entry.signature.signerName}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {entry.signature.signerEmail}
-                </p>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-3 text-sm">
-                <Badge
-                  variant={
-                    entry.signature.status === "SIGNED" ? "success" : "warning"
-                  }
-                >
-                  {entry.signature.status === "SIGNED"
-                    ? "Nenshkruar"
-                    : "Ne pritje"}
-                </Badge>
-                {entry.signature.signedAt && (
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(entry.signature.signedAt).toLocaleDateString(
-                      "en-GB"
-                    )}
-                  </span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* ========== SIGNING TIMELINE ========== */}
-        {hasTimeline && (
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="mb-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Timeline e Nenshkrimeve
-              </h2>
-
-              <div className="relative">
-                {entry.documentSignatures!.map((sig, idx) => {
-                  const isLast =
-                    idx === entry.documentSignatures!.length - 1;
-                  const isSigned = sig.status === "SIGNED";
-                  const isPending = sig.status === "PENDING";
-
-                  return (
-                    <div key={idx} className="relative flex gap-4">
-                      {/* Vertical line */}
-                      {!isLast && (
-                        <div className="absolute bottom-0 left-[15px] top-[32px] w-0.5 bg-border" />
-                      )}
-
-                      {/* Node */}
-                      <div className="relative z-10 flex-shrink-0 pt-1">
-                        {isSigned ? (
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-600 shadow-lg shadow-green-600/20">
-                            <Check className="h-4 w-4 text-white" />
-                          </div>
-                        ) : isPending ? (
-                          <div className="flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-yellow-600 shadow-lg shadow-yellow-600/20">
-                            <Clock className="h-4 w-4 text-white" />
-                          </div>
-                        ) : (
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-300 dark:bg-slate-700">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Content */}
-                      <div
-                        className={cn(
-                          "mb-4 flex-1 rounded-xl border p-4",
-                          isSigned
-                            ? "border-green-200 bg-green-50 dark:border-green-800/50 dark:bg-green-950/20"
-                            : isPending
-                              ? "border-yellow-200 bg-yellow-50 dark:border-yellow-800/50 dark:bg-yellow-950/20"
-                              : "border-border bg-muted"
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-foreground">
-                              {sig.signerName}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {sig.signerEmail}
-                            </span>
-                          </div>
-                          <Badge
-                            variant={
-                              isSigned
-                                ? "success"
-                                : isPending
-                                  ? "warning"
-                                  : "default"
-                            }
-                            className="text-[10px]"
-                          >
-                            {isSigned
-                              ? "Nenshkruar"
-                              : isPending
-                                ? "Ne pritje"
-                                : sig.status}
-                          </Badge>
-                        </div>
-
-                        {sig.signedAt && (
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            Nenshkruar me: {formatDateShort(sig.signedAt)}
-                          </p>
-                        )}
-
-                        {sig.timestampEntry && (
-                          <div className="mt-2 flex flex-wrap items-center gap-2">
-                            <Link
-                              href={`/explorer/${sig.timestampEntry.sequenceNumber}`}
-                              className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-1 font-mono text-[10px] text-blue-600 transition-colors hover:bg-slate-200 dark:text-blue-400 dark:hover:bg-slate-700"
-                            >
-                              Entry #{sig.timestampEntry.sequenceNumber}
-                            </Link>
-                            <Badge
-                              variant={
-                                sig.timestampEntry.otsStatus === "CONFIRMED"
-                                  ? "success"
-                                  : "warning"
-                              }
-                              className="text-[9px]"
-                            >
-                              {sig.timestampEntry.otsStatus === "CONFIRMED"
-                                ? `Polygon #${sig.timestampEntry.btcBlockHeight}`
-                                : "Polygon Queued"}
-                            </Badge>
-                            <code className="font-mono text-[9px] text-muted-foreground/60">
-                              hash:{" "}
-                              {sig.timestampEntry.fingerprint.slice(0, 16)}...
-                            </code>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* ========== CHAIN NAVIGATION ========== */}
-        <Card>
-          <CardContent className="flex items-center justify-between p-6">
-            {entry.previousEntry ? (
-              <Link href={`/explorer/${entry.previousEntry.sequenceNumber}`}>
-                <Button variant="secondary" className="gap-2">
-                  <ChevronLeft className="h-4 w-4" />
-                  Entry #{entry.previousEntry.sequenceNumber}
-                </Button>
-              </Link>
-            ) : (
-              <span className="rounded-xl bg-muted px-4 py-2 text-sm font-medium text-muted-foreground">
-                Genesis Entry
-              </span>
-            )}
-
-            <span className="hidden items-center gap-1 text-xs text-muted-foreground md:flex">
-              <LinkIcon className="h-4 w-4" />
-              Chain kriptografike
-            </span>
-
-            {entry.nextEntry ? (
-              <Link href={`/explorer/${entry.nextEntry.sequenceNumber}`}>
-                <Button variant="secondary" className="gap-2">
-                  Entry #{entry.nextEntry.sequenceNumber}
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            ) : (
-              <span className="rounded-xl bg-muted px-4 py-2 text-sm font-medium text-muted-foreground">
-                Latest Entry
-              </span>
-            )}
-          </CardContent>
-        </Card>
+          {entry.nextEntry ? (
+            <Link href={`/explorer/${entry.nextEntry.sequenceNumber}`}>
+              <Button variant="secondary" size="sm" className="gap-1 min-h-[44px]">
+                #{entry.nextEntry.sequenceNumber}
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          ) : (
+            <span className="text-xs text-muted-foreground">Latest Entry</span>
+          )}
+        </div>
       </div>
     </div>
   );
