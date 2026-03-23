@@ -40,6 +40,13 @@ export async function GET(
       return NextResponse.json({ error: "Nuk keni akses" }, { status: 403 });
     }
 
+    if (!document.fileUrl) {
+      return NextResponse.json(
+        { error: "Ky dokument nuk eshte me i disponueshem per shkarkim. Per arsye privatesi, dokumentet fshihen pas dergimit me email." },
+        { status: 410 }
+      );
+    }
+
     const buffer = await getFileBuffer(document.fileUrl);
 
     await prisma.auditLog.create({
