@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendVerificationCode, sendSigningCompleted, sendSignedDocument } from "@/lib/email";
-import { getFileBuffer, deleteFile } from "@/lib/s3";
-import { createTimestamp } from "@/lib/timestamp/engine";
+import { getFileBuffer, uploadFile, deleteFile } from "@/lib/s3";
+import { computeSHA256, createTimestamp } from "@/lib/timestamp/engine";
 import { rateLimit } from "@/lib/rate-limit";
 import { buildProofMetadata, publishToIPFS } from "@/lib/ipfs";
 import { submitToStamles } from "@/lib/stamles";
+import { signPdf } from "@/lib/crypto/pdf-signer";
+import { generateUserCertificate } from "@/lib/crypto/certificates";
 import crypto from "crypto";
 
 export async function POST(
@@ -96,6 +98,36 @@ export async function POST(
         return NextResponse.json({ error: "Kodi i pavlefshem ose i skaduar" }, { status: 400 });
       }
 
+      // Check if signer has TOTP enabled and verify 2FA code
+      // Do this BEFORE marking OTP as used, so OTP stays valid if TOTP is missing
+      if (user) {
+        const signerUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { totpEnabled: true, totpSecret: true },
+        });
+
+        if (signerUser?.totpEnabled && signerUser.totpSecret) {
+          const totpCode = body.totpCode;
+          if (!totpCode) {
+            // TOTP required but not provided - don't consume OTP, let frontend show TOTP step
+            return NextResponse.json(
+              { error: "Kodi 2FA eshte i detyrueshem per nenshkrim", requireTotp: true },
+              { status: 400 }
+            );
+          }
+
+          const { verifyTotp } = await import("@/lib/totp");
+          const isValid = verifyTotp(signerUser.totpSecret, totpCode);
+          if (!isValid) {
+            return NextResponse.json(
+              { error: "Kodi 2FA nuk eshte i sakte", requireTotp: true },
+              { status: 400 }
+            );
+          }
+        }
+      }
+
+      // Mark OTP as used only after all verification passes
       await prisma.verificationCode.update({
         where: { id: verification.id },
         data: { used: true },
@@ -187,9 +219,8 @@ export async function POST(
             select: { signerEmail: true, signerName: true },
           });
           const baseUrl = process.env.NEXTAUTH_URL || "https://doc.al";
-          const verifyUrl = `${baseUrl}/verify/${signature.document.fileHash}`;
 
-          // Get the signed PDF for attachment
+          // 1. Get original PDF from S3
           let pdfBuffer: Buffer | null = null;
           try {
             pdfBuffer = await getFileBuffer(signature.document.fileUrl);
@@ -197,6 +228,109 @@ export async function POST(
             console.error("[sign] Failed to fetch PDF for email attachment");
           }
 
+          // 2. Apply doc.al visual stamp + PAdES digital signature
+          let finalDocHash = signature.document.fileHash;
+          if (pdfBuffer) {
+            // Find the document owner's certificate (or generate one)
+            let ownerCert = await prisma.certificate.findFirst({
+              where: {
+                userId: signature.document.ownerId,
+                revoked: false,
+                validTo: { gt: new Date() },
+                type: "PERSONAL",
+              },
+              orderBy: { createdAt: "desc" },
+            });
+
+            if (!ownerCert) {
+              // Generate a certificate for the document owner
+              try {
+                const owner = await prisma.user.findUnique({
+                  where: { id: signature.document.ownerId },
+                  select: { name: true, email: true, organization: { select: { name: true } } },
+                });
+                if (owner) {
+                  const certResult = await generateUserCertificate(signature.document.ownerId, {
+                    commonName: owner.name || owner.email || "doc.al User",
+                    organization: owner.organization?.name,
+                    country: "AL",
+                    validityYears: 2,
+                    type: "PERSONAL",
+                  });
+                  ownerCert = await prisma.certificate.findUnique({
+                    where: { id: certResult.certificateId },
+                  });
+                }
+              } catch (certGenErr) {
+                console.error("[sign] Certificate generation failed:", certGenErr);
+              }
+            }
+
+            if (ownerCert) {
+              try {
+                const originalHash = computeSHA256(pdfBuffer);
+                const signResult = await signPdf(pdfBuffer, {
+                  certificateId: ownerCert.id,
+                  signerName: "doc.al Platform",
+                  reason: `Kontrate me ${allSignatures.length} pale - te gjitha te nenshkruara`,
+                  location: "doc.al Platform",
+                  documentHashForQR: originalHash,
+                });
+
+                pdfBuffer = signResult.signedPdfBuffer;
+                finalDocHash = signResult.documentHash;
+                const certInfo = signResult.certificateInfo;
+                console.log("[sign] PAdES signature applied, cert:", certInfo.serialNumber);
+
+                // Update document with new hash and hash timeline
+                const docMeta = (signature.document.metadata as Record<string, unknown>) || {};
+                await prisma.document.update({
+                  where: { id: signature.documentId },
+                  data: {
+                    fileHash: finalDocHash,
+                    metadata: {
+                      ...docMeta,
+                      cryptoSigned: true,
+                      certificateSerial: certInfo.serialNumber,
+                      hashTimeline: {
+                        originalFile: {
+                          hash: originalHash,
+                          timestamp: new Date().toISOString(),
+                          label: "PDF origjinal",
+                        },
+                        cryptoSigned: {
+                          hash: finalDocHash,
+                          timestamp: new Date().toISOString(),
+                          label: "Nenshkrim PAdES (kontrate me shume pale)",
+                          certificateSerial: certInfo.serialNumber,
+                        },
+                      },
+                    },
+                  },
+                });
+
+                // Re-upload stamped PDF to S3
+                await uploadFile(signature.document.fileUrl, pdfBuffer, "application/pdf");
+                console.log("[sign] Stamped PDF re-uploaded to S3");
+              } catch (signErr) {
+                console.error("[sign] PAdES signing failed, sending unstamped PDF:", signErr);
+                // Continue with the original PDF
+              }
+            } else {
+              console.warn("[sign] No certificate available, sending unstamped PDF");
+            }
+
+            // Submit to STAMLES (Polygon blockchain) for the completed document
+            try {
+              await submitToStamles(finalDocHash, signature.documentId, "document");
+            } catch (stamlesErr) {
+              console.error("[sign] STAMLES submit for completed doc failed (non-critical):", stamlesErr);
+            }
+          }
+
+          const verifyUrl = `${baseUrl}/verify/${finalDocHash}`;
+
+          // 3. Send emails with stamped PDF
           for (const sig of allSignatures) {
             // Send completion notification
             await sendSigningCompleted(
@@ -218,13 +352,14 @@ export async function POST(
                 verifyUrl,
                 {
                   documentId: signature.documentId,
-                  documentHash: signature.document.fileHash,
+                  documentHash: finalDocHash,
                   sequenceNumber: timestampEntry.sequenceNumber,
                 }
               );
             }
           }
-          // Delete PDFs from S3 after successful email delivery (privacy)
+
+          // 4. Delete PDFs from S3 after successful email delivery (privacy)
           try {
             if (signature.document.fileUrl) {
               await deleteFile(signature.document.fileUrl);

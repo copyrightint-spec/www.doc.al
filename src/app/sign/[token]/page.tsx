@@ -51,7 +51,7 @@ interface SignatureInfo {
   };
 }
 
-type Step = "welcome" | "preview" | "verify" | "sign" | "done";
+type Step = "welcome" | "preview" | "verify" | "totp" | "sign" | "done";
 type VerifyMethod = "EMAIL" | "SMS" | "SMS_VOICE";
 
 export default function SignPage({
@@ -73,6 +73,8 @@ export default function SignPage({
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [totpCode, setTotpCode] = useState("");
+  const [requireTotp, setRequireTotp] = useState(false);
 
   // Brand theming
   const brandColor = info?.signingRequest?.brandColor || "#dc2626";
@@ -183,19 +185,28 @@ export default function SignPage({
     setError("");
     const canvas = canvasRef.current;
     const signatureImage = canvas?.toDataURL("image/png").split(",")[1] || "";
+    const payload: Record<string, string> = {
+      action: "verify-and-sign",
+      code: otpCode,
+      signatureImage,
+    };
+    if (totpCode) {
+      payload.totpCode = totpCode;
+    }
     const res = await fetch(`/api/sign/${token}/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "verify-and-sign",
-        code: otpCode,
-        signatureImage,
-      }),
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     setActionLoading(false);
     if (res.ok && data.success) {
       setStep("done");
+    } else if (data.requireTotp && !totpCode) {
+      // User has TOTP enabled - show TOTP verification step
+      setRequireTotp(true);
+      setStep("totp");
+      setError("");
     } else {
       setError(data.error);
     }
@@ -207,6 +218,7 @@ export default function SignPage({
       { key: "welcome", label: "Dokumenti" },
       { key: "preview", label: "Shqyrto" },
       { key: "verify", label: "Verifiko" },
+      ...(requireTotp ? [{ key: "totp", label: "2FA" }] : []),
       { key: "sign", label: "Nenshkruaj" },
     ];
     const currentIdx = steps.findIndex((s) => s.key === step);
@@ -635,6 +647,67 @@ export default function SignPage({
 
             <button
               onClick={() => { setStep("preview"); setOtpSent(false); setOtpCode(""); }}
+              className="w-full rounded-xl border border-slate-300 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300"
+            >
+              Kthehu mbrapa
+            </button>
+          </div>
+        )}
+
+        {/* Step: TOTP 2FA Verification */}
+        {step === "totp" && info && (
+          <div className="space-y-4">
+            <Card>
+              <CardContent>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: brandColor + "15" }}>
+                    <ShieldCheck className="h-5 w-5" style={{ color: brandColor }} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                      Verifikim 2FA
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Hapi shtese i sigurise
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Llogaria juaj ka verifikimin me dy faktore te aktivizuar. Fusni kodin 6-shifror nga aplikacioni Google Authenticator.
+                </p>
+
+                <div className="mt-6">
+                  <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Kodi 2FA:
+                  </label>
+                  <input
+                    type="text"
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="000000"
+                    maxLength={6}
+                    autoFocus
+                    className="w-full rounded-xl border-2 border-slate-300 px-4 py-4 text-center text-2xl font-mono tracking-[0.5em] transition-colors focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                    style={{ borderColor: totpCode.length === 6 ? brandColor : undefined }}
+                  />
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (totpCode.length === 6) setStep("sign");
+                  }}
+                  disabled={totpCode.length !== 6}
+                  className="mt-6 w-full rounded-xl py-4 text-sm font-semibold text-white shadow-lg transition-all hover:shadow-xl active:scale-[0.98] disabled:opacity-50"
+                  style={{ backgroundColor: brandColor }}
+                >
+                  Vazhdo me nenshkrim
+                </button>
+              </CardContent>
+            </Card>
+
+            <button
+              onClick={() => { setStep("verify"); setTotpCode(""); }}
               className="w-full rounded-xl border border-slate-300 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300"
             >
               Kthehu mbrapa
