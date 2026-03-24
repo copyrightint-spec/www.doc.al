@@ -31,37 +31,51 @@ export async function submitToStamles(
   sourceId?: string,
   sourceType?: string
 ): Promise<StamlesSubmitResult | null> {
-  try {
-    const response = await fetch(`${STAMLES_URL}/api/v1/submit`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${STAMLES_KEY}`,
-      },
-      body: JSON.stringify({
-        hash: hash.toLowerCase(),
-        sourceId,
-        sourceType,
-      }),
-      signal: AbortSignal.timeout(10000),
-    });
+  const maxRetries = 3;
 
-    if (!response.ok) {
-      console.error(`[STAMLES] Submit failed: ${response.status}`);
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(`${STAMLES_URL}/api/v1/submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${STAMLES_KEY}`,
+        },
+        body: JSON.stringify({
+          hash: hash.toLowerCase(),
+          sourceId,
+          sourceType,
+        }),
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!response.ok) {
+        console.error(`[STAMLES] Submit failed (attempt ${attempt}/${maxRetries}): ${response.status}`);
+        if (attempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, 1000 * attempt));
+          continue;
+        }
+        return null;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        console.log(`[STAMLES] Hash submitted: ${hash.slice(0, 16)}... → ${data.data.status}`);
+        return data.data;
+      }
+
+      return null;
+    } catch (error) {
+      console.error(`[STAMLES] Submit error (attempt ${attempt}/${maxRetries}):`, error instanceof Error ? error.message : "unknown");
+      if (attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, 1000 * attempt));
+        continue;
+      }
       return null;
     }
-
-    const data = await response.json();
-    if (data.success) {
-      console.log(`[STAMLES] Hash submitted: ${hash.slice(0, 16)}... → ${data.data.status}`);
-      return data.data;
-    }
-
-    return null;
-  } catch (error) {
-    console.error("[STAMLES] Submit error:", error instanceof Error ? error.message : "unknown");
-    return null;
   }
+
+  return null;
 }
 
 /**

@@ -72,7 +72,21 @@ export async function GET(req: NextRequest) {
       try {
         const result = await verifyOnStamles(entry.fingerprint);
 
-        if (!result) continue;
+        // If STAMLES doesn't know this hash, re-submit it
+        if (!result) {
+          try {
+            const { submitToStamles } = await import("@/lib/stamles");
+            await submitToStamles(
+              entry.fingerprint,
+              entry.document?.id || entry.id,
+              "retry"
+            );
+            console.log(`[check-stamles] Re-submitted missing hash ${entry.fingerprint.slice(0, 16)}...`);
+          } catch (submitErr) {
+            errors.push(`Re-submit failed for ${entry.fingerprint.slice(0, 16)}: ${submitErr instanceof Error ? submitErr.message : "unknown"}`);
+          }
+          continue;
+        }
 
         if ((result.verified || result.status === "CONFIRMED") && result.polygonTxHash) {
           // Get previous entry for chain linking
