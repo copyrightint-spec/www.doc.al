@@ -503,7 +503,8 @@ export default function AdminUsersPage() {
                               </Button>
                             )}
 
-                            {/* Delete User */}
+                            {/* Delete User - SUPER_ADMIN only */}
+                            {currentUserRole === "SUPER_ADMIN" && (
                             <div className="mt-6 border-t border-border pt-4">
                               <h4 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2">Zona e Rrezikshme</h4>
                               {confirmDelete === user.id ? (
@@ -550,6 +551,7 @@ export default function AdminUsersPage() {
                                 </Button>
                               )}
                             </div>
+                            )}
                           </div>
                         </div>
                       </td>

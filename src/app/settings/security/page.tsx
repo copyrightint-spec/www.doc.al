@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ShieldCheck, Lock, KeyRound, Check } from "lucide-react";
+import { ShieldCheck, Lock, KeyRound, Check, Copy, Printer } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,11 @@ export default function SecuritySettingsPage() {
   const [pwError, setPwError] = useState("");
   const [pwSuccess, setPwSuccess] = useState("");
   const [pwLoading, setPwLoading] = useState(false);
+
+  // Backup codes state
+  const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  const [showBackupCodesModal, setShowBackupCodesModal] = useState(false);
+  const [codesAcknowledged, setCodesAcknowledged] = useState(false);
 
   async function handleSetup() {
     setLoading(true);
@@ -61,6 +66,11 @@ export default function SecuritySettingsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setStatus("verified");
+      if (data.backupCodes) {
+        setBackupCodes(data.backupCodes);
+        setCodesAcknowledged(false);
+        setShowBackupCodesModal(true);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Kodi i gabuar");
     } finally {
@@ -210,6 +220,70 @@ export default function SecuritySettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Backup Codes Modal */}
+      {showBackupCodesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="mx-4 w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl">
+            <h2 className="text-xl font-bold text-foreground mb-2">Kodet e Backup-it</h2>
+            <div className="rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 px-4 py-3 mb-4">
+              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                Ruajini keto kode ne nje vend te sigurt. Nuk do shfaqen me.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {backupCodes.map((code, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg bg-muted px-3 py-2 text-center font-mono text-lg font-bold text-foreground tracking-wider"
+                >
+                  {code}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 mb-4">
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={() => {
+                  navigator.clipboard.writeText(backupCodes.join("\n"));
+                }}
+              >
+                <Copy className="h-4 w-4 mr-1" />
+                Kopjo te gjitha
+              </Button>
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={() => window.print()}
+              >
+                <Printer className="h-4 w-4 mr-1" />
+                Printo
+              </Button>
+            </div>
+            <label className="flex items-center gap-2 mb-4 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={codesAcknowledged}
+                onChange={(e) => setCodesAcknowledged(e.target.checked)}
+                className="h-4 w-4 rounded border-border"
+              />
+              <span className="text-sm text-foreground">I kam ruajtur kodet</span>
+            </label>
+            <Button
+              className="w-full"
+              disabled={!codesAcknowledged}
+              onClick={() => {
+                setShowBackupCodesModal(false);
+                setBackupCodes([]);
+                setCodesAcknowledged(false);
+              }}
+            >
+              Mbyll
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Password Change Section */}
       <Card className="mt-6">

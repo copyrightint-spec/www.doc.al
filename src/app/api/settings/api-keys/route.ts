@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { generateApiKey, hashApiKey } from "@/lib/api-auth";
@@ -60,6 +60,28 @@ export async function POST(req: Request) {
       data: { key: rawKey, name },
       message: "Ruajeni kete key - nuk do te shfaqet perseri!",
     }, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "Ndodhi nje gabim" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Jo i autorizuar" }, { status: 401 });
+    }
+
+    const { id } = await req.json();
+    if (!id) {
+      return NextResponse.json({ error: "ID eshte i detyrueshem" }, { status: 400 });
+    }
+
+    await prisma.apiKey.delete({
+      where: { id, userId: session.user.id },
+    });
+
+    return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Ndodhi nje gabim" }, { status: 500 });
   }

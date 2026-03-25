@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Key, Plus, AlertTriangle, Copy } from "lucide-react";
+import { Key, Plus, AlertTriangle, Copy, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,8 @@ export default function ApiKeysPage() {
   const [creating, setCreating] = useState(false);
   const [newKey, setNewKey] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => { fetchKeys(); }, []);
 
@@ -60,6 +62,25 @@ export default function ApiKeysPage() {
       setError(err instanceof Error ? err.message : "Gabim");
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/settings/api-keys", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setConfirmDeleteId(null);
+      fetchKeys();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gabim");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -161,6 +182,7 @@ export default function ApiKeysPage() {
                 <TableHead>Perdorur</TableHead>
                 <TableHead>Krijuar</TableHead>
                 <TableHead>Skadon</TableHead>
+                <TableHead>Veprime</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -180,11 +202,42 @@ export default function ApiKeysPage() {
                   <TableCell className="text-muted-foreground">
                     {key.expiresAt ? formatDate(key.expiresAt) : "Pa afat"}
                   </TableCell>
+                  <TableCell>
+                    {confirmDeleteId === key.id ? (
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(key.id)}
+                          disabled={deleting}
+                        >
+                          {deleting ? "..." : "Konfirmo"}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setConfirmDeleteId(null)}
+                        >
+                          Anulo
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirmDeleteId(key.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Revoko
+                      </Button>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
               {keys.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
                     Nuk keni API keys akoma
                   </TableCell>
                 </TableRow>

@@ -17,6 +17,7 @@ import {
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PageSpinner } from "@/components/ui/spinner";
@@ -174,6 +175,7 @@ export default function AdminCAPage() {
   const [regenerating, setRegenerating] = useState<string | null>(null);
   const [regenResult, setRegenResult] = useState<{ type: string; success: boolean; message: string } | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ type: string; title: string; warning: string } | null>(null);
+  const [totpCode, setTotpCode] = useState("");
 
   async function handleRegenerate(type: string) {
     setConfirmDialog(null);
@@ -183,8 +185,9 @@ export default function AdminCAPage() {
       const res = await fetch("/api/admin/ca/regenerate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type }),
+        body: JSON.stringify({ type, totpCode }),
       });
+      setTotpCode("");
       const json = await res.json();
       if (res.ok && json.success) {
         setRegenResult({ type, success: true, message: json.message });
@@ -388,15 +391,26 @@ export default function AdminCAPage() {
               </div>
               <h3 className="text-lg font-bold text-foreground">{confirmDialog.title}</h3>
             </div>
-            <p className="text-sm text-muted-foreground mb-6">{confirmDialog.warning}</p>
+            <p className="text-sm text-muted-foreground mb-4">{confirmDialog.warning}</p>
+            <div className="mb-6">
+              <label className="text-sm font-medium text-foreground">Kodi 2FA (i detyrueshem)</label>
+              <Input
+                type="text"
+                maxLength={6}
+                placeholder="000000"
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
+                className="mt-1 text-center text-lg tracking-widest font-mono"
+              />
+            </div>
             <div className="flex items-center justify-end gap-3">
-              <Button variant="secondary" onClick={() => setConfirmDialog(null)}>
+              <Button variant="secondary" onClick={() => { setConfirmDialog(null); setTotpCode(""); }}>
                 Anulo
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => handleRegenerate(confirmDialog.type)}
-                disabled={regenerating !== null}
+                disabled={regenerating !== null || totpCode.length !== 6}
               >
                 {regenerating ? (
                   <RefreshCw className="h-4 w-4 animate-spin mr-2" />
