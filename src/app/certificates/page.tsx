@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import PublicNav from "@/components/PublicNav";
+import Footer from "@/components/Footer";
 import {
   Shield,
   ShieldCheck,
@@ -544,12 +545,7 @@ export default function CertificatesPage() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="mt-16 border-t border-slate-200 py-8 dark:border-slate-800">
-        <div className="mx-auto max-w-6xl px-6 text-center text-sm text-slate-400">
-          &copy; {new Date().getFullYear()} doc.al. Te gjitha te drejtat e rezervuara.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

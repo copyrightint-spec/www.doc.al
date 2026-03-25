@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import PublicNav from "@/components/PublicNav";
+import Footer from "@/components/Footer";
 import Image from "next/image";
 import {
   Hash,
@@ -396,6 +397,7 @@ export default function VerifyPage() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

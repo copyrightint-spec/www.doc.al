@@ -17,6 +17,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import OnboardingBanner from "@/components/OnboardingBanner";
+import OnboardingTutorial from "@/components/onboarding/OnboardingTutorial";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -139,6 +140,7 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
+      <OnboardingTutorial />
       <OnboardingBanner />
 
       <PageHeader
@@ -159,7 +161,7 @@ export default function DashboardPage() {
         </Link>
       )}
       {user && (user.kycStatus === "PENDING" || user.kycStatus === "NOT_SUBMITTED") && (
-        <Link href="/settings/kyc">
+        <Link href="/settings/kyc" data-onboarding="kyc-alert">
           <Alert
             variant="warning"
             icon={<AlertTriangle className="h-5 w-5" />}

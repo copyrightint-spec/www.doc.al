@@ -140,7 +140,7 @@ export function Sidebar({
                 const isGroupActive = item.children.some((child) => isActive(child.href));
                 const isOpen = openGroups[item.label] ?? false;
                 return (
-                  <div key={item.label}>
+                  <div key={item.label} data-onboarding={item.label === "eSign" ? "esign-menu" : undefined}>
                     <button
                       onClick={() => toggleGroup(item.label)}
                       className={cn(
@@ -219,7 +219,7 @@ export function Sidebar({
 
             {/* Settings collapsible group */}
             {settingsItems && settingsItems.length > 0 && (
-              <div className="pt-4">
+              <div className="pt-4" data-onboarding="settings-menu">
                 <button
                   onClick={() => setSettingsOpen(!settingsOpen)}
                   className={cn(

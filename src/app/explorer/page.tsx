@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import Footer from "@/components/Footer";
 import { signOut } from "next-auth/react";
 import {
   ChevronRight,
@@ -1010,6 +1011,7 @@ export default function ExplorerPage() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 }
