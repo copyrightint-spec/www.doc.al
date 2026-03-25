@@ -13,7 +13,7 @@ export async function GET() {
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
 
-    const [totalDocuments, pendingSignatures, completedDocuments, timestampsThisMonth] =
+    const [totalDocuments, pendingSignatures, completedDocuments, timestampsThisMonth, user] =
       await Promise.all([
         prisma.document.count({
           where: { ownerId: session.user.id, deletedAt: null },
@@ -28,13 +28,26 @@ export async function GET() {
           where: { ownerId: session.user.id, status: "COMPLETED" },
         }),
         prisma.timestampEntry.count({
-          where: { createdAt: { gte: startOfMonth } },
+          where: {
+            createdAt: { gte: startOfMonth },
+            document: { ownerId: session.user.id },
+          },
+        }),
+        prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { signatureData: true },
         }),
       ]);
 
     return NextResponse.json({
       success: true,
-      data: { totalDocuments, pendingSignatures, completedDocuments, timestampsThisMonth },
+      data: {
+        totalDocuments,
+        pendingSignatures,
+        completedDocuments,
+        timestampsThisMonth,
+        hasSignatureData: user?.signatureData != null,
+      },
     });
   } catch {
     return NextResponse.json({ error: "Ndodhi nje gabim" }, { status: 500 });

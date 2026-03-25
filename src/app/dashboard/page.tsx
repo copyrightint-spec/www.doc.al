@@ -6,6 +6,8 @@ import {
   FileText,
   Clock,
   CheckCircle,
+  CheckCircle2,
+  XCircle,
   Zap,
   PenTool,
   Mail,
@@ -31,6 +33,7 @@ interface Stats {
   pendingSignatures: number;
   completedDocuments: number;
   timestampsThisMonth: number;
+  hasSignatureData: boolean;
 }
 
 interface UserInfo {
@@ -57,6 +60,31 @@ interface RecentDoc {
   createdAt: string;
   _count: { signatures: number };
   signatures: { status: string }[];
+}
+
+function KycSuccessBanner({ kycStatus }: { kycStatus?: string }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (kycStatus !== "VERIFIED") return;
+    const dismissed = localStorage.getItem("docal_kyc_success_seen");
+    if (!dismissed) {
+      setVisible(true);
+      // Auto-dismiss after this visit
+      localStorage.setItem("docal_kyc_success_seen", "true");
+    }
+  }, [kycStatus]);
+
+  if (!visible) return null;
+
+  return (
+    <Alert
+      variant="success"
+      icon={<CheckCircle2 className="h-5 w-5" />}
+      title="KYC i verifikuar"
+      description="Verifikimi juaj KYC u perfundua me sukses."
+    />
+  );
 }
 
 export default function DashboardPage() {
@@ -119,13 +147,38 @@ export default function DashboardPage() {
       />
 
       {/* KYC Alert */}
-      {user && user.kycStatus !== "VERIFIED" && (
+      {user && user.kycStatus === "REJECTED" && (
+        <Link href="/settings/kyc">
+          <Alert
+            variant="destructive"
+            icon={<XCircle className="h-5 w-5" />}
+            title="Verifikimi KYC u refuzua"
+            description="Kontaktoni supportin ose riaplikoni per verifikimin KYC."
+            className="cursor-pointer transition-colors hover:opacity-90"
+          />
+        </Link>
+      )}
+      {user && (user.kycStatus === "PENDING" || user.kycStatus === "NOT_SUBMITTED") && (
         <Link href="/settings/kyc">
           <Alert
             variant="warning"
             icon={<AlertTriangle className="h-5 w-5" />}
-            title="Verifikimi KYC nuk eshte perfunduar"
+            title="Plotesoni KYC"
             description="Plotesoni verifikimin KYC per te pasur akses te plote ne platforme."
+            className="cursor-pointer transition-colors hover:opacity-90"
+          />
+        </Link>
+      )}
+      <KycSuccessBanner kycStatus={user?.kycStatus} />
+
+      {/* Signature setup banner - shown after KYC verified but no signature configured */}
+      {user && user.kycStatus === "VERIFIED" && stats && !stats.hasSignatureData && (
+        <Link href="/settings/signature">
+          <Alert
+            variant="info"
+            icon={<PenTool className="h-5 w-5" />}
+            title="Vendosni formen e nenshkrimit tuaj"
+            description="Konfiguroni nenshkrimin tuaj elektronik per te nenshkruar dokumenta."
             className="cursor-pointer transition-colors hover:opacity-90"
           />
         </Link>

@@ -191,7 +191,7 @@ export default function SignatureSettingsPage() {
 
     // Set canvas pixel size (2x for retina)
     const w = rect.width;
-    const h = 160; // Fixed height
+    const h = Math.max(160, 150); // Fixed height, min 150px
     canvas.width = w * 2;
     canvas.height = h * 2;
     canvas.style.width = w + "px";
@@ -200,6 +200,9 @@ export default function SignatureSettingsPage() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.scale(2, 2);
+    // White background for visibility
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
     ctx.strokeStyle = "#1a1a2e";
     ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
@@ -288,6 +291,16 @@ export default function SignatureSettingsPage() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Refill white background
+    const rect = canvasContainerRef.current?.getBoundingClientRect();
+    const w = rect?.width || canvas.width / 2;
+    const h = 160;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = "#1a1a2e";
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     setDrawData("");
   };
 
@@ -395,6 +408,28 @@ export default function SignatureSettingsPage() {
         </div>
       )}
 
+      {/* Mobile save button */}
+      <div className="mt-4 sm:hidden">
+        <Button onClick={handleSave} disabled={saving} className="w-full min-h-[48px]">
+          {saving ? (
+            <>
+              <Spinner size="sm" />
+              Duke ruajtur...
+            </>
+          ) : saved ? (
+            <>
+              <Check className="h-4 w-4" />
+              U ruajt!
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              Ruaj Nenshkrimin
+            </>
+          )}
+        </Button>
+      </div>
+
       <div className="mt-6 grid gap-8 lg:grid-cols-5">
         {/* Left: Editor */}
         <div className="lg:col-span-3 space-y-6">
@@ -410,7 +445,7 @@ export default function SignatureSettingsPage() {
                     key={s.key}
                     onClick={() => setStyle(s.key)}
                     className={cn(
-                      "flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all",
+                      "flex flex-col items-center gap-2 rounded-xl border-2 p-4 min-h-[48px] transition-all",
                       style === s.key
                         ? "border-primary bg-primary/5"
                         : "border-border hover:border-slate-400"
@@ -458,15 +493,16 @@ export default function SignatureSettingsPage() {
               <CardContent className="pt-5">
                 <div className="mb-2 flex items-center justify-between">
                   <label className="text-sm font-medium text-foreground">Vizatoni Nenshkrimin</label>
-                  <Button variant="ghost" size="sm" onClick={clearCanvas}>
+                  <Button variant="ghost" size="sm" onClick={clearCanvas} className="min-h-[44px] min-w-[44px]">
                     <Eraser className="mr-1 h-3.5 w-3.5" />
                     Pastro
                   </Button>
                 </div>
-                <div ref={canvasContainerRef} className="rounded-xl border-2 border-dashed border-border bg-card overflow-hidden">
+                <div ref={canvasContainerRef} className="rounded-xl border-2 border-dashed border-slate-300 bg-white overflow-hidden dark:border-slate-600" style={{ minHeight: "150px" }}>
                   <canvas
                     ref={canvasRef}
-                    className="cursor-crosshair touch-none block"
+                    className="cursor-crosshair touch-none block w-full"
+                    style={{ minHeight: "150px" }}
                     onMouseDown={startDraw}
                     onMouseMove={draw}
                     onMouseUp={endDraw}
@@ -610,7 +646,7 @@ export default function SignatureSettingsPage() {
 
             {/* Signature Block Preview */}
             <div className={cn(
-              "overflow-hidden border bg-card shadow-sm",
+              "overflow-hidden border bg-white shadow-sm dark:bg-slate-900",
               shape === "square"
                 ? "rounded-2xl border-border aspect-square max-w-[280px] mx-auto"
                 : "rounded-2xl border-border",

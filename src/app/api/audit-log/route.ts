@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const where: Record<string, unknown> = {};
 
     // Only admins see all logs, regular users see their own
-    if (session.user.role !== "ADMIN") {
+    if (session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {
       where.userId = session.user.id;
     }
 

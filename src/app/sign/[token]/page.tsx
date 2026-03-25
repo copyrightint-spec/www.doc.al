@@ -75,6 +75,8 @@ export default function SignPage({
   const [accepted, setAccepted] = useState(false);
   const [totpCode, setTotpCode] = useState("");
   const [requireTotp, setRequireTotp] = useState(false);
+  const [savedSignatureUrl, setSavedSignatureUrl] = useState<string | null>(null);
+  const savedSignatureLoadedRef = useRef(false);
 
   // Brand theming
   const brandColor = info?.signingRequest?.brandColor || "#dc2626";
@@ -96,6 +98,74 @@ export default function SignPage({
     }
     load();
   }, [token]);
+
+  // Try to load saved signature from settings (if user is authenticated)
+  useEffect(() => {
+    fetch("/api/settings/signature")
+      .then((r) => {
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .then((data) => {
+        if (!data?.success || !data.data) return;
+        const d = data.data;
+        const sigStyle = d.signatureStyle || "text";
+        if (sigStyle === "draw" && d.signatureData?.draw) {
+          setSavedSignatureUrl(d.signatureData.draw);
+        } else if (sigStyle === "image" && d.signatureData?.image) {
+          setSavedSignatureUrl(d.signatureData.image);
+        } else if (sigStyle === "text" && d.name) {
+          // Generate text signature as data URL
+          const canvas = document.createElement("canvas");
+          canvas.width = 600;
+          canvas.height = 180;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.clearRect(0, 0, 600, 180);
+            const fontValue = d.signatureData?.text?.font || "cursive";
+            const fonts: Record<string, string> = {
+              cursive: "'Brush Script MT', 'Segoe Script', cursive",
+              serif: "'Times New Roman', 'Georgia', serif",
+              sans: "'Arial', 'Helvetica', sans-serif",
+              mono: "'Courier New', 'Consolas', monospace",
+            };
+            ctx.font = `36px ${fonts[fontValue] || fonts.cursive}`;
+            ctx.fillStyle = "#1a1a2e";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(d.name, 300, 90);
+            setSavedSignatureUrl(canvas.toDataURL("image/png"));
+          }
+        }
+      })
+      .catch(() => { /* Not authenticated or no saved signature - that's fine */ });
+  }, []);
+
+  // Pre-draw saved signature on canvas when sign step is entered
+  useEffect(() => {
+    if (step !== "sign" || !savedSignatureUrl || savedSignatureLoadedRef.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Fill white background first
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Draw saved signature centered
+      const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.8;
+      const w = img.width * scale;
+      const h = img.height * scale;
+      const x = (canvas.width - w) / 2;
+      const y = (canvas.height - h) / 2;
+      ctx.drawImage(img, x, y, w, h);
+      setHasDrawn(true);
+      savedSignatureLoadedRef.current = true;
+    };
+    img.src = savedSignatureUrl;
+  }, [step, savedSignatureUrl]);
 
   // Resend timer countdown
   useEffect(() => {
@@ -739,22 +809,31 @@ export default function SignPage({
                     onTouchStart={startDrawing}
                     onTouchMove={draw}
                     onTouchEnd={stopDrawing}
-                    className="w-full cursor-crosshair rounded-xl border-2 border-dashed border-slate-300 bg-white touch-none dark:border-slate-600 dark:bg-slate-800"
-                    style={hasDrawn ? { borderColor: brandColor, borderStyle: "solid" } : {}}
+                    className="w-full cursor-crosshair rounded-xl border-2 border-dashed border-slate-300 bg-white touch-none dark:border-slate-600"
+                    style={hasDrawn ? { minHeight: "150px", borderColor: brandColor, borderStyle: "solid" } : { minHeight: "150px" }}
                   />
                   {!hasDrawn && (
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                      <p className="text-slate-300 dark:text-slate-600">Vizatoni nenshkrimin ketu</p>
+                      <p className="text-slate-300 dark:text-slate-600">
+                        {savedSignatureUrl ? "Duke ngarkuar nenshkrimin e ruajtur..." : "Vizatoni nenshkrimin ketu"}
+                      </p>
                     </div>
                   )}
                 </div>
-                <button
-                  onClick={clearCanvas}
-                  className="mt-2 text-xs font-medium hover:underline"
-                  style={{ color: brandColor }}
-                >
-                  Pastro dhe rifillo
-                </button>
+                <div className="mt-2 flex items-center justify-between">
+                  <button
+                    onClick={() => { clearCanvas(); savedSignatureLoadedRef.current = false; }}
+                    className="text-xs font-medium hover:underline min-h-[44px]"
+                    style={{ color: brandColor }}
+                  >
+                    Pastro dhe rifillo
+                  </button>
+                  {savedSignatureLoadedRef.current && (
+                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                      Nenshkrimi i ruajtur u ngarkua
+                    </span>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
