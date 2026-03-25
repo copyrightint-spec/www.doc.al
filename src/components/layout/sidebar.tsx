@@ -17,6 +17,9 @@ interface SidebarProps {
   bottomContent?: React.ReactNode;
 }
 
+/** Badge counts keyed by badgeKey (e.g. { contacts: 3 }) */
+type BadgeCounts = Record<string, number>;
+
 /* ------------------------------------------------------------------ */
 /*  Mobile bottom nav config                                          */
 /* ------------------------------------------------------------------ */
@@ -54,6 +57,23 @@ export function Sidebar({
     settingsItems?.some((item) => item.href && pathname.startsWith(item.href)) ?? false
   );
   const [moreSheetOpen, setMoreSheetOpen] = useState(false);
+  const [badgeCounts, setBadgeCounts] = useState<BadgeCounts>({});
+
+  // Fetch notification badge counts for admin sidebar
+  useEffect(() => {
+    if (variant !== "admin") return;
+    const fetchBadges = () => {
+      fetch("/api/admin/notifications")
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success) setBadgeCounts(data.data);
+        })
+        .catch(() => {});
+    };
+    fetchBadges();
+    const interval = setInterval(fetchBadges, 60_000); // refresh every 60s
+    return () => clearInterval(interval);
+  }, [variant]);
 
   // Track which expandable nav groups are open
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
@@ -195,6 +215,7 @@ export function Sidebar({
 
               // Regular flat nav item
               const active = isActive(item.href!, isRootItem(item.href!));
+              const badgeCount = item.badgeKey ? (badgeCounts[item.badgeKey] || 0) : 0;
               return (
                 <Link
                   key={item.href}
@@ -213,6 +234,11 @@ export function Sidebar({
                 >
                   <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.5} />
                   {item.label}
+                  {badgeCount > 0 && (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1.5 text-[10px] font-bold text-white">
+                      {badgeCount > 99 ? "99+" : badgeCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -345,6 +371,11 @@ export function Sidebar({
                 >
                   <item.icon className="h-5 w-5 shrink-0" strokeWidth={1.5} />
                   {item.label}
+                  {item.badgeKey && (badgeCounts[item.badgeKey] || 0) > 0 && (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1.5 text-[10px] font-bold text-white">
+                      {(badgeCounts[item.badgeKey!] || 0) > 99 ? "99+" : badgeCounts[item.badgeKey!]}
+                    </span>
+                  )}
                 </Link>
               );
             })}

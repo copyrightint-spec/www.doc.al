@@ -45,7 +45,7 @@ export async function PATCH(req: NextRequest) {
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
 
   // Validate status enum
-  const VALID_STATUSES = ["NEW", "IN_PROGRESS", "RESOLVED", "CLOSED"];
+  const VALID_STATUSES = ["NEW", "CONTACTED", "IN_PROGRESS", "CLOSED", "REJECTED"];
   if (status && !VALID_STATUSES.includes(status)) {
     return NextResponse.json(
       { error: `Statusi i pavlefshem. Duhet te jete nje nga: ${VALID_STATUSES.join(", ")}` },

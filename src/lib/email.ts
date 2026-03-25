@@ -118,14 +118,20 @@ async function sendEmail(options: SendEmailOptions): Promise<{ success: boolean;
 // ==================== TEMPLATE ====================
 
 function baseTemplate(content: string, brandColor = "#dc2626", companyName = "doc.al", companyLogo?: string | null) {
+  const docAlLogo = `${BASE_URL}/docal-icon.png`;
   const logoHtml = companyLogo
     ? `<img src="${companyLogo}" alt="${companyName}" style="height: 48px; object-fit: contain;" />`
-    : `<div style="display: inline-flex; align-items: center; gap: 8px;">
-        <div style="background: ${brandColor}; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
-          ${companyName.charAt(0).toUpperCase()}
-        </div>
-        <span style="font-size: 20px; font-weight: 700; color: #18181b;">${companyName}</span>
-      </div>`;
+    : companyName === "doc.al"
+      ? `<div style="display: inline-flex; align-items: center; gap: 8px;">
+          <img src="${docAlLogo}" alt="doc.al" width="36" height="36" style="width: 36px; height: 36px; border-radius: 8px;" />
+          <span style="font-size: 20px; font-weight: 700; color: #18181b;">doc<span style="color: #2563eb;">.al</span></span>
+        </div>`
+      : `<div style="display: inline-flex; align-items: center; gap: 8px;">
+          <div style="background: ${brandColor}; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
+            ${companyName.charAt(0).toUpperCase()}
+          </div>
+          <span style="font-size: 20px; font-weight: 700; color: #18181b;">${companyName}</span>
+        </div>`;
 
   return `
     <!DOCTYPE html>
@@ -545,6 +551,53 @@ export async function sendSignedDocument(
         contentType: "application/pdf",
       },
     ],
+  });
+  return result.success;
+}
+
+/**
+ * Send notification to admin when a new contact request is received.
+ */
+export async function sendContactAdminNotification(details: {
+  contactName: string;
+  email: string;
+  companyName: string | null;
+  subject: string;
+  message: string;
+  createdAt: Date;
+}): Promise<boolean> {
+  const adminEmail = "admin@doc.al";
+  const companyInfo = details.companyName && details.companyName !== "N/A"
+    ? `<tr><td style="padding: 4px 0; font-weight: 600; color: #52525b;">Kompania:</td><td style="padding: 4px 0;">${details.companyName}</td></tr>`
+    : "";
+
+  const content = `
+    <h2 style="margin: 0 0 8px; color: #18181b; font-size: 20px;">Kerkese e re kontakti</h2>
+    <p style="margin: 0 0 16px; color: #52525b; font-size: 15px; line-height: 1.6;">
+      Nje kerkese e re kontakti eshte marre ne platforme.
+    </p>
+    <div style="border: 1px solid #e4e4e7; border-radius: 12px; padding: 16px; margin: 16px 0; background: #fafafa;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 13px; color: #3f3f46;">
+        <tr><td style="padding: 4px 0; font-weight: 600; color: #52525b; width: 100px;">Emri:</td><td style="padding: 4px 0;">${details.contactName}</td></tr>
+        <tr><td style="padding: 4px 0; font-weight: 600; color: #52525b;">Email:</td><td style="padding: 4px 0;"><a href="mailto:${details.email}" style="color: #2563eb;">${details.email}</a></td></tr>
+        ${companyInfo}
+        <tr><td style="padding: 4px 0; font-weight: 600; color: #52525b;">Subjekti:</td><td style="padding: 4px 0;">${details.subject}</td></tr>
+      </table>
+    </div>
+    <div style="border-left: 3px solid #2563eb; padding: 12px 16px; margin: 16px 0; background: #f8fafc; border-radius: 0 8px 8px 0;">
+      <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${details.message}</p>
+    </div>
+    <a href="${BASE_URL}/admin/contacts" style="display: block; background: #18181b; color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: 600; font-size: 14px; margin: 20px 0;">
+      Shiko ne Admin Panel
+    </a>
+  `;
+
+  const result = await sendEmail({
+    to: adminEmail,
+    subject: `Kerkese e re kontakti nga ${details.contactName}`,
+    html: baseTemplate(content),
+    entityType: "ContactRequest",
+    metadata: { contactName: details.contactName, email: details.email },
   });
   return result.success;
 }

@@ -12,7 +12,6 @@ import {
   Send,
   CheckCircle,
   Loader2,
-  Phone,
   Globe,
   ExternalLink,
 } from "lucide-react";
@@ -199,7 +198,7 @@ export default function ContactPage() {
                   <div>
                     <p className="font-medium text-slate-900 dark:text-slate-50">Adresa</p>
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      Tirane, Shqiperi
+                      Bulevardi Zogu i Pare, 1016, PO.Box 55, Tirane, Shqiperi
                     </p>
                   </div>
                 </div>
@@ -224,33 +223,15 @@ export default function ContactPage() {
                   <div>
                     <p className="font-medium text-slate-900 dark:text-slate-50">Website</p>
                     <a
-                      href="https://doc.al"
-                      className="mt-1 block text-sm text-blue-600 hover:underline dark:text-blue-400"
+                      href="https://copyright.al/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 inline-flex items-center gap-1 text-sm text-blue-600 hover:underline dark:text-blue-400"
                     >
-                      doc.al
+                      copyright.al
+                      <ExternalLink className="h-3 w-3" />
                     </a>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Map Placeholder */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700">
-              <div className="flex h-64 items-center justify-center bg-slate-100 dark:bg-slate-800">
-                <div className="text-center">
-                  <MapPin className="mx-auto h-10 w-10 text-blue-500" />
-                  <p className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Tirane, Shqiperi
-                  </p>
-                  <a
-                    href="https://maps.google.com/?q=Tirana,Albania"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 hover:underline dark:text-blue-400"
-                  >
-                    Hap ne Google Maps
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
                 </div>
               </div>
             </div>

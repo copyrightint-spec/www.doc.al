@@ -35,6 +35,7 @@ export interface NavItem {
   icon: LucideIcon;
   adminOnly?: boolean;
   children?: NavChild[];
+  badgeKey?: string; // key to match against notification counts (e.g., "contacts")
 }
 
 export const dashboardNav: NavItem[] = [
@@ -72,7 +73,7 @@ export const adminNav: NavItem[] = [
   { href: "/admin/ca", label: "Autoriteti CA", icon: KeyRound },
   { href: "/admin/timestamps", label: "Timestamps", icon: Clock },
   { href: "/admin/seals", label: "Vulat Dixhitale", icon: Stamp },
-  { href: "/admin/contacts", label: "Kontakte", icon: Mail },
+  { href: "/admin/contacts", label: "Kontakte", icon: Mail, badgeKey: "contacts" },
   { href: "/admin/emails", label: "Emailet", icon: Send },
   { href: "/admin/audit", label: "Audit Log", icon: ScrollText },
 ];

@@ -1,0 +1,21 @@
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+
+export async function GET() {
+  const session = await auth();
+  if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
+  const [newContactsCount] = await Promise.all([
+    prisma.contactRequest.count({ where: { status: "NEW" } }),
+  ]);
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      contacts: newContactsCount,
+    },
+  });
+}
