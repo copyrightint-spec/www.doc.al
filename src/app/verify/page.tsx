@@ -3,12 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import PublicNav from "@/components/PublicNav";
+import Image from "next/image";
 import {
-  Upload,
-  FileCheck,
   Hash,
   Shield,
-  Terminal,
   Loader2,
   CheckCircle,
   XCircle,
@@ -154,28 +152,10 @@ export default function VerifyPage() {
 
   const methods = [
     {
-      id: "file" as const,
-      label: "Original File",
-      desc: "(single-file timestamp)",
-      icon: <Upload className="h-4 w-4" />,
-    },
-    {
-      id: "certificate" as const,
-      label: "Certificate",
-      desc: "(needed for multiple files)",
-      icon: <FileCheck className="h-4 w-4" />,
-    },
-    {
       id: "hash" as const,
-      label: "SHA-2 Fingerprint",
+      label: "Verifikoni me Hash",
       desc: "",
       icon: <Hash className="h-4 w-4" />,
-    },
-    {
-      id: "offline" as const,
-      label: "Offline",
-      desc: "",
-      icon: <Terminal className="h-4 w-4" />,
     },
   ];
 
@@ -183,21 +163,26 @@ export default function VerifyPage() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card px-6 py-4">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <div>
-            <Link href="/" className="text-xl font-bold text-foreground">
-              doc.al
-            </Link>
-            <h1 className="mt-1 text-sm text-muted-foreground">
-              Verify Time Stamp
-            </h1>
-          </div>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/docal-icon.png" alt="doc.al" width={32} height={32} className="rounded-lg" unoptimized />
+            <div>
+              <span className="text-xl font-bold text-foreground">doc.al</span>
+              <p className="text-xs text-muted-foreground">Verifikim Dokumenti</p>
+            </div>
+          </Link>
           <PublicNav />
         </div>
       </header>
 
       <div className="mx-auto max-w-3xl space-y-6 px-6 py-8">
-        {/* Method Tabs */}
-        <div className="flex flex-wrap gap-2">
+        {/* Title */}
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-foreground">Verifikim i Dokumentit</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Fusni hash-in SHA-256 per te verifikuar dokumentin</p>
+        </div>
+
+        {/* Hidden method selector - keep for state compatibility */}
+        <div className="hidden">
           {methods.map((m) => (
             <Button
               key={m.id}
@@ -222,71 +207,6 @@ export default function VerifyPage() {
         {/* Verify Forms */}
         <Card>
           <CardContent className="p-6">
-            {method === "file" && (
-              <form onSubmit={handleFileVerify} className="space-y-4">
-                <div className="rounded-xl border-2 border-dashed border-green-300 bg-green-50 p-6 text-center dark:border-green-800 dark:bg-green-950/30">
-                  <input type="file" className="hidden" id="verify-file" />
-                  <label htmlFor="verify-file" className="cursor-pointer">
-                    <Upload className="mx-auto h-8 w-8 text-green-600 dark:text-green-400" />
-                    <p className="mt-2 font-medium text-green-800 dark:text-green-300">
-                      Original File
-                    </p>
-                    <p className="text-xs text-green-600 dark:text-green-400">
-                      (single-file timestamp)
-                    </p>
-                  </label>
-                </div>
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Duke verifikuar...
-                    </>
-                  ) : (
-                    <>
-                      <Shield className="h-4 w-4" />
-                      Send Fingerprint & Verify
-                    </>
-                  )}
-                </Button>
-              </form>
-            )}
-
-            {method === "certificate" && (
-              <form onSubmit={handleCertificateVerify} className="space-y-4">
-                <div className="rounded-xl border-2 border-dashed border-yellow-300 bg-yellow-50 p-6 text-center dark:border-yellow-800 dark:bg-yellow-950/30">
-                  <input
-                    type="file"
-                    accept=".ots,.p7s,.pem,.crt"
-                    className="hidden"
-                    id="verify-cert"
-                  />
-                  <label htmlFor="verify-cert" className="cursor-pointer">
-                    <FileCheck className="mx-auto h-8 w-8 text-yellow-600 dark:text-yellow-400" />
-                    <p className="mt-2 font-medium text-yellow-800 dark:text-yellow-300">
-                      Certificate
-                    </p>
-                    <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                      (needed for multiple files)
-                    </p>
-                  </label>
-                </div>
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Duke verifikuar...
-                    </>
-                  ) : (
-                    <>
-                      <Shield className="h-4 w-4" />
-                      Upload Certificate & Verify
-                    </>
-                  )}
-                </Button>
-              </form>
-            )}
-
             {method === "hash" && (
               <form onSubmit={handleHashVerify} className="space-y-4">
                 <div className="rounded-xl border-2 border-dashed border-blue-300 bg-blue-50 p-6 dark:border-blue-800 dark:bg-blue-950/30">
