@@ -244,9 +244,10 @@ class PAdESCAdESSigner extends Signer {
     );
     const attrsBytes = asn1.toDer(attrsSet).getBytes();
 
-    // 5. Sign the attributes
-    const attrDigest = forge.md.sha256.create().update(attrsBytes).digest();
-    const signature = (privateKey as any).sign(attrDigest, "RSASSA-PKCS-V1_5");
+    // 5. Sign the attributes (hash then sign with RSASSA-PKCS1-v1_5)
+    const attrMd = forge.md.sha256.create();
+    attrMd.update(attrsBytes);
+    const signature = privateKey.sign(attrMd);
 
     // 6. Build the [0] IMPLICIT authenticated attributes for the SignerInfo
     const authAttrsImplicit = asn1.create(
