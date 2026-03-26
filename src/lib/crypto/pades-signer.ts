@@ -35,7 +35,7 @@ export async function signPdfWithPAdES(
     certificatePem?: string | null;
   },
   signerName: string,
-  reason: string = "Nenshkrim dixhital permes doc.al"
+  reason: string = "Nënshkrim digjital përmes doc.al"
 ): Promise<Buffer> {
   try {
     // Step 1: Decrypt private key

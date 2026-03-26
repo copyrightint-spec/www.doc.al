@@ -579,7 +579,7 @@ export async function sendSignedDocument(
     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin: 16px 0;">
       <p style="margin: 0; color: #166534; font-weight: 600; font-size: 14px;">PDF i nenshkruar bashkangjitur</p>
       <p style="margin: 8px 0 0; color: #15803d; font-size: 12px;">
-        Dokumenti permban nenshkrim dixhital te certifikuar, QR kod per verifikim,
+        Dokumenti përmban nënshkrim digjital të çertifikuar, QR kod për verifikim,
         dhe eshte i ankoruar ne Polygon blockchain dhe IPFS.
       </p>
     </div>

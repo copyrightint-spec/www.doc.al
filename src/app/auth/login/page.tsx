@@ -68,7 +68,7 @@ function LoginForm() {
               <Image src="/docal-icon.png" unoptimized alt="doc.al" width={80} height={80} className="mx-auto h-16 w-16 sm:h-20 sm:w-20" />
               <h1 className="mt-3 text-2xl sm:text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Nenshkrim Elektronik & Timestamp
+                Nënshkrim Elektronik & Timestamp
               </p>
             </div>
 

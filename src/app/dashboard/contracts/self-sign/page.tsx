@@ -562,7 +562,7 @@ export default function SelfSignPage() {
       const dateStr = now.toLocaleDateString("sq-AL", {
         day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
       });
-      page.drawText(`Nenshkruar dixhitalisht me ${dateStr} permes doc.al`, {
+      page.drawText(`Nënshkruar digjitalisht më ${dateStr} përmes doc.al`, {
         x, y: y - 12, size: 7, color: rgb(0.4, 0.4, 0.4),
       });
 
@@ -1380,7 +1380,7 @@ export default function SelfSignPage() {
                             draggable={false}
                           />
                           <p className="bg-white/80 px-1 py-0.5 text-[7px] text-slate-500 truncate">
-                            Nenshkruar dixhitalisht permes doc.al
+                            Nënshkruar digjitalisht përmes doc.al
                           </p>
                           {/* Drag handle indicator */}
                           <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-white shadow">

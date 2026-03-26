@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
         const signResult = await signPdf(visuallySignedBuffer, {
           certificateId: certificate.id,
           signerName: userName,
-          reason: "Nenshkrim dixhital permes doc.al",
+          reason: "Nënshkrim digjital përmes doc.al",
           location: "doc.al Platform",
           documentHashForQR: originalFileHash,
           position: placement ? {

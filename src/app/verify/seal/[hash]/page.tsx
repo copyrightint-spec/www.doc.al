@@ -278,7 +278,7 @@ export default function SealVerificationPage() {
                       <p className="text-foreground">{result.certificate.issuerDN}</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Nenshkrim Dixhital:</span>
+                      <span className="text-muted-foreground">Nënshkrim Digjital:</span>
                       <Badge variant={result.certificate.signatureValid ? "success" : "destructive"}>
                         {result.certificate.signatureValid ? "I Vlefshm" : "I Pavlefshem"}
                       </Badge>

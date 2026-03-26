@@ -135,7 +135,7 @@ export async function signPdf(
 
   // Certification text
   const signDate = new Date().toLocaleDateString("sq-AL", {
-    timeZone: "Europe/Paris",
+    timeZone: "Europe/Tirane",
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -144,7 +144,7 @@ export async function signPdf(
   });
 
   // Line 1: doc.al branding
-  lastPage.drawText("doc.al — Nenshkrim Dixhital i Certifikuar", {
+  lastPage.drawText("doc.al — Nënshkrim Digjital i Çertifikuar", {
     x: textX,
     y: stampY + stampH - 14,
     size: 8,
@@ -171,7 +171,7 @@ export async function signPdf(
   });
 
   // Line 4: Verify URL + hash
-  lastPage.drawText(`Verifikoni: www.doc.al/verify | Hash: ${preHash.slice(0, 24)}...`, {
+  lastPage.drawText(`Vërifikoni: www.doc.al/verify | Hash: ${preHash.slice(0, 24)}...`, {
     x: textX,
     y: stampY + stampH - 48,
     size: 5.5,
@@ -180,7 +180,7 @@ export async function signPdf(
   });
 
   // Line 5: Certificate + reason
-  const certLine = options.reason || "Nenshkrim dixhital permes doc.al";
+  const certLine = options.reason || "Nënshkrim digjital përmes doc.al";
   lastPage.drawText(`${certLine} | COPYRIGHT sh.p.k`, {
     x: textX,
     y: stampY + stampH - 57,
@@ -210,7 +210,7 @@ export async function signPdf(
         stampedPdfBuffer,
         cert,
         options.signerName,
-        options.reason || "Nenshkrim dixhital permes doc.al"
+        options.reason || "Nënshkrim digjital përmes doc.al"
       );
       stampedPdfBuffer = Buffer.from(padesResult);
       console.log("[pdf-signer] PAdES signature embedded successfully, size:", stampedPdfBuffer.length);

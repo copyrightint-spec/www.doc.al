@@ -83,7 +83,7 @@ const steps = [
     number: "02",
     title: "Nenshkruani",
     description:
-      "Verifikimi me 2 hapa (Email + TOTP), nenshkrim dixhital me certifikate.",
+      "Verifikimi me 2 hapa (Email + TOTP), nënshkrim digjital me çertifikatë.",
   },
   {
     number: "03",
