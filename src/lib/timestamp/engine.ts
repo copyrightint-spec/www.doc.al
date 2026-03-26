@@ -89,10 +89,8 @@ export async function createTimestamp(
     timeout: 10000,
   });
 
-  // Auto-submit to OpenTimestamps (fire and forget)
-  import("@/lib/timestamp/opentimestamps")
-    .then(({ anchorToBitcoin }) => anchorToBitcoin(entry.id))
-    .catch(() => {});
+  // OpenTimestamps (BTC) disabled - using Polygon/STAMLES instead
+  // Submissions go through submitToStamles() in the signing routes
 
   return {
     id: entry.id,

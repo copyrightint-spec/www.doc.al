@@ -77,7 +77,13 @@
       "Bash(ssh ubuntu@37.187.226.220 \"ls /tmp/docal-build/src/lib/ 2>/dev/null | head -10\")",
       "Bash(curl -s http://37.187.226.220:3000/api/certificates/public)",
       "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"document signing dashboard admin dark mode mobile app professional\" --design-system -p \"doc.al\")",
-      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"mobile app sidebar bottom navigation touch\" --domain ux -n 10)"
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"mobile app sidebar bottom navigation touch\" --domain ux -n 10)",
+      "Bash(curl -s https://www.doc.al/api/logo -o /dev/null -w \"Logo: %{http_code}\\\\n\")",
+      "Bash(curl -s https://www.doc.al/auth/login -o /dev/null -w \"Login: %{http_code}\\\\n\")",
+      "Bash(curl -s https://www.doc.al/ -o /dev/null -w \"Home: %{http_code}\\\\n\")",
+      "Bash(curl -s https://www.doc.al/auth/login)",
+      "Bash(curl -sL https://www.doc.al/api/logo -o /dev/null -w \"Logo follow redirect: %{http_code}, size: %{size_download}\\\\n\")",
+      "Bash(grep -oE \"1x[0-9A-Za-z]{20,}|0x4[A-Za-z0-9_-]+\")"
     ]
   }
 }
