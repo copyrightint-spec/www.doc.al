@@ -139,7 +139,7 @@ export default function RegisterPage() {
       <nav className="border-b border-border px-4 sm:px-6 py-3 sm:py-4">
         <div className="mx-auto max-w-6xl flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/docal-icon.png" unoptimized alt="doc.al" width={44} height={44} className="h-9 w-9 sm:h-11 sm:w-11" />
+            <Image src="/api/logo" unoptimized alt="doc.al" width={44} height={44} className="h-9 w-9 sm:h-11 sm:w-11" />
             <span className="text-2xl sm:text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
           </Link>
           <Link
@@ -155,7 +155,7 @@ export default function RegisterPage() {
         <Card className="w-full max-w-md">
           <CardContent className="p-5 sm:p-8">
             <div className="mb-6 sm:mb-8 text-center">
-              <Image src="/docal-icon.png" unoptimized alt="doc.al" width={80} height={80} className="mx-auto h-16 w-16 sm:h-20 sm:w-20" />
+              <Image src="/api/logo" unoptimized alt="doc.al" width={80} height={80} className="mx-auto h-16 w-16 sm:h-20 sm:w-20" />
               <h1 className="mt-3 text-2xl sm:text-3xl font-bold text-foreground">
                 doc<span className="text-blue-600">.al</span>
               </h1>

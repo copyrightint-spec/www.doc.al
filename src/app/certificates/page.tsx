@@ -151,7 +151,7 @@ export default function CertificatesPage() {
           <div>
             <Link href="/" className="flex items-center gap-2.5">
               <Image
-                src="/docal-icon.png"
+                src="/api/logo"
                 unoptimized
                 alt="doc.al"
                 width={44}

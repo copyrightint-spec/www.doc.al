@@ -310,7 +310,7 @@ export default function ExplorerPage() {
             <div className="flex items-center gap-3">
               <Link href="/" className="flex items-center gap-2">
                 <Image
-                  src="/docal-icon.png"
+                  src="/api/logo"
                   unoptimized
                   alt="doc.al"
                   width={36}

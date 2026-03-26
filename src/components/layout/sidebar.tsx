@@ -136,7 +136,7 @@ export function Sidebar({
           isAdmin ? "border-slate-800" : "border-border"
         )}>
           <Link href={isAdmin ? "/admin" : "/"} className="flex items-center gap-2.5">
-            <Image src="/docal-icon.png" unoptimized alt="doc.al" width={40} height={40} className="h-10 w-10" />
+            <Image src="/api/logo" unoptimized alt="doc.al" width={40} height={40} className="h-10 w-10" />
             <span className={cn("text-2xl font-bold", isAdmin ? "text-white" : "text-foreground")}>
               doc<span className="text-blue-600">.al</span>
             </span>

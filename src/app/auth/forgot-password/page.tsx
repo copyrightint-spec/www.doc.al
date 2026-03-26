@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
       <nav className="border-b border-border px-6 py-4">
         <div className="mx-auto max-w-6xl flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/docal-icon.png" unoptimized alt="doc.al" width={44} height={44} className="h-11 w-11" />
+            <Image src="/api/logo" unoptimized alt="doc.al" width={44} height={44} className="h-11 w-11" />
             <span className="text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
           </Link>
           <Link href="/auth/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">

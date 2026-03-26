@@ -107,7 +107,7 @@ export default function SealVerificationPage() {
       <div className="border-b border-border bg-card px-4 py-6">
         <div className="mx-auto max-w-3xl text-center">
           <div className="flex items-center justify-center gap-2.5">
-            <Image src="/docal-icon.png" unoptimized alt="doc.al" width={44} height={44} className="h-11 w-11" />
+            <Image src="/api/logo" unoptimized alt="doc.al" width={44} height={44} className="h-11 w-11" />
             <h1 className="text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></h1>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">Verifikim i Vules Dixhitale</p>

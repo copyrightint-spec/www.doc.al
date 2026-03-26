@@ -165,7 +165,7 @@ export default function VerifyPage() {
       <header className="border-b border-border bg-card px-6 py-4">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/docal-icon.png" alt="doc.al" width={32} height={32} className="rounded-lg" unoptimized />
+            <Image src="/api/logo" alt="doc.al" width={32} height={32} className="rounded-lg" unoptimized />
             <div>
               <span className="text-xl font-bold text-foreground">doc.al</span>
               <p className="text-xs text-muted-foreground">Verifikim Dokumenti</p>

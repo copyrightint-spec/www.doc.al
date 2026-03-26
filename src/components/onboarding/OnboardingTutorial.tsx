@@ -629,7 +629,7 @@ export default function OnboardingTutorial() {
               >
                 <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20">
                   <Image
-                    src="/docal-icon.png"
+                    src="/api/logo"
                     alt="doc.al"
                     width={48}
                     height={48}

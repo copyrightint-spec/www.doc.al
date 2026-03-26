@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: "doc.al — Nenshkrime Dixhitale & Vula Elektronike",
   description: "Platforma shqiptare per nenshkrime dixhitale, vula elektronike, dhe verifikim dokumentash. eIDAS & ETSI compliant.",
   icons: {
-    icon: "/docal-icon.png",
-    apple: "/docal-icon.png",
+    icon: "/api/logo",
+    apple: "/api/logo",
   },
 };
 
