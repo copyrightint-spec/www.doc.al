@@ -195,23 +195,29 @@ export async function signPdf(
 
   // Embed PAdES digital signature (PKCS#7/CMS) into PDF structure
   try {
+    console.log("[pdf-signer] Starting PAdES signing, certId:", options.certificateId);
     const { signPdfWithPAdES } = await import("./pades-signer");
     // Get certificate data for PAdES signing
     const cert = await (await import("@/lib/db")).prisma.certificate.findUnique({
       where: { id: options.certificateId },
       select: { publicKey: true, encryptedPrivateKey: true, certificatePem: true },
     });
-    if (cert) {
-      stampedPdfBuffer = Buffer.from(await signPdfWithPAdES(
+    if (!cert) {
+      console.warn("[pdf-signer] No certificate found for PAdES signing, skipping");
+    } else {
+      console.log("[pdf-signer] Certificate found, calling signPdfWithPAdES...");
+      const padesResult = await signPdfWithPAdES(
         stampedPdfBuffer,
         cert,
         options.signerName,
         options.reason || "Nenshkrim dixhital permes doc.al"
-      ));
+      );
+      stampedPdfBuffer = Buffer.from(padesResult);
+      console.log("[pdf-signer] PAdES signature embedded successfully, size:", stampedPdfBuffer.length);
     }
-    console.log("[pdf-signer] PAdES signature embedded successfully");
   } catch (padesError) {
-    console.error("[pdf-signer] PAdES embedding failed, using stamp-only:", padesError);
+    console.error("[pdf-signer] PAdES embedding failed, using stamp-only:", padesError instanceof Error ? padesError.message : padesError);
+    console.error("[pdf-signer] PAdES stack:", padesError instanceof Error ? padesError.stack : "no stack");
   }
 
   // Compute final document hash
