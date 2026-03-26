@@ -671,30 +671,6 @@ export default function LandingPage() {
             >
               Explorer
             </Link>
-            <Link
-              href="/verify"
-              className="hidden text-sm text-slate-400 transition-colors hover:text-white md:block"
-            >
-              Verify
-            </Link>
-            <Link
-              href="/certificates"
-              className="hidden text-sm text-slate-400 transition-colors hover:text-white md:block"
-            >
-              Certifikata
-            </Link>
-            <Link
-              href="/standards"
-              className="hidden text-sm text-slate-400 transition-colors hover:text-white md:block"
-            >
-              Standarde
-            </Link>
-            <Link
-              href="/contact"
-              className="hidden text-sm text-slate-400 transition-colors hover:text-white md:block"
-            >
-              Kontakt
-            </Link>
             {user ? (
               <Link
                 href="/dashboard"
