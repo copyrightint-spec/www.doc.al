@@ -419,9 +419,9 @@ export default function TemplatesPage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-card border-b border-border">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-red-50 via-transparent to-transparent opacity-60 dark:from-red-950/30 dark:opacity-40" />
-        <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="relative mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground lg:text-4xl">
               Zgjidhni nje Template
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-base text-muted-foreground">
@@ -435,7 +435,7 @@ export default function TemplatesPage() {
             <div className="inline-flex rounded-xl bg-muted p-1">
               <button
                 onClick={() => setActiveTab("ready")}
-                className={`rounded-xl px-5 py-2.5 text-sm font-medium transition-all ${
+                className={`rounded-xl px-5 py-2.5 text-sm font-medium transition-all min-h-[44px] ${
                   activeTab === "ready"
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -448,7 +448,7 @@ export default function TemplatesPage() {
               </button>
               <button
                 onClick={() => setActiveTab("mine")}
-                className={`rounded-xl px-5 py-2.5 text-sm font-medium transition-all ${
+                className={`rounded-xl px-5 py-2.5 text-sm font-medium transition-all min-h-[44px] ${
                   activeTab === "mine"
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -471,12 +471,12 @@ export default function TemplatesPage() {
         {activeTab === "ready" && (
           <>
             {/* Category pill filters */}
-            <div className="mb-8 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="mb-8 flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
               {CATEGORIES.map((c) => (
                 <button
                   key={c.value}
                   onClick={() => setCategoryFilter(c.value)}
-                  className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                  className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-medium transition-all min-h-[44px] ${
                     categoryFilter === c.value
                       ? "bg-primary text-white shadow-sm"
                       : "bg-card text-muted-foreground hover:bg-muted border border-border"
@@ -576,7 +576,7 @@ export default function TemplatesPage() {
                 <h2 className="text-lg font-bold text-foreground">Template-t e Mia</h2>
                 <p className="text-sm text-muted-foreground">{templates.length} template gjithsej</p>
               </div>
-              <Button asChild className="min-h-[44px]">
+              <Button asChild className="min-h-[44px] w-full sm:w-auto">
                 <Link href="/templates/editor">
                   <Plus className="h-4 w-4" />
                   Krijo Template
@@ -637,24 +637,24 @@ export default function TemplatesPage() {
                           + Shto rol
                         </Button>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                         {signerRoles.map((role) => (
                           <div
                             key={role.id}
-                            className="flex items-center gap-2 rounded-xl border px-3 py-2"
+                            className="flex items-center gap-2 rounded-xl border px-3 py-2.5 min-h-[44px]"
                             style={{ borderColor: role.color + "40", backgroundColor: role.color + "08" }}
                           >
-                            <div className="h-3 w-3 rounded-full" style={{ backgroundColor: role.color }} />
+                            <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: role.color }} />
                             <input
                               type="text"
                               value={role.name}
                               onChange={(e) =>
                                 setSignerRoles(signerRoles.map((r) => (r.id === role.id ? { ...r, name: e.target.value } : r)))
                               }
-                              className="w-32 border-none bg-transparent text-sm font-medium focus:outline-none text-foreground"
+                              className="w-full sm:w-32 border-none bg-transparent text-sm font-medium focus:outline-none text-foreground"
                             />
                             {signerRoles.length > 1 && (
-                              <button type="button" onClick={() => removeSignerRole(role.id)} className="text-muted-foreground hover:text-red-500 transition-colors">
+                              <button type="button" onClick={() => removeSignerRole(role.id)} className="text-muted-foreground hover:text-red-500 transition-colors p-1 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center">
                                 <X className="h-3.5 w-3.5" />
                               </button>
                             )}
@@ -677,7 +677,7 @@ export default function TemplatesPage() {
                               key={ft.value}
                               type="button"
                               onClick={() => addField(ft.value)}
-                              className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-colors hover:opacity-80 ${ft.color}`}
+                              className={`flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium transition-colors hover:opacity-80 min-h-[44px] ${ft.color}`}
                             >
                               <Icon className="h-3.5 w-3.5" strokeWidth={1.5} />
                               {ft.label}
@@ -693,21 +693,32 @@ export default function TemplatesPage() {
                             const assignedRole = signerRoles.find((r) => r.id === field.assignedTo);
                             const Icon = ft?.icon || File;
                             return (
-                              <div key={i} className="flex items-center gap-3 rounded-xl border border-border bg-muted p-3">
-                                <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${ft?.color || "bg-slate-100"}`}>
-                                  <Icon className="h-4 w-4" strokeWidth={1.5} />
+                              <div key={i} className="flex flex-col gap-2 rounded-xl border border-border bg-muted p-3 sm:flex-row sm:items-center sm:gap-3">
+                                <div className="flex items-center gap-3">
+                                  <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl ${ft?.color || "bg-slate-100"}`}>
+                                    <Icon className="h-4 w-4" strokeWidth={1.5} />
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    type="button"
+                                    onClick={() => removeField(i)}
+                                    className="h-8 w-8 text-muted-foreground hover:text-red-500 sm:hidden ml-auto"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
                                 </div>
-                                <div className="flex-1 flex flex-wrap items-center gap-2">
+                                <div className="flex-1 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                                   <input
                                     type="text"
                                     value={field.label}
                                     onChange={(e) => updateField(i, { label: e.target.value })}
-                                    className="w-36 rounded-xl border border-border bg-card px-2.5 py-1.5 text-xs text-foreground"
+                                    className="w-full sm:w-36 rounded-xl border border-border bg-card px-2.5 py-2 sm:py-1.5 text-xs text-foreground min-h-[44px] sm:min-h-0"
                                   />
                                   <select
                                     value={field.assignedTo || ""}
                                     onChange={(e) => updateField(i, { assignedTo: e.target.value })}
-                                    className="rounded-xl border border-border bg-card px-2.5 py-1.5 text-xs text-foreground"
+                                    className="w-full sm:w-auto rounded-xl border border-border bg-card px-2.5 py-2 sm:py-1.5 text-xs text-foreground min-h-[44px] sm:min-h-0"
                                   >
                                     {signerRoles.map((r) => (
                                       <option key={r.id} value={r.id}>{r.name}</option>
@@ -719,12 +730,12 @@ export default function TemplatesPage() {
                                       <span className="text-[10px] font-medium" style={{ color: assignedRole.color }}>{assignedRole.name}</span>
                                     </div>
                                   )}
-                                  <label className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                  <label className="flex items-center gap-1 text-[10px] text-muted-foreground min-h-[44px] sm:min-h-0">
                                     <input
                                       type="checkbox"
                                       checked={field.required}
                                       onChange={(e) => updateField(i, { required: e.target.checked })}
-                                      className="h-3 w-3 rounded accent-primary"
+                                      className="h-4 w-4 sm:h-3 sm:w-3 rounded accent-primary"
                                     />
                                     Detyrues
                                   </label>
@@ -734,7 +745,7 @@ export default function TemplatesPage() {
                                   size="icon"
                                   type="button"
                                   onClick={() => removeField(i)}
-                                  className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                                  className="hidden sm:flex h-8 w-8 text-muted-foreground hover:text-red-500"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -851,7 +862,7 @@ export default function TemplatesPage() {
                         )}
 
                         <div className="mt-4 flex gap-2">
-                          <Button size="sm" className="flex-1" asChild>
+                          <Button size="sm" className="flex-1 min-h-[44px]" asChild>
                             <Link href={`/dashboard/contracts/from-template/${t.id}`}>
                               Perdor
                             </Link>
@@ -859,6 +870,7 @@ export default function TemplatesPage() {
                           <Button
                             variant="secondary"
                             size="sm"
+                            className="min-h-[44px] min-w-[44px]"
                             onClick={async () => {
                               try {
                                 const res = await fetch(`/api/templates/${t.id}/generate-pdf`, {
@@ -884,6 +896,7 @@ export default function TemplatesPage() {
                           <Button
                             variant="secondary"
                             size="sm"
+                            className="min-h-[44px] min-w-[44px]"
                             onClick={() => { setDetailTemplate(t); setDetailHeaderColor(HEADER_COLORS[0]); }}
                           >
                             <Eye className="h-4 w-4" />

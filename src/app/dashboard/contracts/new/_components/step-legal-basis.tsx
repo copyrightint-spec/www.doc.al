@@ -178,7 +178,7 @@ export function StepLegalBasis({ selectedIds, onChange, onLegalBasesLoaded }: St
                           e.stopPropagation();
                           setExpandedId(expandedId === lb.id ? null : lb.id);
                         }}
-                        className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
+                        className="p-2 sm:p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
                       >
                         {expandedId === lb.id ? (
                           <ChevronUp className="h-4 w-4" />

@@ -61,7 +61,7 @@ export default function RegisterPage() {
       setStep("verify");
       startResendCooldown();
     } catch {
-      setError("Ndodhi nje gabim. Provoni perseri.");
+      setError("Ndodhi një gabim. Provoni përsëri.");
     } finally {
       setLoading(false);
     }
@@ -93,7 +93,7 @@ export default function RegisterPage() {
 
       setStep("success");
     } catch {
-      setError("Ndodhi nje gabim. Provoni perseri.");
+      setError("Ndodhi një gabim. Provoni përsëri.");
     } finally {
       setLoading(false);
     }
@@ -114,10 +114,10 @@ export default function RegisterPage() {
         startResendCooldown();
       } else {
         const data = await res.json();
-        setError(data.error || "Nuk u dergua kodi");
+        setError(data.error || "Nuk u dërgua kodi");
       }
     } catch {
-      setError("Ndodhi nje gabim");
+      setError("Ndodhi një gabim");
     }
   }
 
@@ -174,7 +174,7 @@ export default function RegisterPage() {
             {step === "register" && (
               <>
                 <p className="mb-6 text-center text-sm text-muted-foreground">
-                  Filloni te perdorni doc.al per nenshkrime elektronike
+                  Filloni të përdorni doc.al për nënshkrime elektronike
                 </p>
 
                 <form onSubmit={handleRegister} className="space-y-4">
@@ -182,7 +182,7 @@ export default function RegisterPage() {
 
                   <div>
                     <label htmlFor="name" className="mb-1 block text-sm font-medium text-foreground">
-                      Emri i plote
+                      Emri i plotë
                     </label>
                     <Input
                       id="name"
@@ -210,7 +210,7 @@ export default function RegisterPage() {
 
                   <div>
                     <label htmlFor="password" className="mb-1 block text-sm font-medium text-foreground">
-                      Fjalekalimi
+                      Fjalëkalimi
                     </label>
                     <Input
                       id="password"
@@ -222,7 +222,7 @@ export default function RegisterPage() {
                       placeholder="Min. 10 karaktere (A-z, 0-9, !@#)"
                     />
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Duhet te permbaje: shkronje te madhe, te vogel, numer, dhe simbol
+                      Duhet të përmbajë: shkronjë të madhe, të vogel, numer, dhe simbol
                     </p>
                   </div>
 
@@ -235,7 +235,7 @@ export default function RegisterPage() {
                       type="text"
                       value={form.organizationName}
                       onChange={(e) => setForm({ ...form, organizationName: e.target.value })}
-                      placeholder="Emri i kompanise"
+                      placeholder="Emri i kompanisë"
                     />
                   </div>
 
@@ -278,7 +278,7 @@ export default function RegisterPage() {
                   </div>
                   <h2 className="text-xl font-bold text-foreground">Verifikoni Email-in</h2>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Kemi derguar nje kod 6-shifror ne{" "}
+                    Kemi dërguar një kod 6-shifror ne{" "}
                     <span className="font-medium text-foreground">{form.email}</span>
                   </p>
                 </div>
@@ -326,8 +326,8 @@ export default function RegisterPage() {
                     className="text-sm text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] px-4"
                   >
                     {resendCooldown > 0
-                      ? `Ridergoni kodin pas ${resendCooldown}s`
-                      : "Nuk e morret kodin? Ridergoni"}
+                      ? `Ridërgoni kodin pas ${resendCooldown}s`
+                      : "Nuk e morret kodin? Ridërgoni"}
                   </button>
                 </div>
               </>
@@ -341,22 +341,22 @@ export default function RegisterPage() {
                 </div>
                 <h2 className="text-xl font-bold text-foreground">Llogaria u verifikua me sukses!</h2>
                 <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                  Faleminderit qe u regjistruat ne doc.al! Tani mund te hyni ne llogarine tuaj
-                  dhe te beni verifikimin e ID-se per te marre sherbimet tona sa me shpejt te jete e mundur.
+                  Faleminderit që u regjistruat në doc.al! Tani mund të hyni në llogarinë tuaj
+                  dhe të beni verifikimin e ID-se për të marre shërbimet tona sa me shpejt të jete e mundur.
                 </p>
 
                 <div className="mt-6 rounded-lg bg-blue-50 p-4">
                   <p className="text-sm text-blue-800">
                     <strong>Hapi tjeter:</strong> Pas hyrjes, shkoni te{" "}
-                    <span className="font-medium">Cilesimet &gt; Verifikimi KYC</span>{" "}
-                    per te ngarkuar dokumentin tuaj te identifikimit.
+                    <span className="font-medium">Cilësimet &gt; Verifikimi KYC</span>{" "}
+                    për të ngarkuar dokumentin tuaj të identifikimit.
                   </p>
                 </div>
 
                 <Link href="/auth/login" className="mt-6 block">
                   <Button className="w-full min-h-[48px]">
                     <ArrowRight className="h-4 w-4" />
-                    Hyni ne llogari
+                    Hyni në llogari
                   </Button>
                 </Link>
 

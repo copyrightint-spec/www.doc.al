@@ -83,7 +83,9 @@
       "Bash(curl -s https://www.doc.al/ -o /dev/null -w \"Home: %{http_code}\\\\n\")",
       "Bash(curl -s https://www.doc.al/auth/login)",
       "Bash(curl -sL https://www.doc.al/api/logo -o /dev/null -w \"Logo follow redirect: %{http_code}, size: %{size_download}\\\\n\")",
-      "Bash(grep -oE \"1x[0-9A-Za-z]{20,}|0x4[A-Za-z0-9_-]+\")"
+      "Bash(grep -oE \"1x[0-9A-Za-z]{20,}|0x4[A-Za-z0-9_-]+\")",
+      "Bash(node fix-albanian.js)",
+      "Bash(node -e \"require\\(''./fix-albanian.js''\\)\")"
     ]
   }
 }

@@ -83,7 +83,7 @@ function KycSuccessBanner({ kycStatus }: { kycStatus?: string }) {
       variant="success"
       icon={<CheckCircle2 className="h-5 w-5" />}
       title="KYC i verifikuar"
-      description="Verifikimi juaj KYC u perfundua me sukses."
+      description="Verifikimi juaj KYC u përfundua me sukses."
     />
   );
 }
@@ -145,7 +145,7 @@ export default function DashboardPage() {
 
       <PageHeader
         title={`Mire se vini, ${firstName}`}
-        subtitle="Menaxhoni dokumentat, nenshkrimet dhe certifikatat tuaja."
+        subtitle="Menaxhoni dokumentat, nënshkrimet dhe certifikatat tuaja."
       />
 
       {/* KYC Alert */}
@@ -155,7 +155,7 @@ export default function DashboardPage() {
             variant="destructive"
             icon={<XCircle className="h-5 w-5" />}
             title="Verifikimi KYC u refuzua"
-            description="Kontaktoni supportin ose riaplikoni per verifikimin KYC."
+            description="Kontaktoni supportin ose riaplikoni për verifikimin KYC."
             className="cursor-pointer transition-colors hover:opacity-90"
           />
         </Link>
@@ -165,8 +165,8 @@ export default function DashboardPage() {
           <Alert
             variant="warning"
             icon={<AlertTriangle className="h-5 w-5" />}
-            title="Plotesoni KYC"
-            description="Plotesoni verifikimin KYC per te pasur akses te plote ne platforme."
+            title="Plotësoni KYC"
+            description="Plotësoni verifikimin KYC për të pasur akses të plote në platforme."
             className="cursor-pointer transition-colors hover:opacity-90"
           />
         </Link>
@@ -179,8 +179,8 @@ export default function DashboardPage() {
           <Alert
             variant="info"
             icon={<PenTool className="h-5 w-5" />}
-            title="Vendosni formen e nenshkrimit tuaj"
-            description="Konfiguroni nenshkrimin tuaj elektronik per te nenshkruar dokumenta."
+            title="Vendosni formen e nënshkrimit tuaj"
+            description="Konfiguroni nënshkrimin tuaj elektronik për të nënshkruar dokumenta."
             className="cursor-pointer transition-colors hover:opacity-90"
           />
         </Link>
@@ -191,16 +191,16 @@ export default function DashboardPage() {
         <Alert
           variant="info"
           icon={<Info className="h-5 w-5" />}
-          title="Certifikate dixhitale"
-          description="Admini do t'ju gjeneroje certifikaten pasi te verifikoheni me sukses."
+          title="Certifikate digjitale"
+          description="Admini do t'ju gjeneroje certifikaten pasi të verifikoheni me sukses."
         />
       )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {[
-          { href: "/dashboard/contracts/self-sign", icon: PenTool, label: "Nenshkruaj Dokument", desc: "Ngarko dhe nenshkruaj vete", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
-          { href: "/dashboard/contracts/new", icon: Mail, label: "Krijo Marreveshje", desc: "Marreveshje me pale te shumta", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
+          { href: "/dashboard/contracts/self-sign", icon: PenTool, label: "Nënshkruaj Dokument", desc: "Ngarko dhe nënshkruaj vete", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
+          { href: "/dashboard/contracts/new", icon: Mail, label: "Krijo Marreveshje", desc: "Marreveshje me pale të shumta", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
           { href: "/dashboard/templates", icon: LayoutTemplate, label: "Perdor Shabllon", desc: "Shabllonet e gatshme", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
         ].map((action) => (
           <Link key={action.href} href={action.href}>
@@ -221,7 +221,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Dokumenta Totale" value={stats?.totalDocuments ?? 0} icon={FileText} />
         <StatCard label="Ne Pritje" value={stats?.pendingSignatures ?? 0} icon={Clock} iconColor="text-yellow-600" iconBg="bg-yellow-50 dark:bg-yellow-900/20" valueColor="text-yellow-600 dark:text-yellow-400" />
-        <StatCard label="Te Perfunduara" value={stats?.completedDocuments ?? 0} icon={CheckCircle} iconColor="text-green-600" iconBg="bg-green-50 dark:bg-green-900/20" valueColor="text-green-600 dark:text-green-400" />
+        <StatCard label="Te Përfunduara" value={stats?.completedDocuments ?? 0} icon={CheckCircle} iconColor="text-green-600" iconBg="bg-green-50 dark:bg-green-900/20" valueColor="text-green-600 dark:text-green-400" />
         <StatCard label="Timestamps" value={stats?.timestampsThisMonth ?? 0} icon={Zap} iconColor="text-blue-600" iconBg="bg-blue-50 dark:bg-blue-900/20" valueColor="text-blue-600 dark:text-blue-400" />
       </div>
 
@@ -282,7 +282,7 @@ export default function DashboardPage() {
             <CardTitle>Dokumentat e Fundit</CardTitle>
             <Button variant="link" size="sm" asChild>
               <Link href="/dashboard/contracts">
-                Shiko te gjitha
+                Shiko të gjitha
                 <ChevronRight className="ml-1 h-3 w-3" />
               </Link>
             </Button>

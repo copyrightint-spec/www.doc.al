@@ -136,6 +136,18 @@ export function Header({
                     </Link>
                   ))}
 
+                  {/* Dashboard link - shown on mobile for regular users, always for admin variant */}
+                  {!isAdmin && (
+                    <Link
+                      href="/dashboard"
+                      className="flex items-center gap-2 px-4 py-3 text-sm min-h-[44px] text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      <Home className="h-4 w-4" strokeWidth={1.5} />
+                      Dashboard
+                    </Link>
+                  )}
+
                   {isAdminUser && !isAdmin && (
                     <Link
                       href="/admin"

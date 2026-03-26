@@ -36,7 +36,7 @@ function LoginForm() {
     });
 
     if (result?.error) {
-      setError("Email ose fjalekalimi i gabuar");
+      setError("Email ose fjalëkalimi i gabuar");
       setLoading(false);
     } else {
       router.push(callbackUrl);
@@ -56,7 +56,7 @@ function LoginForm() {
             href="/auth/register"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center"
           >
-            Regjistrohu
+            Regjistrohuni
           </Link>
         </div>
       </nav>
@@ -100,13 +100,13 @@ function LoginForm() {
                     htmlFor="password"
                     className="block text-sm font-medium text-foreground"
                   >
-                    Fjalekalimi
+                    Fjalëkalimi
                   </label>
                   <Link
                     href="/auth/forgot-password"
                     className="text-xs text-blue-600 hover:underline dark:text-blue-400"
                   >
-                    Keni harruar fjalekalimin?
+                    Keni harruar fjalëkalimin?
                   </Link>
                 </div>
                 <Input
@@ -178,7 +178,7 @@ function LoginForm() {
                 href="/auth/register"
                 className="font-medium text-foreground hover:underline"
               >
-                Regjistrohu
+                Regjistrohuni
               </Link>
             </p>
           </CardContent>

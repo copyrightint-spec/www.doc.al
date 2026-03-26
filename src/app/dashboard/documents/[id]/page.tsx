@@ -207,16 +207,16 @@ function HashTimelineSection({ steps }: { steps: HashTimelineStep[] }) {
             const displayHash = step.hash || step.cid || "";
 
             return (
-              <div key={step.step} className="relative flex gap-4">
+              <div key={step.step} className="relative flex gap-3 sm:gap-4">
                 {/* Timeline column */}
                 <div className="flex flex-col items-center">
                   <div
                     className={cn(
-                      "relative z-10 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2",
+                      "relative z-10 flex h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 items-center justify-center rounded-full border-2",
                       styles.dot
                     )}
                   >
-                    <IconComponent className={cn("h-4 w-4", styles.icon)} strokeWidth={2} />
+                    <IconComponent className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", styles.icon)} strokeWidth={2} />
                   </div>
                   {!isLast && (
                     <div className={cn("w-0.5 min-h-[24px] flex-1", styles.line)} />
@@ -224,15 +224,15 @@ function HashTimelineSection({ steps }: { steps: HashTimelineStep[] }) {
                 </div>
 
                 {/* Content */}
-                <div className={cn("flex-1", isLast ? "pb-0" : "pb-6")}>
-                  <div className="rounded-xl border border-border bg-muted/50 p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className={cn("flex-1 min-w-0", isLast ? "pb-0" : "pb-6")}>
+                  <div className="rounded-xl border border-border bg-muted/50 p-3 sm:p-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                           <span className="inline-flex items-center justify-center rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
                             {step.step}
                           </span>
-                          <p className="font-medium text-foreground">{step.label}</p>
+                          <p className="font-medium text-sm sm:text-base text-foreground">{step.label}</p>
                           <Badge
                             variant={
                               step.status === "completed"
@@ -481,7 +481,7 @@ export default function DocumentDetailPage() {
   const st = DOCUMENT_STATUS[document.status] || DOCUMENT_STATUS.DRAFT;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6 lg:p-8">
+    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6 lg:p-8">
       {/* Back button */}
       <Link
         href="/dashboard/documents"
@@ -493,21 +493,21 @@ export default function DocumentDetailPage() {
 
       {/* Document Info Header */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                <FileText className="h-6 w-6 text-primary" />
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+            <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold text-foreground">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-lg sm:text-xl font-bold text-foreground break-words">
                     {document.title}
                   </h1>
                   <Badge variant={st.variant}>{st.label}</Badge>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">{document.fileName}</p>
-                <div className="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground/70">
+                <p className="mt-1 text-sm text-muted-foreground truncate">{document.fileName}</p>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground/70">
                   <span>{formatBytes(document.fileSize)}</span>
                   <span>Krijuar: {formatDateTime(document.createdAt)}</span>
                   <span>Pronari: {document.owner.name}</span>
@@ -515,9 +515,9 @@ export default function DocumentDetailPage() {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               {document.fileUrl && (
-                <Button variant="secondary" size="sm" asChild>
+                <Button variant="secondary" size="sm" className="min-h-[44px] sm:min-h-0 flex-1 sm:flex-none" asChild>
                   <a href={`/api/documents/${document.id}/download`} download>
                     <Download className="h-3.5 w-3.5" />
                     Shkarko
@@ -534,11 +534,11 @@ export default function DocumentDetailPage() {
           </div>
 
           {/* File Hash */}
-          <div className="mt-4 rounded-xl bg-muted px-3 py-2">
+          <div className="mt-4 rounded-xl bg-muted px-3 py-2 overflow-hidden">
             <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               SHA-256:{" "}
             </span>
-            <code className="break-all font-mono text-xs text-muted-foreground">
+            <code className="break-all font-mono text-[10px] sm:text-xs text-muted-foreground">
               {document.fileHash}
             </code>
           </div>
@@ -624,16 +624,16 @@ export default function DocumentDetailPage() {
                 const IconComponent = EVENT_ICONS[event.type] || Info;
 
                 return (
-                  <div key={`${event.type}-${index}`} className="relative flex gap-4">
+                  <div key={`${event.type}-${index}`} className="relative flex gap-3 sm:gap-4">
                     {/* Timeline column */}
                     <div className="flex flex-col items-center">
                       <div
                         className={cn(
-                          "relative z-10 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2",
+                          "relative z-10 flex h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 items-center justify-center rounded-full border-2",
                           colors.ring
                         )}
                       >
-                        <IconComponent className={cn("h-4 w-4", colors.icon)} strokeWidth={2} />
+                        <IconComponent className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", colors.icon)} strokeWidth={2} />
                       </div>
                       {!isLast && (
                         <div className={cn("w-0.5 min-h-[24px] flex-1", colors.line)} />
@@ -641,11 +641,11 @@ export default function DocumentDetailPage() {
                     </div>
 
                     {/* Content */}
-                    <div className={cn("flex-1", isLast ? "pb-0" : "pb-6")}>
-                      <div className="rounded-xl border border-border bg-muted/50 p-4">
-                        <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className={cn("flex-1 min-w-0", isLast ? "pb-0" : "pb-6")}>
+                      <div className="rounded-xl border border-border bg-muted/50 p-3 sm:p-4">
+                        <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-2">
                           <div className="min-w-0 flex-1">
-                            <p className="font-medium text-foreground">{event.title}</p>
+                            <p className="font-medium text-sm sm:text-base text-foreground">{event.title}</p>
                             <p className="mt-0.5 text-xs text-muted-foreground">
                               {event.description}
                             </p>

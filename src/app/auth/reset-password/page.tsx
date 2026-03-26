@@ -26,11 +26,11 @@ function ResetForm() {
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{10,}$/;
     if (!passwordRegex.test(password)) {
-      setError("Fjalekalimi duhet te kete min. 10 karaktere, shkronja te medha/vogla, numra dhe simbole");
+      setError("Fjalëkalimi duhet të këtë min. 10 karaktere, shkronja të medha/vogla, numra dhe simbole");
       return;
     }
     if (password !== confirmPassword) {
-      setError("Fjalekalimiet nuk perputhen");
+      setError("Fjalëkalimiet nuk përputhen");
       return;
     }
 
@@ -45,10 +45,10 @@ function ResetForm() {
       if (data.success) {
         setDone(true);
       } else {
-        setError(data.error || "Ndodhi nje gabim");
+        setError(data.error || "Ndodhi një gabim");
       }
     } catch {
-      setError("Ndodhi nje gabim");
+      setError("Ndodhi një gabim");
     } finally {
       setLoading(false);
     }
@@ -61,10 +61,10 @@ function ResetForm() {
           <CardContent className="p-5 sm:p-8 text-center">
             <h1 className="text-xl font-bold text-foreground">Link i Pavlefshem</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Ky link per rivendosjen e fjalekalimit eshte i pavlefshem ose ka skaduar.
+              Ky link për rivendosjen e fjalëkalimit është i pavlefshem ose ka skaduar.
             </p>
             <Link href="/auth/forgot-password">
-              <Button className="mt-4 min-h-[48px]">Kerkoni link te ri</Button>
+              <Button className="mt-4 min-h-[48px]">Kërkoni link të ri</Button>
             </Link>
           </CardContent>
         </Card>
@@ -89,21 +89,21 @@ function ResetForm() {
             {done ? (
               <div className="text-center">
                 <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
-                <h1 className="mt-4 text-2xl font-bold text-foreground">Fjalekalimi u Ndryshua</h1>
+                <h1 className="mt-4 text-2xl font-bold text-foreground">Fjalëkalimi u Ndryshua</h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Fjalekalimi juaj u ndryshua me sukses. Tani mund te hyni me fjalekalimin e ri.
+                  Fjalëkalimi juaj u ndryshua me sukses. Tani mund të hyni me fjalëkalimin e ri.
                 </p>
                 <Link href="/auth/login">
-                  <Button className="mt-6 w-full min-h-[48px]">Hyr ne Llogari</Button>
+                  <Button className="mt-6 w-full min-h-[48px]">Hyr në Llogari</Button>
                 </Link>
               </div>
             ) : (
               <>
                 <div className="mb-6 sm:mb-8 text-center">
                   <Lock className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-blue-600" />
-                  <h1 className="mt-3 text-2xl font-bold text-foreground">Fjalekalim i Ri</h1>
+                  <h1 className="mt-3 text-2xl font-bold text-foreground">Fjalëkalim i Ri</h1>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Vendosni fjalekalimin tuaj te ri.
+                    Vendosni fjalëkalimin tuaj të ri.
                   </p>
                 </div>
 
@@ -112,7 +112,7 @@ function ResetForm() {
 
                   <div>
                     <label htmlFor="password" className="mb-1 block text-sm font-medium text-foreground">
-                      Fjalekalimi i Ri
+                      Fjalëkalimi i Ri
                     </label>
                     <Input
                       id="password"
@@ -127,7 +127,7 @@ function ResetForm() {
 
                   <div>
                     <label htmlFor="confirm" className="mb-1 block text-sm font-medium text-foreground">
-                      Konfirmoni Fjalekalimin
+                      Konfirmoni Fjalëkalimin
                     </label>
                     <Input
                       id="confirm"
@@ -135,7 +135,7 @@ function ResetForm() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
-                      placeholder="Rishkruani fjalekalimin"
+                      placeholder="Rishkruani fjalëkalimin"
                     />
                   </div>
 
@@ -146,7 +146,7 @@ function ResetForm() {
                         Duke ndryshuar...
                       </>
                     ) : (
-                      "Ndrysho Fjalekalimin"
+                      "Ndrysho Fjalëkalimin"
                     )}
                   </Button>
                 </form>

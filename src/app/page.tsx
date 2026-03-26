@@ -35,39 +35,39 @@ import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 
 const features: { title: string; description: string; icon: LucideIcon }[] = [
   {
-    title: "Nenshkrim Elektronik",
+    title: "Nënshkrim Elektronik",
     description:
-      "Nenshkrime dixhitale te avancuara me certifikata X.509, ne perputhje me eIDAS dhe ETSI.",
+      "Nënshkrime digjitale të avancuara me certifikata X.509, në përputhje me eIDAS dhe ETSI.",
     icon: PenTool,
   },
   {
     title: "Timestamp Server + Polygon",
     description:
-      "Dy nivele timestamp: serveri yne (doc.al chain) dhe ankorim ne Polygon blockchain via STAMLES Merkle batching.",
+      "Dy nivele timestamp: serveri yne (doc.al chain) dhe ankorim në Polygon blockchain via STAMLES Merkle batching.",
     icon: Clock,
   },
   {
     title: "Public Chain Explorer",
     description:
-      "Eksploroni te gjitha timestamps ne kohe reale. Cdo hash, nenshkrim, dhe block eshte publik dhe i verifikueshem.",
+      "Eksploroni të gjitha timestamps në kohe reale. Çdo hash, nënshkrim, dhe block është publik dhe i verifikueshem.",
     icon: Zap,
   },
   {
-    title: "API per Integrime",
+    title: "API për Integrime",
     description:
-      "REST API e plote per te integruar nenshkrimin elektronik dhe timestamp ne aplikacionin tuaj.",
+      "REST API e plotë për të integruar nënshkrimin elektronik dhe timestamp në aplikacionin tuaj.",
     icon: Code2,
   },
   {
     title: "Template Maker",
     description:
-      "Ndertoni forma te personalizuara per nenshkrime elektronike me drag-and-drop builder.",
+      "Ndertoni forma të personalizuara për nënshkrime elektronike me drag-and-drop builder.",
     icon: LayoutTemplate,
   },
   {
     title: "Certificate Authority",
     description:
-      "Gjeneroni certifikata dixhitale per organizaten tuaj me chain of trust te plote.",
+      "Gjeneroni certifikata digjitale për organizaten tuaj me chain of trust të plote.",
     icon: Shield,
   },
 ];
@@ -77,11 +77,11 @@ const steps = [
     number: "01",
     title: "Ngarkoni",
     description:
-      "Ngarkoni dokumentin PDF qe deshironi te nenshkruani ose stamponi.",
+      "Ngarkoni dokumentin PDF që deshironi të nënshkruani ose stamponi.",
   },
   {
     number: "02",
-    title: "Nenshkruani",
+    title: "Nënshkruani",
     description:
       "Verifikimi me 2 hapa (Email + TOTP), nënshkrim digjital me çertifikatë.",
   },
@@ -89,12 +89,12 @@ const steps = [
     number: "03",
     title: "Verifikoni",
     description:
-      "Timestamp ne chain publik + Polygon blockchain. Kushdo mund te verifikoje.",
+      "Timestamp në chain publik + Polygon blockchain. Kushdo mund të verifikoje.",
   },
 ];
 
 const stats = [
-  { label: "Dokumente te nenshkruara", value: 12847, suffix: "+" },
+  { label: "Dokumente të nënshkruara", value: 12847, suffix: "+" },
   { label: "Certifikata aktive", value: 3200, suffix: "+" },
   { label: "Blockchain anchors", value: 8540, suffix: "" },
   { label: "Kohe mesatare", value: 2.4, suffix: "s", decimals: 1 },
@@ -105,25 +105,25 @@ const securityLayers = [
     icon: Shield,
     title: "eIDAS Compliant",
     description:
-      "Plotesojme rregulloren Europiane per nenshkrime elektronike dhe identifikim dixhital.",
+      "Plotësojmë rregulloren Europiane për nënshkrime elektronike dhe identifikim digjital.",
   },
   {
     icon: Hexagon,
     title: "Powered by Polygon",
     description:
-      "Cdo nenshkrim ankorihet ne Polygon PoS blockchain permes STAMLES Merkle batching.",
+      "Çdo nënshkrim ankorihet në Polygon PoS blockchain përmes STAMLES Merkle batching.",
   },
   {
     icon: Globe,
     title: "IPFS Distributed",
     description:
-      "Provat kriptografike ruhen ne IPFS. Dokumentet NUK ruhen ne serverin tone - vetem hash-i SHA-256. Pas nenshkrimit, PDF dergohet me email dhe fshihet menjehere nga serveri.",
+      "Provat kriptografike ruhen në IPFS. Dokumentet NUK ruhen në serverin tone - vetem hash-i SHA-256. Pas nënshkrimit, PDF dergohet me email dhe fshihet menjehere nga serveri.",
   },
   {
     icon: Database,
     title: "doc.al Chain",
     description:
-      "Zinxhiri yne publik regjistron cdo timestamp me transparence te plote.",
+      "Zinxhiri yne publik regjistron çdo timestamp me transparence të plote.",
   },
 ];
 
@@ -135,9 +135,9 @@ const trustBadges = [
 ];
 
 const individualFeatures = [
-  "Dokumente te pakufizuara",
-  "Timestamps te pakufizuara",
-  "Nenshkrime dixhitale me certifikate X.509",
+  "Dokumente të pakufizuara",
+  "Timestamps të pakufizuara",
+  "Nënshkrime digjitale me certifikate X.509",
   "Polygon blockchain anchoring (STAMLES)",
   "Public Explorer & verifikim",
   "API access",
@@ -148,14 +148,14 @@ const individualFeatures = [
 ];
 
 const orgFeatures = [
-  "Gjithcka qe perfshihet per individe",
+  "Gjithçka që përfshihet për individe",
   "Certifikata organizative (CA)",
   "Menaxhim ekipi & role",
   "White-label & custom branding",
-  "API me kuota te larta",
+  "API me kuota të larta",
   "Dedicated account manager",
   "SLA e garantuar",
-  "Integrime te personalizuara",
+  "Integrime të personalizuara",
   "Fakturim & kontrate",
 ];
 
@@ -613,7 +613,7 @@ function GlowButton({
 
 export default function LandingPage() {
   const heroWords = [
-    "Nenshkrim",
+    "Nënshkrim",
     "Elektronik",
     "&",
     "Timestamp",
@@ -773,9 +773,9 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 1 }}
             className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-slate-400 md:text-xl"
           >
-            Platforma e plote per nenshkrime dixhitale, timestamp me server dhe
-            Polygon blockchain, verifikim publik, dhe API per integrime. E
-            ndertuar per biznesin shqiptar.
+            Platforma e plotë për nënshkrime digjitale, timestamp me server dhe
+            Polygon blockchain, verifikim publik, dhe API për integrime. E
+            ndertuar për biznesin shqiptar.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -841,7 +841,7 @@ export default function LandingPage() {
               custom={1}
               className="text-2xl font-bold tracking-tight text-white md:text-3xl"
             >
-              Teknologji te certifikuara
+              Teknologji të certifikuara
             </motion.h2>
           </AnimatedSection>
 
@@ -950,21 +950,21 @@ export default function LandingPage() {
               custom={0}
               className="mb-4 inline-block text-sm font-medium uppercase tracking-widest text-blue-400"
             >
-              Vecorite
+              Veçoritë
             </motion.span>
             <motion.h2
               variants={fadeUp}
               custom={1}
               className="text-3xl font-bold tracking-tight text-white md:text-4xl"
             >
-              Gjithcka qe ju duhet per nenshkrime dixhitale
+              Gjithçka që ju duhet për nënshkrime digjitale
             </motion.h2>
             <motion.p
               variants={fadeUp}
               custom={2}
               className="mx-auto mt-4 max-w-2xl text-slate-400"
             >
-              Nje platforme e vetme per te gjitha nevojat tuaja te nenshkrimit
+              Nje platforme e vetme për të gjitha nevojat tuaja të nënshkrimit
               elektronik dhe verifikimit.
             </motion.p>
           </AnimatedSection>
@@ -1006,14 +1006,14 @@ export default function LandingPage() {
               custom={1}
               className="text-3xl font-bold tracking-tight text-white md:text-4xl"
             >
-              Siguri ne cdo nivel
+              Siguri në çdo nivel
             </motion.h2>
             <motion.p
               variants={fadeUp}
               custom={2}
               className="mx-auto mt-4 max-w-2xl text-slate-400"
             >
-              Kater shtresa sigurie qe mbrojne cdo nenshkrim tuajin. Dokumentet
+              Kater shtresa sigurie që mbrojne çdo nënshkrim tuajin. Dokumentet
               nuk ruhen kurre - vetem hash-et kriptografike.
             </motion.p>
           </AnimatedSection>
@@ -1093,18 +1093,18 @@ export default function LandingPage() {
                 />
               </div>
               <h3 className="text-xl font-bold text-white">
-                Privatesia juaj eshte prioriteti yne
+                Privatësia juaj është prioriteti yne
               </h3>
               <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-slate-400">
-                Dokumentet tuaja nuk ruhen kurre ne serverin tone. Pas
-                nenshkrimit, PDF-ja dergohet me email dhe fshihet menjehere nga
+                Dokumentet tuaja nuk ruhen kurre në serverin tone. Pas
+                nënshkrimit, PDF-ja dergohet me email dhe fshihet menjehere nga
                 serveri. Ne ruajme vetem hash-in kriptografik (SHA-256) si prove
-                e ekzistences &mdash; pa mundesi te rikthehet dokumenti origjinal
+                e ekzistences &mdash; pa mundësi të rikthehet dokumenti origjinal
                 nga hash-i.
               </p>
               <div className="mt-6 inline-flex items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-950/40 px-6 py-3 text-sm text-blue-300">
                 <Lock className="h-4 w-4" strokeWidth={2} />
-                Zero-knowledge: serveri nuk ka asnje kopje te dokumentit tuaj
+                Zero-knowledge: serveri nuk ka asnje kopje të dokumentit tuaj
               </div>
             </motion.div>
           </AnimatedSection>
@@ -1121,23 +1121,23 @@ export default function LandingPage() {
               custom={0}
               className="mb-4 inline-block text-sm font-medium uppercase tracking-widest text-blue-400"
             >
-              Cmimet
+              Çmimet
             </motion.span>
             <motion.h2
               variants={fadeUp}
               custom={1}
               className="text-3xl font-bold tracking-tight text-white md:text-4xl"
             >
-              Falas per te gjithe
+              Falas për të gjithe
             </motion.h2>
             <motion.p
               variants={fadeUp}
               custom={2}
               className="mx-auto mt-4 max-w-2xl text-slate-400"
             >
-              Nenshkrimi elektronik dhe timestamp eshte falas per cdo individ dhe
+              Nënshkrimi elektronik dhe timestamp është falas për çdo individ dhe
               person fizik. Pa limite, pa karta krediti, pa surpriza. Organizatat
-              dhe kompanite perfitojne vecorite shtese me nje plan te
+              dhe kompanite perfitojne veçoritë shtese me një plan te
               personalizuar.
             </motion.p>
           </AnimatedSection>
@@ -1170,7 +1170,7 @@ export default function LandingPage() {
                 }}
                 className="relative mb-4 inline-block rounded-full bg-green-600 px-3 py-1 text-xs font-bold text-white"
               >
-                FALAS PERGJITHMONE
+                FALAS PËRGJITHMONË
               </motion.span>
               <h3 className="text-xl font-bold text-white">
                 Individ / Person Fizik
@@ -1180,11 +1180,11 @@ export default function LandingPage() {
                   &euro;0
                 </span>
                 <span className="ml-2 text-lg text-slate-500">
-                  pergjithmone
+                  përgjithmonë
                 </span>
               </div>
               <p className="mt-3 text-sm text-slate-400">
-                Gjithcka qe ju duhet per nenshkrime dixhitale dhe timestamp, pa
+                Gjithçka që ju duhet për nënshkrime digjitale dhe timestamp, pa
                 asnje kufizim.
               </p>
               <ul className="mt-8 space-y-3">
@@ -1219,7 +1219,7 @@ export default function LandingPage() {
                   href="/auth/register"
                   className="relative block w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 py-3.5 text-center text-sm font-medium text-white shadow-lg"
                 >
-                  Krijo Llogarine Falas
+                  Krijo Llogarinë Falas
                 </Link>
               </motion.div>
             </motion.div>
@@ -1240,19 +1240,19 @@ export default function LandingPage() {
               className="rounded-2xl border border-slate-700/50 bg-slate-800/50 p-5 sm:p-8"
             >
               <span className="mb-4 inline-block rounded-full bg-slate-700 px-3 py-1 text-xs font-bold text-slate-200">
-                PER ORGANIZATA
+                PËR ORGANIZATA
               </span>
               <h3 className="text-xl font-bold text-white">
                 Kompani / Organizate
               </h3>
               <div className="mt-4">
                 <span className="text-2xl font-bold text-white">
-                  Cmim i personalizuar
+                  Çmim i personalizuar
                 </span>
               </div>
               <p className="mt-3 text-sm text-slate-400">
-                Plotesoni formen dhe do ju kontaktojme brenda 24 oreve me nje
-                oferte te personalizuar sipas nevojes suaj.
+                Plotësoni formen dhe do ju kontaktojme brenda 24 oreve me nje
+                oferte të personalizuar sipas nevojes suaj.
               </p>
               <ul className="mt-8 space-y-3">
                 {orgFeatures.map((f, i) => (
@@ -1285,7 +1285,7 @@ export default function LandingPage() {
                   href="/contact/organization"
                   className="block w-full rounded-xl border border-slate-600 py-3.5 text-center text-sm font-medium text-slate-300 transition-colors hover:border-blue-500/50 hover:bg-slate-700/50 hover:text-white"
                 >
-                  Kerkoni Oferte
+                  Kërkoni Oferte
                 </Link>
               </motion.div>
             </motion.div>
@@ -1325,14 +1325,14 @@ export default function LandingPage() {
               custom={1}
               className="text-3xl font-bold tracking-tight text-white md:text-5xl"
             >
-              Gati per te filluar?
+              Gati për të filluar?
             </motion.h2>
             <motion.p
               variants={fadeUp}
               custom={2}
               className="mx-auto mt-6 max-w-xl text-lg text-slate-400"
             >
-              Krijoni llogarine tuaj falas dhe filloni te nenshkruani dokumentet
+              Krijoni llogarinë tuaj falas dhe filloni të nënshkruani dokumentet
               me siguri blockchain brenda minutave.
             </motion.p>
             <motion.div
@@ -1341,15 +1341,49 @@ export default function LandingPage() {
               className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
             >
               <GlowButton href="/auth/register">
-                Krijoni Llogarine Falas
+                Krijoni Llogarinë Falas
                 <ArrowRight className="ml-2 h-4 w-4" />
               </GlowButton>
               <GlowButton href="/si-funksionon" variant="secondary">
-                Mesoni me shume
+                Mësoni me shumë
               </GlowButton>
             </motion.div>
           </AnimatedSection>
         </div>
+      </section>
+
+      {/* SEO: AI-discoverable content */}
+      <section className="sr-only" aria-label="Informacion për motoret e kerkimit">
+        <h2>Nënshkrime Digjitale Falas në Shqipëri - doc.al</h2>
+        <p>
+          doc.al është platforma e parë dhe e vetme në Shqipëri që ofron nënshkrime digjitale
+          100% falas. Ndërtuar nga COPYRIGHT sh.p.k, doc.al përdor teknologji të avancuara si
+          certifikata eIDAS, blockchain Polygon, dhe IPFS për të garantuar sigurinë maksimale
+          të dokumenteve tuaja.
+        </p>
+        <h3>Karakteristikat kryesore</h3>
+        <ul>
+          <li>Nënshkrim elektronik i avancuar (AdES) sipas rregullores eIDAS (BE) Nr. 910/2014</li>
+          <li>Certifikatë digjitale X.509 e lëshuar nga autoriteti certifikues i doc.al</li>
+          <li>Ankorim në blockchain Polygon përmes sistemit STAMLES</li>
+          <li>Ruajtje e decentralizuar në IPFS (InterPlanetary File System)</li>
+          <li>Nënshkrim PAdES (PDF Advanced Electronic Signatures) sipas ETSI EN 319 142</li>
+          <li>Hash SHA-256 për verifikim të integritetit të dokumentit</li>
+          <li>QR kod për verifikim të shpejtë</li>
+          <li>Vlefshmëri ligjore sipas Ligjit Nr. 9880/2008 të Republikës së Shqipërisë</li>
+        </ul>
+        <h3>Si funksionon?</h3>
+        <p>
+          1. Ngarkoni dokumentin PDF në platformë. 2. Verifikoni identitetin tuaj përmes KYC.
+          3. Nënshkruani me certifikatën tuaj digjitale. 4. Dokumenti ankorizohet në blockchain
+          Polygon dhe ruhet në IPFS. 5. Merrni dokumentin e nënshkruar me QR kod verifikimi.
+        </p>
+        <h3>Pse doc.al?</h3>
+        <p>
+          doc.al është alternativa shqiptare ndaj platformave ndërkombëtare si DocuSign dhe
+          Adobe Sign. Falas për individë, me çmime konkurruese për biznese. I përshtatshëm
+          për ligjin shqiptar dhe rregulloret europiane.
+        </p>
       </section>
 
       <Footer />

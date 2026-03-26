@@ -1,7 +1,10 @@
 export const metadata = {
-  title: "Si Funksionon - doc.al",
+  title: "Si Funksionon - Procesi i Nënshkrimit Digjital",
   description:
-    "Si funksionon sistemi i sigurise doc.al: Merkle tree batching, Polygon blockchain, IPFS, dhe verifikimi i dokumenteve.",
+    "Mësoni si funksionon nënshkrimi digjital me doc.al: ngarkoni PDF, verifikoni identitetin, nënshkruani me certifikatë eIDAS, dhe ankorizoni në blockchain Polygon.",
+  alternates: {
+    canonical: "https://www.doc.al/si-funksionon",
+  },
 };
 
 export default function SiFunksiononLayout({

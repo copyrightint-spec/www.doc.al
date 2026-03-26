@@ -31,10 +31,10 @@ export default function ForgotPasswordPage() {
       if (data.success) {
         setSent(true);
       } else {
-        setError(data.error || "Ndodhi nje gabim");
+        setError(data.error || "Ndodhi një gabim");
       }
     } catch {
-      setError("Ndodhi nje gabim. Provoni perseri.");
+      setError("Ndodhi një gabim. Provoni përsëri.");
     } finally {
       setLoading(false);
     }
@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
             <span className="text-2xl sm:text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
           </Link>
           <Link href="/auth/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">
-            Kthehu te Hyrja
+            Kthehu të Hyrja
           </Link>
         </div>
       </nav>
@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
                 <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
                 <h1 className="mt-4 text-2xl font-bold text-foreground">Kontrolloni Email-in</h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Nese ky email ekziston ne sistemin tone, do te merrni nje link per te ndryshuar fjalekalimin.
+                  Nëse ky email ekziston në sistemin tone, do të merrni një link për të ndryshuar fjalëkalimin.
                 </p>
                 <p className="mt-4 text-xs text-muted-foreground">
                   Kontrolloni edhe folderen Spam/Junk.
@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
                 <Link href="/auth/login">
                   <Button variant="secondary" className="mt-6 w-full gap-2 min-h-[48px]">
                     <ArrowLeft className="h-4 w-4" />
-                    Kthehu te Hyrja
+                    Kthehu të Hyrja
                   </Button>
                 </Link>
               </div>
@@ -78,9 +78,9 @@ export default function ForgotPasswordPage() {
               <>
                 <div className="mb-6 sm:mb-8 text-center">
                   <Mail className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-blue-600" />
-                  <h1 className="mt-3 text-2xl font-bold text-foreground">Rivendos Fjalekalimin</h1>
+                  <h1 className="mt-3 text-2xl font-bold text-foreground">Rivendos Fjalëkalimin</h1>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Fut email-in tuaj dhe do t&apos;ju dergojme nje link per te ndryshuar fjalekalimin.
+                    Fut email-in tuaj dhe do t&apos;ju dërgojmë një link për të ndryshuar fjalëkalimin.
                   </p>
                 </div>
 
@@ -105,12 +105,12 @@ export default function ForgotPasswordPage() {
                     {loading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Duke derguar...
+                        Duke dërguar...
                       </>
                     ) : (
                       <>
                         <Mail className="h-4 w-4" />
-                        Dergo Linkun
+                        Dërgo Linkun
                       </>
                     )}
                   </Button>
@@ -119,7 +119,7 @@ export default function ForgotPasswordPage() {
                 <p className="mt-6 text-center text-sm text-muted-foreground">
                   <Link href="/auth/login" className="font-medium text-foreground hover:underline">
                     <ArrowLeft className="inline h-3 w-3 mr-1" />
-                    Kthehu te Hyrja
+                    Kthehu të Hyrja
                   </Link>
                 </p>
               </>
