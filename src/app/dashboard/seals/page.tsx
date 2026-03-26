@@ -387,7 +387,7 @@ export default function SealsPage() {
 
   if (loading && hasOrganization === null) {
     return (
-      <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
+      <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
         <PageHeader title="Vulat Dixhitale" subtitle="Menaxhoni vulat dixhitale te kompanise per dokumente dhe fatura" />
         <PageSpinner />
       </div>
@@ -396,7 +396,7 @@ export default function SealsPage() {
 
   if (hasOrganization === false) {
     return (
-      <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
+      <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
         <PageHeader title="Vulat Dixhitale" subtitle="Menaxhoni vulat dixhitale te kompanise per dokumente dhe fatura" />
         <Card>
           <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
@@ -420,7 +420,7 @@ export default function SealsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
+    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <PageHeader title="Vulat Dixhitale" subtitle="Menaxhoni vulat dixhitale te kompanise per dokumente dhe fatura" />
         <div className="flex items-center gap-2">

@@ -643,22 +643,22 @@ export default function LandingPage() {
     <div className="min-h-screen bg-slate-950 text-slate-100">
       {/* ─── Nav ─── */}
       <nav className="fixed top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2.5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+          <Link href="/" className="flex items-center gap-2">
             <Image
               src="/api/logo"
               unoptimized
               alt="doc.al"
               width={44}
               height={44}
-              className="h-11 w-11"
+              className="h-9 w-9 sm:h-11 sm:w-11"
               priority
             />
-            <span className="text-3xl font-bold text-white">
+            <span className="text-2xl sm:text-3xl font-bold text-white">
               doc<span className="text-blue-500">.al</span>
             </span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link
               href="/si-funksionon"
               className="hidden text-sm text-slate-400 transition-colors hover:text-white md:block"
@@ -719,7 +719,7 @@ export default function LandingPage() {
               <>
                 <Link
                   href="/auth/login"
-                  className="rounded-xl border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800"
+                  className="rounded-xl border border-slate-700 px-3 sm:px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 min-h-[44px] flex items-center"
                 >
                   Hyr
                 </Link>
@@ -729,7 +729,7 @@ export default function LandingPage() {
                 >
                   <Link
                     href="/auth/register"
-                    className="inline-block rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500"
+                    className="inline-flex items-center rounded-xl bg-blue-600 px-3 sm:px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500 min-h-[44px]"
                   >
                     Fillo Falas
                   </Link>
@@ -752,7 +752,7 @@ export default function LandingPage() {
           <ParticleGrid />
         </div>
 
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center px-6 py-32 text-center md:py-40">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center px-4 sm:px-6 py-24 sm:py-32 text-center md:py-40">
           {/* Floating badges */}
           <div className="mb-8 flex flex-wrap items-center justify-center gap-3">
             <FloatingBadge delay={0}>
@@ -770,7 +770,7 @@ export default function LandingPage() {
           </div>
 
           {/* Heading with staggered word animation */}
-          <h1 className="text-5xl font-bold leading-[1.1] tracking-tight text-white md:text-7xl lg:text-8xl">
+          <h1 className="text-3xl sm:text-5xl font-bold leading-[1.1] tracking-tight text-white md:text-7xl lg:text-8xl">
             {heroWords.map((word, i) => (
               <motion.span
                 key={i}
@@ -851,7 +851,7 @@ export default function LandingPage() {
       {/* ─── Trust Badges ─── */}
       <section className="relative border-t border-slate-800/50 py-20">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-900/50 to-slate-950" />
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimatedSection className="text-center">
             <motion.span
               variants={fadeUp}
@@ -880,7 +880,7 @@ export default function LandingPage() {
       {/* ─── How It Works ─── */}
       <section className="relative py-32">
         <div className="absolute inset-0 -z-10 bg-slate-950" />
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimatedSection className="text-center">
             <motion.span
               variants={fadeUp}
@@ -967,7 +967,7 @@ export default function LandingPage() {
       {/* ─── Features Grid ─── */}
       <section className="relative border-t border-slate-800/50 py-32">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950" />
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimatedSection className="text-center">
             <motion.span
               variants={fadeUp}
@@ -1004,7 +1004,7 @@ export default function LandingPage() {
       {/* ─── Stats ─── */}
       <section className="relative border-y border-slate-800/50 py-24">
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950 via-blue-950/20 to-slate-950" />
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimatedSection className="grid grid-cols-2 gap-12 md:grid-cols-4">
             {stats.map((s, i) => (
               <StatCard key={s.label} {...s} index={i} />
@@ -1016,7 +1016,7 @@ export default function LandingPage() {
       {/* ─── Security ─── */}
       <section className="relative py-32">
         <div className="absolute inset-0 -z-10 bg-slate-950" />
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimatedSection className="text-center">
             <motion.span
               variants={fadeUp}
@@ -1108,7 +1108,7 @@ export default function LandingPage() {
             <motion.div
               variants={fadeUp}
               custom={0}
-              className="mx-auto max-w-3xl rounded-2xl border border-blue-500/10 bg-blue-950/20 p-8 backdrop-blur-sm"
+              className="mx-auto max-w-3xl rounded-2xl border border-blue-500/10 bg-blue-950/20 p-5 sm:p-8 backdrop-blur-sm"
             >
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600/20 to-cyan-600/20 ring-1 ring-blue-500/20">
                 <Fingerprint
@@ -1138,7 +1138,7 @@ export default function LandingPage() {
       {/* ─── Pricing ─── */}
       <section className="relative border-t border-slate-800/50 py-32">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950" />
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <AnimatedSection className="text-center">
             <motion.span
               variants={fadeUp}
@@ -1180,7 +1180,7 @@ export default function LandingPage() {
                   },
                 },
               }}
-              className="relative overflow-hidden rounded-2xl border-2 border-blue-500/30 bg-gradient-to-b from-slate-800/80 to-slate-900/80 p-8 shadow-xl shadow-blue-900/20"
+              className="relative overflow-hidden rounded-2xl border-2 border-blue-500/30 bg-gradient-to-b from-slate-800/80 to-slate-900/80 p-5 sm:p-8 shadow-xl shadow-blue-900/20"
             >
               {/* Subtle glow at top */}
               <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-blue-500/10 blur-[60px]" />
@@ -1261,7 +1261,7 @@ export default function LandingPage() {
                   },
                 },
               }}
-              className="rounded-2xl border border-slate-700/50 bg-slate-800/50 p-8"
+              className="rounded-2xl border border-slate-700/50 bg-slate-800/50 p-5 sm:p-8"
             >
               <span className="mb-4 inline-block rounded-full bg-slate-700 px-3 py-1 text-xs font-bold text-slate-200">
                 PER ORGANIZATA

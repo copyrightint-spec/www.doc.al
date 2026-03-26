@@ -287,7 +287,7 @@ export default function ContractDetailPage() {
   const canManage = contract.isOwner || contract.isRequester;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6 lg:p-8">
+    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6 lg:p-8">
       {/* Back button */}
       <Link
         href="/dashboard/contracts"

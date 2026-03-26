@@ -132,7 +132,7 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="mx-auto max-w-2xl p-8">
+      <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
         <p className="text-muted-foreground">Nuk u gjet profili. Ju lutem identifikohuni.</p>
       </div>
     );

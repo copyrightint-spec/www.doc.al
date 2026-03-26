@@ -105,14 +105,14 @@ export default function OrganizationContactPage() {
     return (
       <div className="min-h-screen bg-background">
         <nav className="border-b border-border">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <Image src="/api/logo" unoptimized alt="doc.al" width={44} height={44} className="h-11 w-11" />
-              <span className="text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/api/logo" unoptimized alt="doc.al" width={44} height={44} className="h-9 w-9 sm:h-11 sm:w-11" />
+              <span className="text-2xl sm:text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
             </Link>
           </div>
         </nav>
-        <div className="mx-auto max-w-2xl px-6 py-24 text-center">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-16 sm:py-24 text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
@@ -157,7 +157,7 @@ export default function OrganizationContactPage() {
         </div>
       </nav>
 
-      <div className="mx-auto max-w-3xl px-6 py-16">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10 sm:py-16">
         <div className="mb-10">
           <Link
             href="/"

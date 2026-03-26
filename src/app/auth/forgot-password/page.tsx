@@ -42,21 +42,21 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <nav className="border-b border-border px-6 py-4">
+      <nav className="border-b border-border px-4 sm:px-6 py-3 sm:py-4">
         <div className="mx-auto max-w-6xl flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/api/logo" unoptimized alt="doc.al" width={44} height={44} className="h-11 w-11" />
-            <span className="text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/api/logo" unoptimized alt="doc.al" width={44} height={44} className="h-9 w-9 sm:h-11 sm:w-11" />
+            <span className="text-2xl sm:text-3xl font-bold text-foreground">doc<span className="text-blue-600">.al</span></span>
           </Link>
-          <Link href="/auth/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/auth/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">
             Kthehu te Hyrja
           </Link>
         </div>
       </nav>
 
-      <div className="flex flex-1 items-center justify-center px-4 py-12">
+      <div className="flex flex-1 items-center justify-center px-4 py-6 sm:py-12">
         <Card className="w-full max-w-md">
-          <CardContent className="p-8">
+          <CardContent className="p-5 sm:p-8">
             {sent ? (
               <div className="text-center">
                 <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
                   Kontrolloni edhe folderen Spam/Junk.
                 </p>
                 <Link href="/auth/login">
-                  <Button variant="secondary" className="mt-6 w-full gap-2">
+                  <Button variant="secondary" className="mt-6 w-full gap-2 min-h-[48px]">
                     <ArrowLeft className="h-4 w-4" />
                     Kthehu te Hyrja
                   </Button>
@@ -76,8 +76,8 @@ export default function ForgotPasswordPage() {
               </div>
             ) : (
               <>
-                <div className="mb-8 text-center">
-                  <Mail className="mx-auto h-12 w-12 text-blue-600" />
+                <div className="mb-6 sm:mb-8 text-center">
+                  <Mail className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-blue-600" />
                   <h1 className="mt-3 text-2xl font-bold text-foreground">Rivendos Fjalekalimin</h1>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Fut email-in tuaj dhe do t&apos;ju dergojme nje link per te ndryshuar fjalekalimin.
@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
                     />
                   </div>
 
-                  <Button type="submit" disabled={loading} className="w-full">
+                  <Button type="submit" disabled={loading} className="w-full min-h-[48px]">
                     {loading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />

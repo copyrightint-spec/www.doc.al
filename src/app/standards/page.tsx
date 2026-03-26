@@ -61,7 +61,7 @@ function StandardCard({
   const badge = complianceBadge[compliance];
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-slate-900">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 dark:border-slate-700 dark:bg-slate-900">
       <div className="flex items-start gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
           <Icon className="h-6 w-6" />
@@ -115,10 +115,10 @@ export default function StandardsPage() {
     <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Nav */}
       <nav className="border-b border-slate-100 dark:border-slate-800">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/api/logo" unoptimized alt="doc.al" width={44} height={44} className="h-11 w-11" />
-            <span className="text-3xl font-bold text-slate-900 dark:text-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/api/logo" unoptimized alt="doc.al" width={44} height={44} className="h-9 w-9 sm:h-11 sm:w-11" />
+            <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
               doc<span className="text-blue-600">.al</span>
             </span>
           </Link>
@@ -127,7 +127,7 @@ export default function StandardsPage() {
       </nav>
 
       {/* Hero */}
-      <section className="mx-auto max-w-4xl px-6 py-16 text-center">
+      <section className="mx-auto max-w-4xl px-4 sm:px-6 py-10 sm:py-16 text-center">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-xs font-medium text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
           <Award className="h-3.5 w-3.5" />
           Standardet Nderkombetare
@@ -142,7 +142,7 @@ export default function StandardsPage() {
       </section>
 
       {/* Main Standards */}
-      <section className="mx-auto max-w-4xl space-y-6 px-6 pb-16">
+      <section className="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 pb-16">
         <StandardCard
           icon={Shield}
           title="eIDAS Regulation"

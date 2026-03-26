@@ -207,7 +207,7 @@ const BASE = "https://www.doc.al/api/v1";
 
 export default function SealApiDocsPage() {
   return (
-    <div className="mx-auto max-w-5xl space-y-8 p-6 lg:p-8">
+    <div className="mx-auto max-w-5xl space-y-8 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link

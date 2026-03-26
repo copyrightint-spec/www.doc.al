@@ -396,7 +396,7 @@ export default function DocumentDetailPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-5xl space-y-6 p-6 lg:p-8">
+      <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6 lg:p-8">
         {/* Back button skeleton */}
         <Skeleton className="h-5 w-28" />
 

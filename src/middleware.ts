@@ -26,6 +26,7 @@ const publicPaths = [
   "/api/verify",
   "/api/stamles",
   "/api/email/track",
+  "/api/logo",
   "/contact",
   "/verify/seal",
 ];

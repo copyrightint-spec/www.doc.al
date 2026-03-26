@@ -45,7 +45,7 @@ export default function SignaturesPage() {
   const signed = signatures.filter((s) => s.status === "SIGNED").length;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
+    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Nenshkrimet e Mia"
         subtitle={`${signatures.length} gjithsej | ${pending} ne pritje | ${signed} te nenshkruara`}

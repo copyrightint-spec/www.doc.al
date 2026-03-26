@@ -97,7 +97,7 @@ export default function PublicNav() {
         {/* Mobile hamburger */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden"
           aria-label="Toggle menu"
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -113,7 +113,7 @@ export default function PublicNav() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                className="rounded-lg px-3 py-3 text-base font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 min-h-[44px]"
               >
                 {link.label}
               </Link>
@@ -123,14 +123,14 @@ export default function PublicNav() {
                 <Link
                   href="/auth/login"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-center text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  className="rounded-xl border border-slate-200 px-4 py-3 text-center text-base font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 min-h-[48px] flex items-center justify-center"
                 >
                   Hyr
                 </Link>
                 <Link
                   href="/auth/register"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-xl bg-slate-900 px-4 py-2.5 text-center text-sm font-medium text-white hover:opacity-90 dark:bg-white dark:text-slate-900"
+                  className="rounded-xl bg-slate-900 px-4 py-3 text-center text-base font-medium text-white hover:opacity-90 dark:bg-white dark:text-slate-900 min-h-[48px] flex items-center justify-center"
                 >
                   Fillo Falas
                 </Link>

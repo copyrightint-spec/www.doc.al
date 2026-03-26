@@ -41,10 +41,10 @@ export default function ContactPage() {
     <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Nav */}
       <nav className="border-b border-slate-100 dark:border-slate-800">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/api/logo" unoptimized alt="doc.al" width={44} height={44} className="h-11 w-11" />
-            <span className="text-3xl font-bold text-slate-900 dark:text-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/api/logo" unoptimized alt="doc.al" width={44} height={44} className="h-9 w-9 sm:h-11 sm:w-11" />
+            <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
               doc<span className="text-blue-600">.al</span>
             </span>
           </Link>
@@ -53,12 +53,12 @@ export default function ContactPage() {
       </nav>
 
       {/* Hero */}
-      <section className="mx-auto max-w-4xl px-6 py-16 text-center">
+      <section className="mx-auto max-w-4xl px-4 sm:px-6 py-10 sm:py-16 text-center">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-xs font-medium text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
           <Mail className="h-3.5 w-3.5" />
           Na kontaktoni
         </div>
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-5xl">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 md:text-5xl">
           Kontakt
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-500 dark:text-slate-400">
@@ -67,10 +67,10 @@ export default function ContactPage() {
       </section>
 
       {/* Content */}
-      <section className="mx-auto max-w-6xl px-6 pb-16">
-        <div className="grid gap-12 lg:grid-cols-2">
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-16">
+        <div className="grid gap-8 sm:gap-12 lg:grid-cols-2">
           {/* Contact Form */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-slate-900">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 dark:border-slate-700 dark:bg-slate-900">
             <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50">
               Dergoni nje mesazh
             </h2>
@@ -154,7 +154,7 @@ export default function ContactPage() {
                 <button
                   type="submit"
                   disabled={status === "sending"}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 min-h-[48px]"
                 >
                   {status === "sending" ? (
                     <>
@@ -175,7 +175,7 @@ export default function ContactPage() {
           {/* Company Info & Map */}
           <div className="space-y-6">
             {/* Company Info */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-slate-900">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 dark:border-slate-700 dark:bg-slate-900">
               <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50">
                 Informacione
               </h2>

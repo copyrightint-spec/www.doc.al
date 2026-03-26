@@ -149,7 +149,7 @@ export default function CertificatesPage() {
   const expiringCount = certs.filter((c) => !c.revoked && daysUntilExpiry(c.validTo) > 0 && daysUntilExpiry(c.validTo) <= 90).length;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
+    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Certifikatat"
         subtitle={`${certs.length} gjithsej | ${activeCount} aktive | ${expiringCount} duke skaduar`}

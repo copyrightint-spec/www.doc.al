@@ -156,7 +156,7 @@ export default function ContractsPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Header */}
       <PageHeader
         title="Nenshkrimet e Mia"
@@ -236,8 +236,8 @@ export default function ContractsPage() {
       </div>
 
       {/* Filters */}
-      <div className="mb-4 flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="mb-4 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
@@ -247,7 +247,7 @@ export default function ContractsPage() {
             className="pl-10"
           />
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
           {[
             { value: "", label: "Te gjitha" },
             { value: "PENDING", label: "Ne pritje" },
@@ -292,7 +292,7 @@ export default function ContractsPage() {
                 {/* Main row */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : contract.id)}
-                  className="flex w-full items-center gap-4 p-5 text-left"
+                  className="flex w-full items-center gap-3 sm:gap-4 p-4 sm:p-5 text-left"
                 >
                   {/* Icon */}
                   <div className={cn(
@@ -329,14 +329,14 @@ export default function ContractsPage() {
                   </div>
 
                   {/* Progress */}
-                  <div className="flex flex-shrink-0 items-center gap-3">
+                  <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
                     {!selfSigned && (
                       <>
                         <div className="text-right">
                           <p className="text-sm font-medium text-foreground">{signedCount}/{totalSigners}</p>
                           <p className="text-[10px] text-muted-foreground">nenshkrime</p>
                         </div>
-                        <div className="h-10 w-10 flex-shrink-0">
+                        <div className="h-10 w-10 flex-shrink-0 hidden sm:block">
                           <svg viewBox="0 0 36 36" className="h-10 w-10 -rotate-90">
                             <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" strokeWidth="3" className="text-slate-200 dark:text-slate-700" />
                             <circle

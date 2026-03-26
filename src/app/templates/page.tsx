@@ -190,7 +190,7 @@ function DetailModal({
         {/* Colored header */}
         <div className={`h-24 bg-gradient-to-r ${headerColor}`} />
 
-        <div className="px-6 pb-6">
+        <div className="px-4 sm:px-6 pb-6">
           {/* Name + badge */}
           <div className="-mt-6 flex items-end gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-card shadow-lg">
@@ -258,7 +258,7 @@ function DetailModal({
           </div>
 
           {/* Action */}
-          <Button onClick={onUse} className="mt-6 w-full">
+          <Button onClick={onUse} className="mt-6 w-full min-h-[48px]">
             Perdor Template
           </Button>
         </div>
@@ -536,7 +536,7 @@ export default function TemplatesPage() {
                           <div className="mt-4 flex gap-2">
                             <Button
                               onClick={() => handleUseTemplate(t.id)}
-                              className="flex-1"
+                              className="flex-1 min-h-[44px]"
                               size="sm"
                             >
                               Perdor Kete Template
@@ -545,6 +545,7 @@ export default function TemplatesPage() {
                               variant="secondary"
                               size="sm"
                               onClick={() => { setDetailTemplate(t); setDetailHeaderColor(hColor); }}
+                              className="min-h-[44px] min-w-[44px]"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -570,12 +571,12 @@ export default function TemplatesPage() {
         {/* My Templates Tab */}
         {activeTab === "mine" && (
           <>
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-bold text-foreground">Template-t e Mia</h2>
                 <p className="text-sm text-muted-foreground">{templates.length} template gjithsej</p>
               </div>
-              <Button asChild>
+              <Button asChild className="min-h-[44px]">
                 <Link href="/templates/editor">
                   <Plus className="h-4 w-4" />
                   Krijo Template
@@ -587,12 +588,12 @@ export default function TemplatesPage() {
             {showCreate && (
               <form onSubmit={handleCreate} className="mb-8">
                 <Card className="overflow-hidden">
-                  <div className="border-b border-border bg-muted px-6 py-4">
+                  <div className="border-b border-border bg-muted px-4 sm:px-6 py-4">
                     <h2 className="text-lg font-semibold text-foreground">Krijo Template te Ri</h2>
                     <p className="mt-1 text-sm text-muted-foreground">Konfiguro fushat e nenshkrimit dhe cakto rolet per secilin nenshkrues</p>
                   </div>
 
-                  <CardContent className="space-y-6 p-6">
+                  <CardContent className="space-y-6 p-4 sm:p-6">
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
                         <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Emri i Template</label>
@@ -762,7 +763,7 @@ export default function TemplatesPage() {
                     </label>
                   </CardContent>
 
-                  <div className="flex items-center justify-end gap-3 border-t border-border bg-muted px-6 py-4">
+                  <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 border-t border-border bg-muted px-4 sm:px-6 py-4">
                     <Button
                       variant="secondary"
                       type="button"

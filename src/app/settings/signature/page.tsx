@@ -369,7 +369,7 @@ export default function SignatureSettingsPage() {
 
   if (!data) {
     return (
-      <div className="p-8 text-center text-muted-foreground">Nuk mund te ngarkoheshin te dhenat</div>
+      <div className="p-4 sm:p-6 lg:p-8 text-center text-muted-foreground">Nuk mund te ngarkoheshin te dhenat</div>
     );
   }
 

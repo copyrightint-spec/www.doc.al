@@ -619,17 +619,17 @@ export default function SiFunksionon() {
     <div className="min-h-screen bg-slate-950 text-white">
       {/* Nav */}
       <nav className="border-b border-slate-800/50">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2.5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+          <Link href="/" className="flex items-center gap-2">
             <Image
               src="/api/logo"
               unoptimized
               alt="doc.al"
               width={44}
               height={44}
-              className="h-11 w-11"
+              className="h-9 w-9 sm:h-11 sm:w-11"
             />
-            <span className="text-3xl font-bold text-white">
+            <span className="text-2xl sm:text-3xl font-bold text-white">
               doc<span className="text-blue-500">.al</span>
             </span>
           </Link>
@@ -643,7 +643,7 @@ export default function SiFunksionon() {
         <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-transparent" />
         <div className="absolute left-1/2 top-0 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-blue-500/5 blur-3xl" />
 
-        <div className="relative mx-auto max-w-4xl px-6 pb-16 pt-20 text-center">
+        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 pb-16 pt-20 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -681,7 +681,7 @@ export default function SiFunksionon() {
 
       {/* ─── Section 2: Process Flow Timeline ─── */}
       <section className="relative border-t border-slate-800/50 bg-slate-900/30 py-20">
-        <div className="mx-auto max-w-3xl px-6">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
           <AnimatedSection className="mb-16 text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Procesi i{" "}
@@ -709,7 +709,7 @@ export default function SiFunksionon() {
 
       {/* ─── Section 3: 4 Shtresat e Sigurise ─── */}
       <section className="border-t border-slate-800/50 py-20">
-        <div className="mx-auto max-w-4xl px-6">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6">
           <AnimatedSection className="mb-16 text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 text-xs font-medium text-blue-400">
               <Layers className="h-3.5 w-3.5" />
@@ -741,7 +741,7 @@ export default function SiFunksionon() {
 
       {/* ─── Section 4: Merkle Tree Vizualizim ─── */}
       <section className="border-t border-slate-800/50 bg-slate-900/30 py-20">
-        <div className="mx-auto max-w-4xl px-6">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6">
           <AnimatedSection className="text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 text-xs font-medium text-blue-400">
               <Layers className="h-3.5 w-3.5" />
@@ -808,7 +808,7 @@ export default function SiFunksionon() {
 
       {/* ─── Section 5: Privatesia ─── */}
       <section className="border-t border-slate-800/50 py-20">
-        <div className="mx-auto max-w-3xl px-6">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
           <AnimatedSection className="mb-12 text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-green-500/20 bg-green-500/10 px-4 py-1.5 text-xs font-medium text-green-400">
               <Lock className="h-3.5 w-3.5" />

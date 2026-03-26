@@ -70,7 +70,8 @@ const FONTS = [
   { value: "mono", css: "'Courier New', 'Consolas', monospace" },
 ];
 
-const PDF_RENDER_WIDTH = 650;
+const PDF_RENDER_WIDTH_DESKTOP = 650;
+const PDF_RENDER_WIDTH_MOBILE = 340;
 
 function formatBytes(bytes: number) {
   if (bytes < 1024) return bytes + " B";
@@ -97,6 +98,18 @@ function generateTextSignatureDataUrl(name: string, fontValue: string): string {
 
 // -- Main Component --
 export default function SelfSignPage() {
+  // Responsive PDF width
+  const [pdfRenderWidth, setPdfRenderWidth] = useState(PDF_RENDER_WIDTH_DESKTOP);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      setPdfRenderWidth(window.innerWidth < 768 ? Math.min(window.innerWidth - 32, PDF_RENDER_WIDTH_MOBILE) : PDF_RENDER_WIDTH_DESKTOP);
+    };
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
+
   // React-PDF lazy load state
   const [pdfReady, setPdfReady] = useState(false);
 
@@ -1199,9 +1212,73 @@ export default function SelfSignPage() {
         </div>
       </div>
 
+      {/* Mobile signature bar - shown only on small screens */}
+      <div className="md:hidden border-b border-border bg-muted/50 p-3 overflow-x-auto">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground whitespace-nowrap">Firma:</span>
+          {signatureOptions.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => selectSignature(opt)}
+              className={`flex-shrink-0 rounded-xl border-2 p-1.5 transition-all min-h-[44px] ${
+                activeSignatureId === opt.id
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-slate-400"
+              }`}
+            >
+              <div className="flex h-8 w-14 items-center justify-center rounded-lg border border-border bg-card">
+                {opt.dataUrl ? (
+                  <img src={opt.dataUrl} alt="" className="h-7 w-12 object-contain" />
+                ) : (
+                  <span className="text-xs text-muted-foreground">--</span>
+                )}
+              </div>
+            </button>
+          ))}
+          <button
+            onClick={() => setShowDrawPanel(!showDrawPanel)}
+            className="flex-shrink-0 flex items-center gap-1.5 rounded-xl border-2 border-dashed border-slate-300 px-3 py-2 text-xs font-medium text-muted-foreground hover:border-slate-400 min-h-[44px] dark:border-slate-600"
+          >
+            <PenTool className="h-3.5 w-3.5" strokeWidth={1.5} />
+            Vizato
+          </button>
+          {signatureOptions.length === 0 && (
+            <Link href="/settings/signature" className="text-xs text-primary underline whitespace-nowrap min-h-[44px] flex items-center">
+              Konfiguro firmat
+            </Link>
+          )}
+        </div>
+        {showDrawPanel && (
+          <div className="mt-2 rounded-xl border border-border bg-card p-2.5">
+            <div className="rounded-lg border border-slate-300 bg-white dark:border-slate-600">
+              <canvas
+                ref={drawCanvasRef}
+                className="w-full cursor-crosshair touch-none min-h-[100px]"
+                style={{ aspectRatio: "10 / 3" }}
+                onMouseDown={startNewDraw}
+                onMouseMove={continueNewDraw}
+                onMouseUp={endNewDraw}
+                onMouseLeave={endNewDraw}
+                onTouchStart={startNewDraw}
+                onTouchMove={continueNewDraw}
+                onTouchEnd={endNewDraw}
+              />
+            </div>
+            <div className="mt-2 flex gap-2">
+              <Button variant="secondary" size="sm" onClick={clearNewDraw} className="flex-1 text-[11px] min-h-[44px]">
+                Pastro
+              </Button>
+              <Button size="sm" onClick={confirmNewDraw} className="flex-1 text-[11px] min-h-[44px]">
+                Perdor
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Main split layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar - signature picker (collapsible on mobile) */}
+        {/* Left sidebar - signature picker (hidden on mobile, shown on md+) */}
         <div className="w-64 flex-shrink-0 overflow-y-auto border-r border-border bg-muted/50 p-3 hidden md:block">
           {/* Signature options from settings */}
           <div className="mb-3">
@@ -1339,7 +1416,7 @@ export default function SelfSignPage() {
                 <Alert variant="destructive" title="Gabim gjate ngarkimit te PDF" className="mx-auto max-w-md" />
               }
             >
-              <div className="mx-auto space-y-6" style={{ maxWidth: PDF_RENDER_WIDTH }}>
+              <div className="mx-auto space-y-6" style={{ maxWidth: pdfRenderWidth }}>
                 {Array.from({ length: numPages }, (_, i) => (
                   <div key={i} className="relative mx-auto shadow-xl rounded-sm overflow-hidden" data-page-idx={i}>
                     {/* Page number badge - z-[5] within page context, below app bar */}
@@ -1354,7 +1431,7 @@ export default function SelfSignPage() {
                     >
                       <PdfPage
                         pageNumber={i + 1}
-                        width={PDF_RENDER_WIDTH}
+                        width={pdfRenderWidth}
                         renderTextLayer={false}
                         renderAnnotationLayer={false}
                       />

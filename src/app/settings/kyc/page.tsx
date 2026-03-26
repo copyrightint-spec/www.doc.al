@@ -192,7 +192,7 @@ export default function KycPage() {
   // Verified state
   if (kycData?.kycStatus === "VERIFIED") {
     return (
-      <div className="mx-auto max-w-2xl p-8">
+      <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
         <PageHeader title="Verifikimi i Identitetit (KYC)" />
 
         <div className="mt-8">
@@ -226,7 +226,7 @@ export default function KycPage() {
   const kycConfig = kycData?.kycStatus ? KYC_STATUS[kycData.kycStatus] : null;
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
+    <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Verifikimi i Identitetit (KYC)"
         subtitle="Plotesoni te dhenat tuaja personale dhe ngarkoni dokumentin e identitetit per te aktivizuar nenshkrimin e dokumentave."
@@ -341,7 +341,7 @@ export default function KycPage() {
                 <select
                   value={nationality}
                   onChange={(e) => setNationality(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="mt-1 w-full rounded-xl border border-border bg-muted px-4 py-3 sm:py-2.5 text-base sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px] sm:min-h-0"
                 >
                   <option value="Shqiptar">Shqiptar</option>
                   <option value="Kosovar">Kosovar</option>
@@ -393,6 +393,7 @@ export default function KycPage() {
                 <Button
                   onClick={() => setStep(2)}
                   disabled={!canProceedStep1()}
+                  className="min-h-[48px]"
                 >
                   Vazhdo
                   <ChevronRight className="ml-1 h-4 w-4" />
@@ -411,7 +412,7 @@ export default function KycPage() {
                 <select
                   value={documentType}
                   onChange={(e) => setDocumentType(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="mt-1 w-full rounded-xl border border-border bg-muted px-4 py-3 sm:py-2.5 text-base sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px] sm:min-h-0"
                 >
                   <option value="Karte Identiteti">Karte Identiteti</option>
                   <option value="Pasaporte">Pasaporte</option>
@@ -567,13 +568,14 @@ export default function KycPage() {
               </div>
 
               <div className="flex justify-between pt-4">
-                <Button variant="secondary" onClick={() => setStep(1)}>
+                <Button variant="secondary" onClick={() => setStep(1)} className="min-h-[48px]">
                   <ChevronLeft className="mr-1 h-4 w-4" />
                   Kthehu
                 </Button>
                 <Button
                   onClick={() => setStep(3)}
                   disabled={!canProceedStep2()}
+                  className="min-h-[48px]"
                 >
                   Vazhdo
                   <ChevronRight className="ml-1 h-4 w-4" />
@@ -592,7 +594,7 @@ export default function KycPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">Emri:</span>
                       <p className="font-medium text-foreground">{fullName}</p>
@@ -688,13 +690,14 @@ export default function KycPage() {
               </label>
 
               <div className="flex justify-between pt-2">
-                <Button variant="secondary" onClick={() => setStep(2)}>
+                <Button variant="secondary" onClick={() => setStep(2)} className="min-h-[48px]">
                   <ChevronLeft className="mr-1 h-4 w-4" />
                   Kthehu
                 </Button>
                 <Button
                   onClick={handleSubmit}
                   disabled={loading || !confirmed}
+                  className="min-h-[48px]"
                 >
                   {loading ? (
                     <>
