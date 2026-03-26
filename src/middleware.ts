@@ -29,6 +29,11 @@ const publicPaths = [
   "/api/logo",
   "/contact",
   "/verify/seal",
+  "/terms",
+  "/standards",
+  "/sitemap.xml",
+  "/robots.txt",
+  "/api/timestamp/rfc3161",
 ];
 
 function isPublicPath(pathname: string): boolean {
