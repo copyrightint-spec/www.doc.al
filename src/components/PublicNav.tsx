@@ -8,10 +8,6 @@ import { Home, User, LogOut, ChevronDown, Settings, Menu, X } from "lucide-react
 const navLinks = [
   { label: "Si Funksionon", href: "/si-funksionon" },
   { label: "Explorer", href: "/explorer" },
-  { label: "Verify", href: "/verify" },
-  { label: "Certifikata", href: "/certificates" },
-  { label: "Standarde", href: "/standards" },
-  { label: "Kontakt", href: "/contact" },
 ];
 
 export default function PublicNav() {
