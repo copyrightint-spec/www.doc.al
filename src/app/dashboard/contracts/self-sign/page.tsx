@@ -8,7 +8,6 @@ import {
   Upload,
   FileText,
   Check,
-  Download,
   PenTool,
   Move,
   Settings,
@@ -18,6 +17,7 @@ import {
   XCircle,
   Loader2,
   Eye,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -528,7 +528,7 @@ export default function SelfSignPage() {
       { label: "Verifikimi me email (OTP)", status: "success" },
       { label: "Verifikimi 2FA (TOTP)", status: "success" },
       { label: "Gjenerimi i PDF te nenshkruar", status: "pending" },
-      { label: "Ruajtja ne server (S3)", status: "pending" },
+      { label: "Derguar me email dhe fshire nga serveri", status: "pending" },
       { label: "Regjistrimi i nenshkrimit", status: "pending" },
       { label: "STAMLES Polygon Blockchain", status: "pending" },
       { label: "Prove IPFS (decentralized)", status: "pending" },
@@ -1125,11 +1125,9 @@ export default function SelfSignPage() {
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
-                  <Button asChild className="w-full sm:w-auto min-h-[48px]">
-                    <a href={signedPdfUrl} download={signedFileName}>
-                      <Download className="h-4 w-4" />
-                      Shkarko PDF
-                    </a>
+                  <Button disabled className="w-full sm:w-auto min-h-[48px]" variant="secondary">
+                    <Mail className="h-4 w-4" />
+                    PDF u dergua me email
                   </Button>
                   <Button variant="secondary" onClick={resetAll} className="w-full sm:w-auto min-h-[48px]">
                     Nenshkruaj tjeter

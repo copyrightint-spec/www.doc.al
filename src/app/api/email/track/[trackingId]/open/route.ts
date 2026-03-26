@@ -25,7 +25,6 @@ export async function GET(
       where: { trackingId },
       data: {
         openCount: { increment: 1 },
-        firstOpenAt: undefined, // only set if null, handled below
         lastOpenAt: new Date(),
         lastOpenIp: ip,
         lastOpenUa: userAgent,
@@ -50,10 +49,15 @@ export async function GET(
     // Audit log
     const emailLog = await prisma.emailLog.findUnique({
       where: { trackingId },
-      select: { entityType: true, entityId: true, userId: true, to: true, openCount: true },
+      select: { entityType: true, entityId: true, userId: true, to: true, openCount: true, metadata: true },
     });
 
     if (emailLog?.entityId) {
+      const emailMeta = emailLog.metadata && typeof emailLog.metadata === "object"
+        ? (emailLog.metadata as Record<string, unknown>)
+        : {};
+      const trackingCode = typeof emailMeta.trackingCode === "string" ? emailMeta.trackingCode : undefined;
+
       await prisma.auditLog.create({
         data: {
           action: "EMAIL_OPENED",
@@ -65,6 +69,7 @@ export async function GET(
           metadata: {
             to: emailLog.to,
             trackingId,
+            trackingCode,
             openNumber: emailLog.openCount,
           },
         },

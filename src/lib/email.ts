@@ -29,6 +29,11 @@ function wrapLinksWithTracking(html: string, trackingId: string): string {
 
 // ==================== CORE SEND ====================
 
+function generateTrackingCode(trackingId: string): string {
+  // Use last 4 characters of trackingId uppercased as tracking code
+  return trackingId.slice(-4).toUpperCase();
+}
+
 interface EmailAttachment {
   filename: string;
   content: Buffer;
@@ -47,7 +52,7 @@ interface SendEmailOptions {
   attachments?: EmailAttachment[];
 }
 
-async function sendEmail(options: SendEmailOptions): Promise<{ success: boolean; trackingId?: string }> {
+async function sendEmail(options: SendEmailOptions): Promise<{ success: boolean; trackingId?: string; trackingCode?: string }> {
   const fromName = options.fromName || "doc.al";
   const from = `${fromName} <noreply@doc.al>`;
 
@@ -65,14 +70,40 @@ async function sendEmail(options: SendEmailOptions): Promise<{ success: boolean;
     },
   });
 
-  // Add tracking pixel and wrap links
-  const trackedHtml = wrapLinksWithTracking(options.html, emailLog.trackingId) + trackingPixel(emailLog.trackingId);
+  // Generate unique tracking code from trackingId
+  const trackingCode = generateTrackingCode(emailLog.trackingId);
+
+  // Store trackingCode in metadata
+  await prisma.emailLog.update({
+    where: { id: emailLog.id },
+    data: {
+      metadata: {
+        ...(options.metadata ? JSON.parse(JSON.stringify(options.metadata)) : {}),
+        trackingCode,
+      },
+    },
+  });
+
+  // Prepend tracking code to subject
+  const subjectWithCode = `[DOC-${trackingCode}] ${options.subject}`;
+
+  // Add tracking code banner to email body, then tracking pixel and link wrapping
+  const trackingCodeBanner = `
+    <div style="background: #f0f4f8; border-radius: 8px; padding: 8px 16px; margin-bottom: 16px; font-size: 11px; color: #64748b; text-align: center;">
+      Kodi i gjurmimit: <strong style="color: #334155; font-family: monospace;">DOC-${trackingCode}</strong>
+    </div>
+  `;
+  const htmlWithCode = options.html.replace(
+    /(<td style="padding: 32px;">)/,
+    `$1${trackingCodeBanner}`
+  );
+  const trackedHtml = wrapLinksWithTracking(htmlWithCode, emailLog.trackingId) + trackingPixel(emailLog.trackingId);
 
   try {
     await transporter.sendMail({
       from,
       to: options.to,
-      subject: options.subject,
+      subject: subjectWithCode,
       html: trackedHtml,
       attachments: options.attachments?.map((a) => ({
         filename: a.filename,
@@ -95,13 +126,14 @@ async function sendEmail(options: SendEmailOptions): Promise<{ success: boolean;
         userId: options.userId,
         metadata: {
           to: options.to,
-          subject: options.subject,
+          subject: subjectWithCode,
           trackingId: emailLog.trackingId,
+          trackingCode,
         },
       },
     });
 
-    return { success: true, trackingId: emailLog.trackingId };
+    return { success: true, trackingId: emailLog.trackingId, trackingCode };
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
     console.error("Failed to send email:", errorMessage);

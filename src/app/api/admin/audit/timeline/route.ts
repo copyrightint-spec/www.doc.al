@@ -550,12 +550,20 @@ export async function GET(req: NextRequest) {
       });
 
       for (const eLog of emailLogs) {
+        // Extract trackingCode from metadata if available
+        const emailMeta = eLog.metadata && typeof eLog.metadata === "object"
+          ? (eLog.metadata as Record<string, unknown>)
+          : {};
+        const trackingCode = typeof emailMeta.trackingCode === "string"
+          ? emailMeta.trackingCode
+          : null;
+
         // Email sent event
         events.push({
           id: `email-${eLog.id}`,
           timestamp: (eLog.sentAt || eLog.createdAt).toISOString(),
           type: "EMAIL_SENT",
-          title: `Email u dergua: ${eLog.subject}`,
+          title: `Email u dergua: ${trackingCode ? `[DOC-${trackingCode}] ` : ""}${eLog.subject}`,
           status: eLog.status === "DELIVERED" || eLog.status === "OPENED"
             ? "success"
             : eLog.status === "BOUNCED" || eLog.status === "FAILED"
@@ -568,6 +576,7 @@ export async function GET(req: NextRequest) {
             subjekti: eLog.subject,
             statusi: eLog.status,
             trackingId: eLog.trackingId,
+            kodiGjurmimit: trackingCode || "-",
             hapjeTeAre: eLog.openCount > 0 ? `${eLog.openCount}x` : "0",
             klikime: eLog.clickCount > 0 ? `${eLog.clickCount}x` : "0",
           },
@@ -607,10 +616,11 @@ export async function GET(req: NextRequest) {
             id: `email-open-${open.id}`,
             timestamp: open.openedAt.toISOString(),
             type: "EMAIL_OPENED",
-            title: `Email u hap: ${eLog.subject}`,
+            title: `Email u hap: ${trackingCode ? `[DOC-${trackingCode}] ` : ""}${eLog.subject}`,
             status: "info",
             details: {
               drejt: eLog.to,
+              kodiGjurmimit: trackingCode || "-",
               IP: open.ipAddress,
               pajisja: open.userAgent ? open.userAgent.substring(0, 80) : "-",
             },
@@ -623,10 +633,11 @@ export async function GET(req: NextRequest) {
             id: `email-click-${click.id}`,
             timestamp: click.clickedAt.toISOString(),
             type: "EMAIL_CLICKED",
-            title: `Link u klikua ne email: ${eLog.subject}`,
+            title: `Link u klikua ne email: ${trackingCode ? `[DOC-${trackingCode}] ` : ""}${eLog.subject}`,
             status: "info",
             details: {
               drejt: eLog.to,
+              kodiGjurmimit: trackingCode || "-",
               URL: click.url,
               IP: click.ipAddress,
             },

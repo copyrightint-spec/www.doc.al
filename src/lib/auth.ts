@@ -116,6 +116,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.totpEnabled = user.totpEnabled;
         token.organizationId = user.organizationId;
       }
+
+      // Refresh kycStatus (and other mutable fields) from DB on every request
+      // so that changes (e.g. admin verifying KYC) are reflected immediately
+      if (token.sub) {
+        const freshUser = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { kycStatus: true, role: true, totpEnabled: true, organizationId: true },
+        });
+        if (freshUser) {
+          token.kycStatus = freshUser.kycStatus;
+          token.role = freshUser.role;
+          token.totpEnabled = freshUser.totpEnabled;
+          token.organizationId = freshUser.organizationId;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
