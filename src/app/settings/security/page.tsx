@@ -170,42 +170,60 @@ export default function SecuritySettingsPage() {
           )}
 
           {status === "setup" && qrCode && (
-            <div className="mt-6 space-y-4">
-              <div className="flex justify-center">
-                <Image src={qrCode} alt="TOTP QR Code" width={200} height={200} />
-              </div>
-              {secret && (
-                <div className="rounded-xl bg-muted p-3 text-center">
-                  <p className="text-xs text-muted-foreground">Kodi manual:</p>
-                  <code className="text-sm font-mono font-bold text-foreground">
-                    {secret}
-                  </code>
+            <div className="mt-6 space-y-6">
+              {/* Step 1: Scan QR */}
+              <div className="rounded-xl border border-border bg-card p-6">
+                <p className="mb-4 text-center text-sm font-medium text-foreground">
+                  Hapi 1: Skanoni QR kodin me Google Authenticator
+                </p>
+                <div className="flex justify-center rounded-lg bg-white p-4 mx-auto w-fit">
+                  <Image src={qrCode} alt="TOTP QR Code" width={180} height={180} unoptimized />
                 </div>
-              )}
-              <form onSubmit={handleVerify} className="space-y-3">
-                <Input
-                  type="text"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="Fut kodin 6-shifror"
-                  maxLength={6}
-                  className="text-center text-lg font-mono tracking-widest"
-                />
-                <Button
-                  type="submit"
-                  disabled={loading || token.length !== 6}
-                  className="w-full min-h-[48px]"
-                >
-                  {loading ? (
-                    <>
-                      <Spinner size="sm" />
-                      Duke verifikuar...
-                    </>
-                  ) : (
-                    "Verifiko & Aktivizo"
-                  )}
-                </Button>
-              </form>
+                {secret && (
+                  <div className="mt-4 rounded-lg bg-muted/50 p-3">
+                    <p className="text-[11px] text-center text-muted-foreground mb-1">Ose futni kodin manual:</p>
+                    <div className="overflow-x-auto">
+                      <code className="block text-center text-[11px] font-mono text-foreground break-all leading-relaxed">
+                        {secret}
+                      </code>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Step 2: Enter code */}
+              <div className="rounded-xl border border-border bg-card p-6">
+                <p className="mb-4 text-center text-sm font-medium text-foreground">
+                  Hapi 2: Futni kodin 6-shifror nga aplikacioni
+                </p>
+                <form onSubmit={handleVerify} className="space-y-4">
+                  <Input
+                    type="text"
+                    value={token}
+                    onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="000000"
+                    maxLength={6}
+                    className="text-center text-2xl font-mono tracking-[0.5em] h-14 bg-muted/30"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={loading || token.length !== 6}
+                    className="w-full min-h-[48px]"
+                  >
+                    {loading ? (
+                      <>
+                        <Spinner size="sm" />
+                        Duke verifikuar...
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="h-4 w-4" />
+                        Verifiko & Aktivizo
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </div>
             </div>
           )}
 
