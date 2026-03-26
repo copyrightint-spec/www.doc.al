@@ -1,22 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ShieldCheck, Lock, KeyRound, Check, Copy, Printer } from "lucide-react";
+import { ShieldCheck, Lock, KeyRound, Check, Copy, Printer, RefreshCw, Mail } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
-import { PageSpinner, Spinner } from "@/components/ui/spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { Alert } from "@/components/ui/alert";
+
+type TotpStatus = "loading" | "idle" | "setup" | "verified";
+type ReconfigStep = "password" | "email-otp" | "new-setup" | "new-verify";
 
 export default function SecuritySettingsPage() {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
   const [token, setToken] = useState("");
-  const [status, setStatus] = useState<"idle" | "setup" | "verified">("idle");
+  const [status, setStatus] = useState<TotpStatus>("loading");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Reconfiguration state
+  const [reconfiguring, setReconfiguring] = useState(false);
+  const [reconfigStep, setReconfigStep] = useState<ReconfigStep>("password");
+  const [reconfigPassword, setReconfigPassword] = useState("");
+  const [reconfigEmailOtp, setReconfigEmailOtp] = useState("");
+  const [reconfigNewToken, setReconfigNewToken] = useState("");
+  const [reconfigError, setReconfigError] = useState("");
+  const [reconfigLoading, setReconfigLoading] = useState(false);
+  const [reconfigQrCode, setReconfigQrCode] = useState<string | null>(null);
+  const [reconfigSecret, setReconfigSecret] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
 
   // Password change state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -31,6 +46,28 @@ export default function SecuritySettingsPage() {
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [showBackupCodesModal, setShowBackupCodesModal] = useState(false);
   const [codesAcknowledged, setCodesAcknowledged] = useState(false);
+
+  // Check existing TOTP status on mount
+  useEffect(() => {
+    async function checkStatus() {
+      try {
+        const res = await fetch("/api/settings/totp/status");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.totpEnabled) {
+            setStatus("verified");
+          } else {
+            setStatus("idle");
+          }
+        } else {
+          setStatus("idle");
+        }
+      } catch {
+        setStatus("idle");
+      }
+    }
+    checkStatus();
+  }, []);
 
   async function handleSetup() {
     setLoading(true);
@@ -75,6 +112,96 @@ export default function SecuritySettingsPage() {
       setError(err instanceof Error ? err.message : "Kodi i gabuar");
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Reconfiguration flow
+  function startReconfigure() {
+    setReconfiguring(true);
+    setReconfigStep("password");
+    setReconfigPassword("");
+    setReconfigEmailOtp("");
+    setReconfigNewToken("");
+    setReconfigError("");
+    setReconfigQrCode(null);
+    setReconfigSecret(null);
+    setEmailSent(false);
+  }
+
+  function cancelReconfigure() {
+    setReconfiguring(false);
+    setReconfigStep("password");
+    setReconfigError("");
+  }
+
+  async function handleReconfigPasswordVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setReconfigError("");
+    setReconfigLoading(true);
+    try {
+      const res = await fetch("/api/settings/totp/reconfig", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ step: "verify-password", password: reconfigPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      // Password verified, send email OTP
+      setReconfigStep("email-otp");
+      setEmailSent(true);
+    } catch (err) {
+      setReconfigError(err instanceof Error ? err.message : "Gabim");
+    } finally {
+      setReconfigLoading(false);
+    }
+  }
+
+  async function handleReconfigEmailVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setReconfigError("");
+    setReconfigLoading(true);
+    try {
+      const res = await fetch("/api/settings/totp/reconfig", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ step: "verify-email-otp", code: reconfigEmailOtp }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      // Both verified, get new QR code
+      setReconfigQrCode(data.qrCode);
+      setReconfigSecret(data.secret);
+      setReconfigStep("new-setup");
+    } catch (err) {
+      setReconfigError(err instanceof Error ? err.message : "Gabim");
+    } finally {
+      setReconfigLoading(false);
+    }
+  }
+
+  async function handleReconfigNewVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setReconfigError("");
+    setReconfigLoading(true);
+    try {
+      const res = await fetch("/api/settings/totp/reconfig", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ step: "verify-new-totp", token: reconfigNewToken }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setReconfiguring(false);
+      setStatus("verified");
+      if (data.backupCodes) {
+        setBackupCodes(data.backupCodes);
+        setCodesAcknowledged(false);
+        setShowBackupCodesModal(true);
+      }
+    } catch (err) {
+      setReconfigError(err instanceof Error ? err.message : "Kodi i gabuar");
+    } finally {
+      setReconfigLoading(false);
     }
   }
 
@@ -146,6 +273,12 @@ export default function SecuritySettingsPage() {
           {error && (
             <div className="mt-4">
               <Alert variant="destructive" title={error} />
+            </div>
+          )}
+
+          {status === "loading" && (
+            <div className="mt-4 flex justify-center py-4">
+              <Spinner size="sm" />
             </div>
           )}
 
@@ -227,13 +360,193 @@ export default function SecuritySettingsPage() {
             </div>
           )}
 
-          {status === "verified" && (
-            <div className="mt-4">
+          {status === "verified" && !reconfiguring && (
+            <div className="mt-4 space-y-4">
               <Alert
                 variant="success"
                 icon={<Check className="h-4 w-4" />}
-                title="2FA u aktivizua me sukses!"
+                title="2FA i konfiguruar"
               />
+              <Button
+                variant="secondary"
+                onClick={startReconfigure}
+                className="w-full sm:w-auto min-h-[48px]"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Rikonfiguro 2FA
+              </Button>
+            </div>
+          )}
+
+          {/* Reconfiguration Flow */}
+          {status === "verified" && reconfiguring && (
+            <div className="mt-6 space-y-4">
+              <div className="rounded-xl border border-border bg-card p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-foreground">Rikonfiguro 2FA</h4>
+                  <button
+                    onClick={cancelReconfigure}
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Anulo
+                  </button>
+                </div>
+
+                {/* Progress indicator */}
+                <div className="mb-6 flex items-center justify-center gap-2">
+                  <div className={`h-2 w-2 rounded-full ${reconfigStep === "password" ? "bg-primary" : "bg-green-500"}`} />
+                  <div className={`h-0.5 w-8 ${reconfigStep !== "password" ? "bg-green-500" : "bg-border"}`} />
+                  <div className={`h-2 w-2 rounded-full ${reconfigStep === "email-otp" ? "bg-primary" : reconfigStep === "new-setup" || reconfigStep === "new-verify" ? "bg-green-500" : "bg-border"}`} />
+                  <div className={`h-0.5 w-8 ${reconfigStep === "new-setup" || reconfigStep === "new-verify" ? "bg-green-500" : "bg-border"}`} />
+                  <div className={`h-2 w-2 rounded-full ${reconfigStep === "new-setup" || reconfigStep === "new-verify" ? "bg-primary" : "bg-border"}`} />
+                </div>
+
+                {reconfigError && (
+                  <div className="mb-4">
+                    <Alert variant="destructive" title={reconfigError} />
+                  </div>
+                )}
+
+                {/* Step 1: Password verification */}
+                {reconfigStep === "password" && (
+                  <form onSubmit={handleReconfigPasswordVerify} className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Futni fjalekalimin tuaj aktual per te vazhduar.
+                    </p>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Fjalekalimi
+                      </label>
+                      <Input
+                        type="password"
+                        value={reconfigPassword}
+                        onChange={(e) => setReconfigPassword(e.target.value)}
+                        placeholder="Fut fjalekalimin aktual"
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={reconfigLoading || !reconfigPassword}
+                      className="w-full min-h-[48px]"
+                    >
+                      {reconfigLoading ? (
+                        <>
+                          <Spinner size="sm" />
+                          Duke verifikuar...
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="h-4 w-4" />
+                          Verifiko Fjalekalimin
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                )}
+
+                {/* Step 2: Email OTP verification */}
+                {reconfigStep === "email-otp" && (
+                  <form onSubmit={handleReconfigEmailVerify} className="space-y-4">
+                    {emailSent && (
+                      <Alert
+                        variant="info"
+                        icon={<Mail className="h-4 w-4" />}
+                        title="Kodi u dergua ne email-in tuaj"
+                      />
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      Futni kodin 6-shifror qe u dergua ne email-in tuaj.
+                    </p>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Kodi i Email-it
+                      </label>
+                      <Input
+                        type="text"
+                        value={reconfigEmailOtp}
+                        onChange={(e) => setReconfigEmailOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                        placeholder="000000"
+                        maxLength={6}
+                        className="text-center text-2xl font-mono tracking-[0.5em] h-14 bg-muted/30"
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={reconfigLoading || reconfigEmailOtp.length !== 6}
+                      className="w-full min-h-[48px]"
+                    >
+                      {reconfigLoading ? (
+                        <>
+                          <Spinner size="sm" />
+                          Duke verifikuar...
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="h-4 w-4" />
+                          Verifiko Kodin
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                )}
+
+                {/* Step 3: New QR code setup */}
+                {(reconfigStep === "new-setup" || reconfigStep === "new-verify") && reconfigQrCode && (
+                  <div className="space-y-6">
+                    <div className="rounded-xl border border-border bg-card p-4">
+                      <p className="mb-4 text-center text-sm font-medium text-foreground">
+                        Skanoni QR kodin e ri me Google Authenticator
+                      </p>
+                      <div className="flex justify-center rounded-lg bg-white p-4 mx-auto w-fit">
+                        <Image src={reconfigQrCode} alt="TOTP QR Code" width={180} height={180} unoptimized />
+                      </div>
+                      {reconfigSecret && (
+                        <div className="mt-4 rounded-lg bg-muted/50 p-3">
+                          <p className="text-[11px] text-center text-muted-foreground mb-1">Ose futni kodin manual:</p>
+                          <div className="overflow-x-auto">
+                            <code className="block text-center text-[11px] font-mono text-foreground break-all leading-relaxed">
+                              {reconfigSecret}
+                            </code>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <form onSubmit={handleReconfigNewVerify} className="space-y-4">
+                      <p className="text-center text-sm text-muted-foreground">
+                        Futni kodin 6-shifror nga aplikacioni
+                      </p>
+                      <Input
+                        type="text"
+                        value={reconfigNewToken}
+                        onChange={(e) => setReconfigNewToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                        placeholder="000000"
+                        maxLength={6}
+                        className="text-center text-2xl font-mono tracking-[0.5em] h-14 bg-muted/30"
+                      />
+                      <Button
+                        type="submit"
+                        disabled={reconfigLoading || reconfigNewToken.length !== 6}
+                        className="w-full min-h-[48px]"
+                      >
+                        {reconfigLoading ? (
+                          <>
+                            <Spinner size="sm" />
+                            Duke verifikuar...
+                          </>
+                        ) : (
+                          <>
+                            <ShieldCheck className="h-4 w-4" />
+                            Verifiko & Aktivizo
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </CardContent>

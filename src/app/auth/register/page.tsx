@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { UserPlus, Loader2, Mail, CheckCircle2, ArrowRight } from "lucide-react";
+import { UserPlus, Loader2, Mail, CheckCircle2, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -212,15 +213,25 @@ export default function RegisterPage() {
                     <label htmlFor="password" className="mb-1 block text-sm font-medium text-foreground">
                       Fjalëkalimi
                     </label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={form.password}
-                      onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      required
-                      minLength={10}
-                      placeholder="Min. 10 karaktere (A-z, 0-9, !@#)"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={form.password}
+                        onChange={(e) => setForm({ ...form, password: e.target.value })}
+                        required
+                        minLength={10}
+                        placeholder="Min. 10 karaktere (A-z, 0-9, !@#)"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Duhet të përmbajë: shkronjë të madhe, të vogel, numer, dhe simbol
                     </p>

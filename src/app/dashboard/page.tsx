@@ -16,7 +16,6 @@ import {
   Info,
   ChevronRight,
 } from "lucide-react";
-import OnboardingBanner from "@/components/OnboardingBanner";
 import OnboardingTutorial from "@/components/onboarding/OnboardingTutorial";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
@@ -141,7 +140,6 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
       <OnboardingTutorial />
-      <OnboardingBanner />
 
       <PageHeader
         title={`Mire se vini, ${firstName}`}
