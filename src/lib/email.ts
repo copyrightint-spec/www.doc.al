@@ -167,9 +167,8 @@ function baseTemplate(content: string, brandColor = "#dc2626", companyName = "do
   const logoHtml = companyLogo
     ? `<img src="${companyLogo}" alt="${companyName}" style="height: 48px; object-fit: contain;" />`
     : companyName === "doc.al"
-      ? `<div style="display: inline-flex; align-items: center; gap: 8px;">
-          <img src="${docAlLogo}" alt="doc.al" width="36" height="36" style="width: 36px; height: 36px; border-radius: 8px;" />
-          <span style="font-size: 20px; font-weight: 700; color: #18181b;">doc<span style="color: #2563eb;">.al</span></span>
+      ? `<div style="display: inline-flex; align-items: center; gap: 4px;">
+          <span style="font-size: 24px; font-weight: 800; color: #18181b;">doc</span><span style="font-size: 24px; font-weight: 800; color: #2563eb;">.al</span>
         </div>`
       : `<div style="display: inline-flex; align-items: center; gap: 8px;">
           <div style="background: ${brandColor}; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
