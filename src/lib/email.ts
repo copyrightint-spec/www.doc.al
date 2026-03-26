@@ -1,5 +1,18 @@
 import nodemailer from "nodemailer";
+import fs from "fs";
+import path from "path";
 import { prisma } from "@/lib/db";
+
+// Pre-load logo as base64 data URI for reliable rendering in email clients
+let logoBase64DataUri = "";
+try {
+  const logoPath = path.join(process.cwd(), "public", "docal-icon.png");
+  const logoBase64 = fs.readFileSync(logoPath).toString("base64");
+  logoBase64DataUri = `data:image/png;base64,${logoBase64}`;
+} catch {
+  // Fallback to URL if file not found (e.g., during build)
+  logoBase64DataUri = "";
+}
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "docal-mail",
@@ -150,7 +163,7 @@ async function sendEmail(options: SendEmailOptions): Promise<{ success: boolean;
 // ==================== TEMPLATE ====================
 
 function baseTemplate(content: string, brandColor = "#dc2626", companyName = "doc.al", companyLogo?: string | null) {
-  const docAlLogo = `${BASE_URL}/docal-icon.png`;
+  const docAlLogo = logoBase64DataUri || `${BASE_URL}/docal-icon.png`;
   const logoHtml = companyLogo
     ? `<img src="${companyLogo}" alt="${companyName}" style="height: 48px; object-fit: contain;" />`
     : companyName === "doc.al"
@@ -195,6 +208,20 @@ function baseTemplate(content: string, brandColor = "#dc2626", companyName = "do
                   <p style="margin: 4px 0 0; font-size: 11px; color: #a1a1aa; text-align: center;">
                     Nese nuk e prisni kete email, mund ta injoroni.
                   </p>
+                </td>
+              </tr>
+              <!-- Unsubscribe -->
+              <tr>
+                <td style="text-align: center; padding: 16px; border-top: 1px solid #e5e7eb;">
+                  <a href="${BASE_URL}/settings/profile#notifications"
+                     style="color: #6b7280; font-size: 11px; text-decoration: underline;">
+                    Menaxhoni preferencat e emaileve
+                  </a>
+                  <span style="color: #9ca3af; font-size: 11px;"> | </span>
+                  <a href="${BASE_URL}/settings/profile#notifications"
+                     style="color: #6b7280; font-size: 11px; text-decoration: underline;">
+                    Caktivizo njoftimet
+                  </a>
                 </td>
               </tr>
             </table>
@@ -496,7 +523,7 @@ export async function sendSigningCompleted(
       Verifiko Dokumentin
     </a>
     <p style="margin: 0; color: #71717a; font-size: 12px; line-height: 1.5;">
-      Nje kopje dixhitale e kontrates se nenshkruar do te ruhet ne llogarine tuaj ne doc.al.
+      Dokumenti i nenshkruar eshte derguar me email. Per arsye privatesi, nuk ruhet asnje kopje ne serverin tone.
     </p>
   `;
   const result = await sendEmail({
